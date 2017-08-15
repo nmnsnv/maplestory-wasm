@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -24,6 +24,8 @@
 
 namespace jrc
 {
+	constexpr Rectangle<int16_t> GraphicsGL::SCREEN;
+
 	GraphicsGL::GraphicsGL()
 	{
 		locked = false;
@@ -101,13 +103,13 @@ namespace jrc
 		uniform_screensize = glGetUniformLocation(program, "screensize");
 		uniform_yoffset = glGetUniformLocation(program, "yoffset");
 		uniform_fontregion = glGetUniformLocation(program, "fontregion");
-		if (attribute_coord == -1 || attribute_color == -1 || uniform_texture == -1 
+		if (attribute_coord == -1 || attribute_color == -1 || uniform_texture == -1
 			|| uniform_atlassize == -1 || uniform_yoffset == -1 || uniform_screensize == -1)
 			return Error::SHADER_VARS;
 
 		glGenBuffers(1, &vbo);
 
-		glGenTextures(1, &atlas); 
+		glGenTextures(1, &atlas);
 		glBindTexture(GL_TEXTURE_2D, atlas);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -218,7 +220,7 @@ namespace jrc
 			GLshort w = static_cast<GLshort>(g->bitmap.width);
 			GLshort h = static_cast<GLshort>(g->bitmap.rows);
 
-			glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, w, h, 
+			glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, w, h,
 				GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer);
 
 			Offset offset = Offset(ox, oy, w, h);
@@ -393,8 +395,8 @@ namespace jrc
 
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bmp.data());
 		return offsets.emplace(
-			std::piecewise_construct, 
-			std::forward_as_tuple(id), 
+			std::piecewise_construct,
+			std::forward_as_tuple(id),
 			std::forward_as_tuple(x, y, w, h)
 			).first->second;
 	}
@@ -532,7 +534,7 @@ namespace jrc
 				}
 			}
 		}
-		
+
 		bool newword = skip > 0;
 		bool newline = linebreak || ax + wordwidth > maxwidth;
 		if (newword || newline)
@@ -555,7 +557,7 @@ namespace jrc
 
 			advances.push_back(ax);
 
-			if (pos < first + skip || newline && c == ' ')
+			if (pos < first + skip || (newline && c == ' '))
 				continue;
 
 			ax += ch.ax;

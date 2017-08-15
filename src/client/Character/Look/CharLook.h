@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "BodyDrawinfo.h"
+#include "BodyDrawInfo.h"
 #include "Body.h"
 #include "Hair.h"
 #include "Face.h"
@@ -70,7 +70,7 @@ namespace jrc
 
 	private:
 		void updatetwohanded();
-		void draw(const DrawArgument& args, Stance::Id interstance, 
+		void draw(const DrawArgument& args, Stance::Id interstance,
 			Expression::Id interexp, uint8_t interframe, uint8_t interfcframe) const;
 		uint16_t get_delay(Stance::Id stance, uint8_t frame) const;
 		uint8_t getnextframe(Stance::Id stance, uint8_t frame) const;

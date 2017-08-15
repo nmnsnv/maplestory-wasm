@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -18,10 +18,10 @@
 #pragma once
 #include "Char.h"
 #include "CharStats.h"
-#include "Skillbook.h"
-#include "Questlog.h"
-#include "Telerock.h"
-#include "Monsterbook.h"
+#include "SkillBook.h"
+#include "QuestLog.h"
+#include "TeleRock.h"
+#include "MonsterBook.h"
 #include "Buff.h"
 #include "ActiveBuffs.h"
 #include "PassiveBuffs.h"
@@ -31,9 +31,9 @@
 
 #include "../Gameplay/Combat/Attack.h"
 #include "../Gameplay/Combat/Skill.h"
-#include "../Gameplay/Maplemap/Layer.h"
+#include "../Gameplay/MapleMap/Layer.h"
 #include "../Gameplay/Movement.h"
-#include "../Gameplay/Maplemap/MapInfo.h"
+#include "../Gameplay/MapleMap/MapInfo.h"
 #include "../Gameplay/Playable.h"
 #include "../Gameplay/Physics/Physics.h"
 
@@ -60,7 +60,7 @@ namespace jrc
 		// Respawn the player at the given position.
 		void respawn(Point<int16_t> position, bool underwater);
 		// Sends a Keyaction to the player's state, to apply forces, change the state and other behaviour.
-		void send_action(KeyAction::Id action, bool pressed);
+		void send_action(KeyAction::Id action, bool pressed) override;
 		// Recalculates the total stats from base stats, inventories and skills.
 		void recalc_stats(bool equipchanged);
 		// Change the equipment at the specified slot and recalculate stats.
@@ -122,7 +122,7 @@ namespace jrc
 
 		// Return wether the player is underwater.
 		bool is_underwater() const;
-		// Returns if a Keyaction is currently active. 
+		// Returns if a Keyaction is currently active.
 		bool is_key_down(KeyAction::Id action) const;
 		// Return a pointer to the ladder the player is on.
 		Optional<const Ladder> get_ladder() const;

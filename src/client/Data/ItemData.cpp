@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -66,8 +66,8 @@ namespace jrc
 			icons[true] = src["iconRaw"];
 			price = src["price"];
 
-			name = strsrc["name"];
-			desc = strsrc["desc"];
+			name = strsrc["name"].get_string();
+			desc = strsrc["desc"].get_string();
 
 			valid = true;
 		}
@@ -79,11 +79,11 @@ namespace jrc
 
 	std::string ItemData::get_eqcategory(int32_t id) const
 	{
-		constexpr char* categorynames[15] =
+		constexpr char const* categorynames[15] =
 		{
-			"Cap", "Accessory", "Accessory", "Accessory", "Coat", "Longcoat",
-			"Pants", "Shoes", "Glove", "Shield", "Cape", "Ring", "Accessory",
-			"Accessory", "Accessory"
+			"Cap",      "Accessory", "Accessory", "Accessory", "Coat",
+			"Longcoat", "Pants",     "Shoes",     "Glove",     "Shield",
+			"Cape",     "Ring",      "Accessory", "Accessory", "Accessory"
 		};
 
 		size_t index = (id / 10000) - 100;

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -34,7 +34,7 @@ namespace jrc
 	{
 	public:
 		UIStateGame();
-		
+
 		void draw(float inter, Point<int16_t> cursor) const override;
 		void update() override;
 
@@ -49,7 +49,7 @@ namespace jrc
 		void show_skill(Tooltip::Parent parent, int32_t skill_id,
 			int32_t level, int32_t masterlevel, int64_t expiration) override;
 
-		Iterator pre_add(UIElement::Type type, bool toggled, bool focused);
+		Iterator pre_add(UIElement::Type type, bool toggled, bool focused) override;
 		void remove(UIElement::Type type) override;
 		UIElement* get(UIElement::Type type) override;
 		UIElement* get_front(Point<int16_t> pos) override;

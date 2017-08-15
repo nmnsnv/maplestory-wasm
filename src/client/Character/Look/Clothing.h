@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -16,8 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "BodyDrawinfo.h"
-#include "Equipslot.h"
+#include "BodyDrawInfo.h"
+#include "EquipSlot.h"
 
 #include "../../Graphics/Texture.h"
 #include "../../Template/EnumMap.h"
@@ -32,7 +32,7 @@ namespace jrc
 		enum Layer
 		{
 			CAPE, SHOES, PANTS, TOP, MAIL, MAILARM,
-			EARRINGS, FACEACC, EYEACC, PENDANT, BELT, MEDAL, RING, 
+			EARRINGS, FACEACC, EYEACC, PENDANT, BELT, MEDAL, RING,
 			CAP, CAP_BELOW_BODY, CAP_OVER_HAIR,
 			GLOVE, WRIST, GLOVE_OVER_HAIR, WRIST_OVER_HAIR, GLOVE_OVER_BODY, WRIST_OVER_BODY,
 			SHIELD, BACKSHIELD, SHIELD_BELOW_BODY, SHIELD_OVER_HAIR,

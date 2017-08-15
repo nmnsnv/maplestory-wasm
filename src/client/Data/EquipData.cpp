@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -61,11 +61,12 @@ namespace jrc
 		size_t index = (id / 10000) - 100;
 		if (index < NON_WEAPON_TYPES)
 		{
-			constexpr char* types[NON_WEAPON_TYPES] =
+			constexpr char const* types[NON_WEAPON_TYPES] =
 			{
-				"HAT", "FACE ACCESSORY", "EYE ACCESSORY", "EARRINGS", "TOP", "OVERALL",
-				"BOTTOM", "SHOES", "GLOVES", "SHIELD", "CAPE", "RING",
-				"PENDANT", "BELT", "MEDAL"
+				"HAT",     "FACE ACCESSORY", "EYE ACCESSORY", "EARRINGS",
+				"TOP",     "OVERALL",        "BOTTOM",        "SHOES",
+				"GLOVES",  "SHIELD",         "CAPE",          "RING",
+				"PENDANT", "BELT",           "MEDAL"
 			};
 			constexpr Equipslot::Id equipslots[NON_WEAPON_TYPES] =
 			{
@@ -79,7 +80,7 @@ namespace jrc
 		}
 		else if (index >= WEAPON_OFFSET && index < WEAPON_OFFSET + WEAPON_TYPES)
 		{
-			constexpr char* types[WEAPON_TYPES] =
+			constexpr char const* types[WEAPON_TYPES] =
 			{
 				"ONE-HANDED SWORD", "ONE-HANDED AXE", "ONE-HANDED MACE", "DAGGER",
 				"", "", "", "WAND", "STAFF", "", "TWO-HANDED SWORD", "TWO-HANDED AXE",

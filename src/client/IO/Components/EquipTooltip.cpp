@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -26,7 +26,7 @@
 
 namespace jrc
 {
-	EquipTooltip::EquipTooltip() 
+	EquipTooltip::EquipTooltip()
 	{
 		nl::node itemtt = nl::nx::ui["UIToolTip.img"]["Item"];
 
@@ -80,12 +80,12 @@ namespace jrc
 		jobs[false][3] = itemtt["Equip"]["Job"]["disable"]["3"];
 		jobs[false][4] = itemtt["Equip"]["Job"]["disable"]["4"];
 		jobs[false][5] = itemtt["Equip"]["Job"]["disable"]["5"];
-		jobs[true][0] = itemtt["Equip"]["Job"]["enable"]["0"];
-		jobs[true][1] = itemtt["Equip"]["Job"]["enable"]["1"];
-		jobs[true][2] = itemtt["Equip"]["Job"]["enable"]["2"];
-		jobs[true][3] = itemtt["Equip"]["Job"]["enable"]["3"];
-		jobs[true][4] = itemtt["Equip"]["Job"]["enable"]["4"];
-		jobs[true][5] = itemtt["Equip"]["Job"]["enable"]["5"];
+		jobs[true][0]  = itemtt["Equip"]["Job"]["enable"]["0"];
+		jobs[true][1]  = itemtt["Equip"]["Job"]["enable"]["1"];
+		jobs[true][2]  = itemtt["Equip"]["Job"]["enable"]["2"];
+		jobs[true][3]  = itemtt["Equip"]["Job"]["enable"]["3"];
+		jobs[true][4]  = itemtt["Equip"]["Job"]["enable"]["4"];
+		jobs[true][5]  = itemtt["Equip"]["Job"]["enable"]["5"];
 
 		invpos = 0;
 	}
@@ -124,7 +124,7 @@ namespace jrc
 		const EquipData& equipdata = EquipData::get(item_id);
 		const ItemData& itemdata = equipdata.get_itemdata();
 		const CharStats& stats = player.get_stats();
-		
+
 		height = 500;
 
 		itemicon = itemdata.get_icon(true);

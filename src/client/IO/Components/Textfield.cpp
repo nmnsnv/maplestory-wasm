@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -23,8 +23,8 @@
 
 namespace jrc
 {
-	Textfield::Textfield(Text::Font font, Text::Alignment alignment, 
-		Text::Color color, Rectangle<int16_t> bnd, size_t lim) 
+	Textfield::Textfield(Text::Font font, Text::Alignment alignment,
+		Text::Color color, Rectangle<int16_t> bnd, size_t lim)
 		: textlabel(font, alignment, color, "", 0, false), marker(font, alignment, color, "|") {
 
 		bounds = bnd;
@@ -46,7 +46,7 @@ namespace jrc
 	{
 		if (state == DISABLED)
 			return;
-		
+
 		Point<int16_t> absp = bounds.getlt() + parent;
 		if (text.size() > 0)
 		{
@@ -90,9 +90,9 @@ namespace jrc
 		}
 	}
 
-	void Textfield::set_enter_callback(std::function<void(std::string)> or)
+	void Textfield::set_enter_callback(std::function<void(std::string)> on_return)
 	{
-		onreturn = or;
+		onreturn = on_return;
 	}
 
 	void Textfield::set_key_callback(KeyAction::Id key, std::function<void(void)> action)
@@ -280,7 +280,7 @@ namespace jrc
 	Rectangle<int16_t> Textfield::get_bounds() const
 	{
 		return Rectangle<int16_t>(
-			bounds.getlt() + parentpos, 
+			bounds.getlt() + parentpos,
 			bounds.getrb() + parentpos
 			);
 	}

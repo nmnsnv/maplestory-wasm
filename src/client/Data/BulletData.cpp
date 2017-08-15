@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -21,12 +21,12 @@
 
 namespace jrc
 {
-	BulletData::BulletData(int32_t itemid) 
+	BulletData::BulletData(int32_t itemid)
 		: itemdata(ItemData::get(itemid)) {
 
 		std::string prefix = "0" + std::to_string(itemid / 10000);
 		std::string strid = "0" + std::to_string(itemid);
-		nl::node src = src = nl::nx::item["Consume"][prefix + ".img"][strid];
+		nl::node src = nl::nx::item["Consume"][prefix + ".img"][strid];
 
 		bullet = src["bullet"];
 		watk = src["info"]["incPAD"];

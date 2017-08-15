@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "UIChatbar.h"
+#include "UIChatBar.h"
 
 #include "../UI.h"
 
@@ -97,7 +97,7 @@ namespace jrc
 			}
 		});
 
-		slider = {11, Range<int16_t>(0, CHATROWHEIGHT * chatrows - 14), -22, chatrows, 1, 
+		slider = {11, Range<int16_t>(0, CHATROWHEIGHT * chatrows - 14), -22, chatrows, 1,
 			[&](bool up) {
 			int16_t next = up ?
 				rowpos - 1 :
@@ -213,9 +213,9 @@ namespace jrc
 				return tstate;
 			}
 		}
-		
+
 		auto chattop = Rectangle<int16_t>(
-			0,  502, 
+			0,  502,
 			getchattop(),
 			getchattop() + 6
 			);

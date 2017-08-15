@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -30,7 +30,7 @@
 
 namespace jrc
 {
-	Mob::Mob(int32_t oi, int32_t mid, int8_t mode, int8_t st, uint16_t fh, 
+	Mob::Mob(int32_t oi, int32_t mid, int8_t mode, int8_t st, uint16_t fh,
 		bool newspawn, int8_t tm, Point<int16_t> position) : MapObject(oi) {
 
 		std::string strid = string_format::extend_id(mid, 7);
@@ -70,7 +70,7 @@ namespace jrc
 		animations[HIT] = src["hit1"];
 		animations[DIE] = src["die1"];
 
-		name = nl::nx::string["Mob.img"][std::to_string(mid)]["name"];
+		name = nl::nx::string["Mob.img"][std::to_string(mid)]["name"].get_string();
 
 		nl::node sndsrc = nl::nx::sound["Mob.img"][strid];
 
@@ -318,8 +318,8 @@ namespace jrc
 	void Mob::update_movement()
 	{
 		MoveMobPacket(
-			oid, 
-			1, 0, 0, 0, 0, 0, 0, 
+			oid,
+			1, 0, 0, 0, 0, 0, 0,
 			get_position(),
 			Movement(phobj, value_of(stance, flip))
 			).dispatch();
@@ -523,7 +523,7 @@ namespace jrc
 		bool hit = randomizer.below(hitchance);
 		if (!hit)
 			return{ 0, false };
-		
+
 		constexpr double DAMAGECAP = 999999.0;
 
 		double damage = randomizer.next_real(mindamage, maxdamage);

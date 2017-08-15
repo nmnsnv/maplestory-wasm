@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -23,12 +23,12 @@
 #include "../../IO/UI.h"
 #include "../../IO/Messages.h"
 #include "../../IO/UITypes/UIStatusMessenger.h"
-#include "../../IO/UITypes/UIStatusbar.h"
+#include "../../IO/UITypes/UIStatusBar.h"
 
 namespace jrc
 {
 	// Modes:
-	// 0 - Item(0) or Meso(1) 
+	// 0 - Item(0) or Meso(1)
 	// 3 - Exp gain
 	// 4 - Fame
 	// 5 - Mesos
@@ -115,7 +115,7 @@ namespace jrc
 		if (servermessage)
 			recv.skip(1);
 		std::string message = recv.read_string();
-		
+
 		if (type == 3)
 		{
 			recv.read_byte(); // channel

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -21,7 +21,7 @@
 #include "../Constants.h"
 #include "../Data/WeaponData.h"
 #include "../IO/UI.h"
-#include "../IO/UITypes/UIStatsinfo.h"
+#include "../IO/UITypes/UIStatsInfo.h"
 #include "../Net/Packets/GameplayPackets.h"
 #include "../Net/Packets/InventoryPackets.h"
 
@@ -71,7 +71,7 @@ namespace jrc
 		set_direction(false);
 	}
 
-	Player::Player() 
+	Player::Player()
 		: Char(0, {}, "") {}
 
 	void Player::respawn(Point<int16_t> pos, bool uw)
@@ -446,7 +446,7 @@ namespace jrc
 			set_direction(false);
 		}
 	}
-	
+
 	float Player::get_walkforce() const
 	{
 		return 0.05f + 0.11f * static_cast<float>(stats.get_total(Equipstat::SPEED)) / 100;

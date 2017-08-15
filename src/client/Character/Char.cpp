@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "Char.h"
+
+#include <math.h>
 
 #include "../Constants.h"
 #include "../Data/WeaponData.h"
@@ -39,7 +41,7 @@ namespace jrc
 		if (invincible)
 		{
 			float phi = invincible.alpha() * 30;
-			float rgb = 0.9f - 0.5f * std::abs(std::sinf(phi));
+			float rgb = 0.9f - 0.5f * std::abs(sinf(phi));
 			color = { rgb, rgb, rgb, 1.0f };
 		}
 		else

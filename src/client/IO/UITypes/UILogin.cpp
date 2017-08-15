@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "UILogin.h"
-#include "UILoginwait.h"
+#include "UILoginWait.h"
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
@@ -139,7 +139,7 @@ namespace jrc
 		password.set_state(Textfield::NORMAL);
 
 		LoginPacket(
-			account.get_text(), 
+			account.get_text(),
 			password.get_text()
 		).dispatch();
 	}

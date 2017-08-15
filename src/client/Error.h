@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -76,18 +76,18 @@ namespace jrc
 		{
 			"",
 			"The server seems to be offline. Please start the server and enter 'retry'.",
-			"Could not initialize nlnx. Message: ",
+			"Could not initialize NLNX. Message: ",
 			"Missing a game file: ",
 			"UI.nx has wrong version.",
-			"Could not initialize glfw.",
-			"Could not initialize glew.",
-			"Could not initialize freetype.",
+			"Could not initialize GLFW.",
+			"Could not initialize GLEW.",
+			"Could not initialize FreeType.",
 			"Failed to create vertex shader.",
 			"Failed to create fragment shader.",
 			"Failed to create shader program.",
 			"Failed to locate shader variables.",
 			"Failed to create window.",
-			"Failed to initialize audio"
+			"Failed to initialize audio."
 		};
 	};
 }

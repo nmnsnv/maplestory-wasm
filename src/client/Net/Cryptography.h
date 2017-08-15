@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -34,28 +34,28 @@ namespace jrc
 		~Cryptography();
 
 		// Encrypt a byte array with the given length and iv.
-		void encrypt(int8_t* bytes, size_t length);
+		void encrypt(int8_t* bytes, std::size_t length);
 		// Decrypt a byte array with the given length and iv.
-		void decrypt(int8_t* bytes, size_t length);
+		void decrypt(int8_t* bytes, std::size_t length);
 		// Generate a header for the specified length and key.
-		void create_header(int8_t* buffer, size_t length) const;
+		void create_header(int8_t* buffer, std::size_t length) const;
 		// Use the 4-byte header of a received packet to determine its length.
-		size_t check_length(const int8_t* header) const;
+		std::size_t check_length(const int8_t* header) const;
 
 	private:
 		// Add the maple custom encryption.
-		void mapleencrypt(int8_t* bytes, size_t length) const;
+		void mapleencrypt(int8_t* bytes, std::size_t length) const;
 		// Remove the maple custom encryption.
-		void mapledecrypt(int8_t* bytes, size_t length) const;
+		void mapledecrypt(int8_t* bytes, std::size_t length) const;
 		// Update a key.
 		void updateiv(uint8_t* iv) const;
 		// Perform a roll-left operation.
-		int8_t rollleft(int8_t byte, size_t count) const;
+		int8_t rollleft(int8_t byte, std::size_t count) const;
 		// Perform a roll-right operation.
-		int8_t rollright(int8_t byte, size_t count) const;
+		int8_t rollright(int8_t byte, std::size_t count) const;
 
 		// Apply aesofb to a byte array.
-		void aesofb(int8_t* bytes, size_t length, uint8_t* iv) const;
+		void aesofb(int8_t* bytes, std::size_t length, uint8_t* iv) const;
 		// Encrypt a byte array with AES.
 		void aesencrypt(uint8_t* bytes) const;
 		// AES addroundkey step.

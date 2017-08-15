@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -83,9 +83,11 @@ namespace jrc
 		}
 
 		constexpr size_t NUM_SKINTYPES = 12;
-		constexpr char* skintypes[NUM_SKINTYPES] =
+		constexpr char const* skintypes[NUM_SKINTYPES] =
 		{
-			"Light", "Tan", "Dark", "Pale", "Blue", "Green", "", "", "", "Grey", "Pink", "Red"
+			"Light", "Tan",   "Dark", "Pale",
+			"Blue",  "Green", "",     "",
+			"",      "Grey",  "Pink", "Red"
 		};
 		size_t index = skin;
 		name = (index < NUM_SKINTYPES) ? skintypes[index] : "";

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "UISkillbook.h"
+#include "UISkillBook.h"
 
 #include "../Components/MapleButton.h"
 #include "../Components/TwoSpriteButton.h"
@@ -32,6 +32,10 @@
 
 namespace jrc
 {
+	constexpr Point<int16_t> UISkillbook::SKILL_OFFSET;
+	constexpr Point<int16_t> UISkillbook::ICON_OFFSET;
+	constexpr Point<int16_t> UISkillbook::LINE_OFFSET;
+
 	SkillIcon::SkillIcon(int32_t i, int32_t lv) :
 		id(i) {
 
@@ -479,21 +483,29 @@ namespace jrc
 	{
 		int16_t x = cursorpos.x();
 		if (x < SKILL_OFFSET.x() || x > 148)
+		{
 			return nullptr;
+		}
 
 		int16_t y = cursorpos.y();
 		if (y < SKILL_OFFSET.y())
+		{
 			return nullptr;
+		}
 
 		uint16_t row = (y - SKILL_OFFSET.y()) / ROW_HEIGHT;
 		if (row < 0 || row >= ROWS)
+		{
 			return nullptr;
+		}
 
 		uint16_t absrow = offset + row;
 		if (icons.size() <= absrow)
+		{
 			return nullptr;
+		}
 
 		auto iter = icons.begin() + absrow;
-		return iter._Ptr;
+		return icons.data() + (iter - icons.begin());
 	}
 }

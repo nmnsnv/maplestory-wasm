@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -32,7 +32,7 @@ namespace jrc
 	};
 
 	// Request to be logged-in to an account.
-	// Opcode: LOGIN(1)
+	// Opcode: LOGIN(1) [LOGIN_PASSWORD(1) for OdinMS-based sources]
 	class LoginPacket : public OutPacket
 	{
 	public:
@@ -65,7 +65,7 @@ namespace jrc
 	};
 
 	// Requests being logged-in to a channel server with the specified character.
-	// Opcode: PLAYER_LOGIN(20)
+	// Opcode: PLAYER_LOGIN(20) [PLAYER_LOGGEDIN(20) for OdinMS-based sources]
 	class PlayerLoginPacket : public OutPacket
 	{
 	public:

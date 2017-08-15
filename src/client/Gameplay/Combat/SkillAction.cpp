@@ -1,4 +1,4 @@
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -41,7 +41,7 @@ namespace jrc
 
 	SingleAction::SingleAction(nl::node src)
 	{
-		action = src["action"]["0"];
+		action = src["action"]["0"].get_string();
 	}
 
 	void SingleAction::apply(Char& target, Attack::Type) const
@@ -52,8 +52,8 @@ namespace jrc
 
 	TwoHAction::TwoHAction(nl::node src)
 	{
-		actions[false] = src["action"]["0"];
-		actions[true] = src["action"]["1"];
+		actions[false] = src["action"]["0"].get_string();
+		actions[true] = src["action"]["1"].get_string();
 	}
 
 	void TwoHAction::apply(Char& target, Attack::Type) const
@@ -70,7 +70,7 @@ namespace jrc
 		for (auto sub : src["level"])
 		{
 			int32_t level = string_conversion::or_zero<int32_t>(sub.name());
-			actions[level] = sub["action"];
+			actions[level] = sub["action"].get_string();
 		}
 
 		skillid = id;

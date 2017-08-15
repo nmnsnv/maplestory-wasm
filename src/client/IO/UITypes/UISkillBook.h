@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -22,7 +22,7 @@
 #include "../Components/Slider.h"
 
 #include "../../Character/CharStats.h"
-#include "../../Character/Skillbook.h"
+#include "../../Character/SkillBook.h"
 #include "../../Graphics/Text.h"
 
 #include <vector>
@@ -114,8 +114,8 @@ namespace jrc
 		static constexpr int16_t ROWS = 4;
 		static constexpr int16_t ROW_HEIGHT = 40;
 		static constexpr Point<int16_t> SKILL_OFFSET = { 11, 93 };
-		static constexpr Point<int16_t> ICON_OFFSET = { 2, 33 };
-		static constexpr Point<int16_t> LINE_OFFSET = { 2, 37 };
+		static constexpr Point<int16_t> ICON_OFFSET  = {  2, 33 };
+		static constexpr Point<int16_t> LINE_OFFSET  = {  2, 37 };
 
 		const CharStats& stats;
 		const Skillbook& skillbook;
@@ -134,7 +134,7 @@ namespace jrc
 		uint16_t tab;
 		uint16_t skillcount;
 		uint16_t offset;
-		
+
 		std::vector<SkillIcon> icons;
 	};
 }

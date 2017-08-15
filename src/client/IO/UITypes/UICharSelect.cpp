@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -17,8 +17,8 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "UICharSelect.h"
 
-#include "UISoftkey.h"
-#include "UICharcreation.h"
+#include "UISoftKey.h"
+#include "UICharCreation.h"
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
@@ -68,7 +68,7 @@ namespace jrc
 		sprites.emplace_back(charselect["selectedWorld"]["name"]["15"], selworldpos);
 		sprites.emplace_back(charselect["selectedWorld"]["ch"][channel_id], selworldpos);
 
-		emptyslot = charselect["buyCharacter"]; 
+		emptyslot = charselect["buyCharacter"];
 		nametag = charselect["nameTag"];
 
 		buttons[BT_SELECTCHAR] = std::make_unique<MapleButton>(charselect["BtSelect"], charinfopos + Point<int16_t>(-76, 72));
@@ -202,7 +202,7 @@ namespace jrc
 	{
 		if (selected_relative >= charcount_relative)
 			return;
-		
+
 		charlooks[selected_absolute].set_stance(Stance::WALK1);
 		nametags[selected_absolute].set_selected(true);
 

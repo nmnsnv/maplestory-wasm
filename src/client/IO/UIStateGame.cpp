@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -19,14 +19,14 @@
 #include "UI.h"
 
 #include "UITypes/UIStatusMessenger.h"
-#include "UITypes/UIStatusbar.h"
+#include "UITypes/UIStatusBar.h"
 #include "UITypes/UIBuffList.h"
 #include "UITypes/UINpcTalk.h"
 #include "UITypes/UIShop.h"
-#include "UITypes/UIStatsinfo.h"
+#include "UITypes/UIStatsInfo.h"
 #include "UITypes/UIItemInventory.h"
 #include "UITypes/UIEquipInventory.h"
-#include "UITypes/UISkillbook.h"
+#include "UITypes/UISkillBook.h"
 
 #include "../Gameplay/Stage.h"
 
@@ -307,7 +307,7 @@ namespace jrc
 	void UIStateGame::remove(UIElement::Type type)
 	{
 		if (type == focused)
-			focused = UIElement::NONE; 
+			focused = UIElement::NONE;
 		if (type == tooltipparent)
 			clear_tooltip(tooltipparent);
 

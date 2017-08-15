@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -60,12 +60,13 @@ namespace jrc
 			}
 		}
 
-		name = nl::nx::string["Eqp.img"]["Eqp"]["Hair"][std::to_string(hairid)]["name"];
+		name = nl::nx::string["Eqp.img"]["Eqp"]["Hair"][std::to_string(hairid)]["name"].get_string();
 
 		constexpr size_t NUM_COLORS = 8;
-		constexpr char* haircolors[NUM_COLORS] =
+		constexpr char const* haircolors[NUM_COLORS] =
 		{
-			"Black", "Red", "Orange", "Blonde", "Green", "Blue", "Violet", "Brown"
+			"Black", "Red",  "Orange", "Blonde",
+			"Green", "Blue", "Violet", "Brown"
 		};
 		size_t index = hairid % 10;
 		color = (index < NUM_COLORS) ? haircolors[index] : "";
@@ -81,13 +82,13 @@ namespace jrc
 	}
 
 	const std::string& Hair::get_name() const
-	{ 
-		return name; 
+	{
+		return name;
 	}
 
 	const std::string& Hair::getcolor() const
-	{ 
-		return color; 
+	{
+		return color;
 	}
 
 

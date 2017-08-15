@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -98,7 +98,7 @@ namespace jrc
 		if (Optional<Mob> mob = mobs.get(oid))
 		{
 			mob->send_movement(
-				start, 
+				start,
 				std::move(movements)
 			);
 		}
@@ -198,7 +198,7 @@ namespace jrc
 	{
 		Range<int16_t> horizontal{ moveobj.get_last_x(), moveobj.get_x() };
 		Range<int16_t> vertical{ moveobj.get_last_y(), moveobj.get_y() };
-		Rectangle<int16_t> player_rect{ 
+		Rectangle<int16_t> player_rect{
 			horizontal.smaller(),
 			horizontal.greater(),
 			vertical.smaller() - 50,

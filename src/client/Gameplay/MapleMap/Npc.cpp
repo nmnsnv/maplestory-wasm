@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -23,7 +23,7 @@
 
 namespace jrc
 {
-	Npc::Npc(int32_t id, int32_t o, bool fl, uint16_t f, bool cnt, Point<int16_t> position) 
+	Npc::Npc(int32_t id, int32_t o, bool fl, uint16_t f, bool cnt, Point<int16_t> position)
 		: MapObject(o) {
 
 		std::string strid = std::to_string(id);
@@ -61,8 +61,8 @@ namespace jrc
 			}
 		}
 
-		name = strsrc["name"];
-		func = strsrc["func"];
+		name = strsrc["name"].get_string();
+		func = strsrc["func"].get_string();
 
 		namelabel = { Text::A13B, Text::CENTER, Text::YELLOW, Text::NAMETAG, name };
 		funclabel = { Text::A13B, Text::CENTER, Text::YELLOW, Text::NAMETAG, func };
@@ -141,9 +141,9 @@ namespace jrc
 			Point<int16_t>();
 
 		return Rectangle<int16_t>(
-			absp.x() - dim.x() / 2, 
-			absp.x() + dim.x() / 2, 
-			absp.y() - dim.y(), 
+			absp.x() - dim.x() / 2,
+			absp.x() + dim.x() / 2,
+			absp.y() - dim.y(),
 			absp.y()
 			).contains(cursorpos);
 	}

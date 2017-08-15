@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "UIChatbar.h"
+#include "UIChatBar.h"
 
 #include "../UIElement.h"
 #include "../Messages.h"
@@ -76,8 +76,8 @@ namespace jrc
 			BT_SKILL
 		};
 
-		static constexpr Point<int16_t> POSITION = { 512, 590 };
-		static constexpr Point<int16_t> DIMENSION = { 1366, 80 };
+		static constexpr Point<int16_t> POSITION  = {  512, 590 };
+		static constexpr Point<int16_t> DIMENSION = { 1366, 80  };
 		static constexpr time_t MESSAGE_COOLDOWN = 1'000;
 
 		const CharStats& stats;

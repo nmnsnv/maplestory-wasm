@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -35,7 +35,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace jrc 
+namespace jrc
 {
 	// Graphics engine which uses OpenGL.
 	class GraphicsGL : public Singleton<GraphicsGL>
@@ -82,7 +82,7 @@ namespace jrc
 	private:
 		void clearinternal();
 		bool addfont(const char* name, Text::Font id, FT_UInt width, FT_UInt height);
-		
+
 		struct Offset
 		{
 			GLshort l;
@@ -98,7 +98,7 @@ namespace jrc
 				b = y + h;
 			}
 
-			Offset() 
+			Offset()
 			{
 				l = 0;
 				r = 0;
@@ -132,14 +132,14 @@ namespace jrc
 				b = 0;
 			}
 
-			GLshort width() const 
-			{ 
-				return r - l; 
+			GLshort width() const
+			{
+				return r - l;
 			}
 
-			GLshort height() const 
-			{ 
-				return b - t; 
+			GLshort height() const
+			{
+				return b - t;
 			}
 		};
 
@@ -209,7 +209,7 @@ namespace jrc
 				height = h;
 			}
 
-			Font() 
+			Font()
 			{
 				width = 0;
 				height = 0;
@@ -291,5 +291,7 @@ namespace jrc
 		Point<GLshort> fontborder;
 		GLshort fontymax;
 	};
+
+	//constexpr Rectangle<int16_t> GraphicsGL::SCREEN;
 }
 

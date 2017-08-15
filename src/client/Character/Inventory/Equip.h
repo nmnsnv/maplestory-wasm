@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -34,7 +34,7 @@ namespace jrc
 			LENGTH
 		};
 
-		Equip(int32_t item_id, int64_t expiration, 
+		Equip(int32_t item_id, int64_t expiration,
 			const std::string& owner, int16_t flags, uint8_t slots,
 			uint8_t level, const EnumMap<Equipstat::Id, uint16_t>& stats,
 			uint8_t itemlevel, int16_t itemexp, int32_t vicious);

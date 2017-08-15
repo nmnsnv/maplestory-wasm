@@ -39,5 +39,3 @@ namespace jrc
 		DrawArgument stateargs;
 	};
 }
-
-

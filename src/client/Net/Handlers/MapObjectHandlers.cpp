@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -18,7 +18,7 @@
 #include "MapObjectHandlers.h"
 
 #include "Helpers/LoginParser.h"
-#include "Helpers\MovementParser.h"
+#include "Helpers/MovementParser.h"
 
 #include "../../Audio/Audio.h"
 #include "../../Gameplay/Stage.h"
@@ -58,7 +58,7 @@ namespace jrc
 		int16_t job = recv.read_short();
 		LookEntry look = LoginParser::parse_look(recv);
 
-		recv.read_int(); //count of 5110000 
+		recv.read_int(); //count of 5110000
 		recv.read_int(); // 'itemeffect'
 		recv.read_int(); // 'chair'
 
@@ -101,8 +101,8 @@ namespace jrc
 		recv.skip(3);
 		recv.read_byte(); // team
 
-		Stage::get().get_chars().spawn({ 
-			cid, look, level, job, name, stance, position 
+		Stage::get().get_chars().spawn({
+			cid, look, level, job, name, stance, position
 		});
 	}
 

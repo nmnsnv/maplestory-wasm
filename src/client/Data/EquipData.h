@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -18,9 +18,9 @@
 #pragma once
 #include "ItemData.h"
 
-#include "../Character/Look/Equipslot.h"
-#include "../Character/Equipstat.h"
-#include "../Character/Maplestat.h"
+#include "../Character/Look/EquipSlot.h"
+#include "../Character/EquipStat.h"
+#include "../Character/MapleStat.h"
 #include "../Template/EnumMap.h"
 
 namespace jrc

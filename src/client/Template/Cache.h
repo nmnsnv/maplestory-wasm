@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -22,7 +22,7 @@
 namespace jrc
 {
 	template <typename T>
-	// Template for a cache of game objects 
+	// Template for a cache of game objects
 	// which can be constructed from an identifier.
 	// The 'get' factory method is static.
 	class Cache
@@ -37,8 +37,7 @@ namespace jrc
 			auto iter = cache.find(id);
 			if (iter == cache.end())
 			{
-				iter = cache.emplace(id, T{ id })
-					.first;
+				iter = cache.emplace(id, T{ id }).first;
 			}
 			return iter->second;
 		}

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -30,13 +30,14 @@ namespace jrc
 		// Names of the needed game files.
 		constexpr std::array<const char*, NUM_FILES> filenames =
 		{
-			"Character.nx", "Effect.nx", "Etc.nx", "Item.nx", "Map.nx", "Mob.nx", "Npc.nx",
-			"Quest.nx", "Reactor.nx", "Skill.nx", "Sound.nx", "String.nx", "TamingMob.nx", "UI.nx"
+			"Character.nx", "Effect.nx", "Etc.nx",   "Item.nx",
+			"Map.nx",       "Mob.nx",    "Npc.nx",   "Quest.nx",
+			"Reactor.nx",   "Skill.nx",  "Sound.nx", "String.nx",
+			"TamingMob.nx", "UI.nx"
 		};
 
 		// Initialize nlnx.
-		// When successfull also tests if the UI file contains valid images.
+		// When successful, also tests if the UI file contains valid images.
 		Error init();
 	};
 }
-

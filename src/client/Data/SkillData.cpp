@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -40,8 +40,8 @@ namespace jrc
 
 
 		// Load strings
-		name = strsrc["name"];
-		desc = strsrc["desc"];
+		name = strsrc["name"].get_string();
+		desc = strsrc["desc"].get_string();
 
 		for (int32_t level = 1; nl::node sub = strsrc["h" + std::to_string(level)]; level++)
 		{
@@ -77,7 +77,7 @@ namespace jrc
 			);
 		}
 
-		element = src["elemAttr"];
+		element = src["elemAttr"].get_string();
 		reqweapon = Weapon::by_value(100 + (int32_t)src["weapon"]);
 		masterlevel = static_cast<int32_t>(stats.size());
 		passive = (id % 10000) / 1000 == 0;

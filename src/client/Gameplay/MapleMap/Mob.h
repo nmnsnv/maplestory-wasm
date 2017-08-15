@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "Mapobject.h"
+#include "MapObject.h"
 
 #include "../Combat/Attack.h"
 #include "../Combat/Bullet.h"
@@ -65,7 +65,7 @@ namespace jrc
 
 		// Construct a mob by combining data from game files with
 		// data sent by the server.
-		Mob(int32_t oid, int32_t mobid, int8_t mode, int8_t stance, uint16_t fhid, 
+		Mob(int32_t oid, int32_t mobid, int8_t mode, int8_t stance, uint16_t fhid,
 			bool newspawn, int8_t team, Point<int16_t> position);
 
 		// Draw the mob.

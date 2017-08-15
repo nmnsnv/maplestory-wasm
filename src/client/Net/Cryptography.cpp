@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -19,15 +19,15 @@
 
 namespace jrc
 {
-	Cryptography::Cryptography(const int8_t* handshake) 
+	Cryptography::Cryptography(const int8_t* handshake)
 	{
 #ifdef JOURNEY_USE_CRYPTO
-		for (size_t i = 0; i < HEADER_LENGTH; i++)
+		for (std::size_t i = 0; i < HEADER_LENGTH; ++i)
 		{
 			sendiv[i] = handshake[i + 7];
 		}
 
-		for (size_t i = 0; i < HEADER_LENGTH; i++)
+		for (std::size_t i = 0; i < HEADER_LENGTH; ++i)
 		{
 			recviv[i] = handshake[i + 11];
 		}
@@ -38,7 +38,7 @@ namespace jrc
 
 	Cryptography::~Cryptography() {}
 
-	void Cryptography::encrypt(int8_t* bytes, size_t length)
+	void Cryptography::encrypt(int8_t* bytes, std::size_t length)
 	{
 #ifdef JOURNEY_USE_CRYPTO
 		mapleencrypt(bytes, length);
@@ -46,7 +46,7 @@ namespace jrc
 #endif
 	}
 
-	void Cryptography::decrypt(int8_t* bytes, size_t length) 
+	void Cryptography::decrypt(int8_t* bytes, std::size_t length)
 	{
 #ifdef JOURNEY_USE_CRYPTO
 		aesofb(bytes, length, recviv);
@@ -54,39 +54,39 @@ namespace jrc
 #endif
 	}
 
-	void Cryptography::create_header(int8_t* buffer, size_t length) const
+	void Cryptography::create_header(int8_t* buffer, std::size_t length) const
 	{
 #ifdef JOURNEY_USE_CRYPTO
 		static const uint8_t MAPLEVERSION = 83;
 
-		size_t a = ((sendiv[3] << 8) | sendiv[2]) ^ MAPLEVERSION;
-		size_t b = a ^ length;
+		std::size_t a = ((sendiv[3] << 8) | sendiv[2]) ^ MAPLEVERSION;
+		std::size_t b = a ^ length;
 		buffer[0] = static_cast<int8_t>(a % 0x100);
 		buffer[1] = static_cast<int8_t>(a / 0x100);
 		buffer[2] = static_cast<int8_t>(b % 0x100);
 		buffer[3] = static_cast<int8_t>(b / 0x100);
 #else
-		int32_t length = static_cast<int32_t>(slength);
-		for (int32_t i = 0; i < HEADERLEN; i++)
+		int32_t slength = static_cast<int32_t>(length);
+		for (int32_t i = 0; i < HEADER_LENGTH; ++i) // HEADERLEN
 		{
-			buffer[i] = static_cast<int8_t>(length);
-			length = length >> 8;
+			buffer[i] = static_cast<int8_t>(slength);
+			slength = slength >> 8;
 		}
 #endif
 	}
 
-	size_t Cryptography::check_length(const int8_t* bytes) const
+	std::size_t Cryptography::check_length(const int8_t* bytes) const
 	{
 #ifdef JOURNEY_USE_CRYPTO
 		uint32_t headermask = 0;
-		for (size_t i = 0; i < 4; i++)
+		for (std::size_t i = 0; i < 4; i++)
 		{
 			headermask |= static_cast<uint8_t>(bytes[i]) << (8 * i);
 		}
 		return static_cast<int16_t>((headermask >> 16) ^ (headermask & 0xFFFF));
 #else
-		size_t length = 0;
-		for (int32_t i = 0; i < HEADERLEN; i++)
+		std::size_t length = 0;
+		for (int32_t i = 0; i < HEADER_LENGTH; ++i) // HEADERLEN
 		{
 			length += static_cast<uint8_t>(bytes[i]) << (8 * i);
 		}
@@ -94,13 +94,13 @@ namespace jrc
 #endif
 	}
 
-	void Cryptography::mapleencrypt(int8_t* bytes, size_t length) const
+	void Cryptography::mapleencrypt(int8_t* bytes, std::size_t length) const
 	{
-		for (size_t j = 0; j < 3; j++)
+		for (std::size_t j = 0; j < 3; ++j)
 		{
 			int8_t remember = 0;
 			int8_t datalen = static_cast<int8_t>(length & 0xFF);
-			for (size_t i = 0; i < length; i++)
+			for (std::size_t i = 0; i < length; ++i)
 			{
 				int8_t cur = (rollleft(bytes[i], 3) + datalen) ^ remember;
 				remember = cur;
@@ -111,7 +111,7 @@ namespace jrc
 
 			remember = 0;
 			datalen = static_cast<int8_t>(length & 0xFF);
-			for (size_t i = length; i--;)
+			for (std::size_t i = length; i--;)
 			{
 				int8_t cur = (rollleft(bytes[i], 4) + datalen) ^ remember;
 				remember = cur;
@@ -121,14 +121,14 @@ namespace jrc
 		}
 	}
 
-	void Cryptography::mapledecrypt(int8_t* bytes, size_t length) const
+	void Cryptography::mapledecrypt(int8_t* bytes, std::size_t length) const
 	{
-		for (size_t i = 0; i < 3; i++)
+		for (std::size_t i = 0; i < 3; ++i)
 		{
 			uint8_t remember = 0;
 			uint8_t datalen = static_cast<uint8_t>(length & 0xFF);
 
-			for (size_t j = length; j--;)
+			for (std::size_t j = length; j--;)
 			{
 				uint8_t cur = rollleft(bytes[j], 3) ^ 0x13;
 				bytes[j] = rollright((cur ^ remember) - datalen, 4);
@@ -138,7 +138,7 @@ namespace jrc
 
 			remember = 0;
 			datalen = static_cast<uint8_t>(length & 0xFF);
-			for (size_t j = 0; j < length; j++)
+			for (std::size_t j = 0; j < length; ++j)
 			{
 				uint8_t cur = (~(bytes[j] - 0x48)) & 0xFF;
 				cur = rollleft(cur, static_cast<int32_t>(datalen)& 0xFF);
@@ -151,7 +151,7 @@ namespace jrc
 
 	void Cryptography::updateiv(uint8_t* iv) const
 	{
-		static const uint8_t maplebytes[256] =
+		static const uint8_t maplebytes[256] = // This is called `funnyBytes` in OdinMS-based sources.
 		{
 			0xEC, 0x3F, 0x77, 0xA4, 0x45, 0xD0, 0x71, 0xBF, 0xB7, 0x98, 0x20, 0xFC, 0x4B, 0xE9, 0xB3, 0xE1,
 			0x5C, 0x22, 0xF7, 0x0C, 0x44, 0x1B, 0x81, 0xBD, 0x63, 0x8D, 0xD4, 0xC3, 0xF2, 0x10, 0x19, 0xE0,
@@ -171,72 +171,74 @@ namespace jrc
 			0x84, 0x7F, 0x61, 0x1E, 0xCF, 0xC5, 0xD1, 0x56, 0x3D, 0xCA, 0xF4, 0x05, 0xC6, 0xE5, 0x08, 0x49
 		};
 
-		uint8_t mbytes[4] =
+		uint8_t mbytes[4] = // Called `in` in OdinMS-based sources. Local to the `getNewIv` method or similar.
 		{
 			0xF2, 0x53, 0x50, 0xC6
 		};
 
-		for (size_t i = 0; i < 4; i++)
+		for (std::size_t i = 0; i < 4; ++i)
 		{
+			// `funnyShit` method/routine.
 			uint8_t ivbyte = iv[i];
 			mbytes[0] += maplebytes[mbytes[1] & 0xFF] - ivbyte;
-			mbytes[1] -= mbytes[2] ^ maplebytes[ivbyte & 0xFF] & 0xFF;
+			mbytes[1] -= mbytes[2] ^ (maplebytes[ivbyte & 0xFF] & 0xFF);
 			mbytes[2] ^= maplebytes[mbytes[3] & 0xFF] + ivbyte;
 			mbytes[3] += (maplebytes[ivbyte & 0xFF] & 0xFF) - (mbytes[0] & 0xFF);
 
-			size_t mask = 0;
-			mask |= (mbytes[0]) & 0xFF;
-			mask |= (mbytes[1] << 8) & 0xFF00;
+			std::size_t mask = 0;
+			mask |= (mbytes[0]      ) & 0xFF;
+			mask |= (mbytes[1] << 8 ) & 0xFF00;
 			mask |= (mbytes[2] << 16) & 0xFF0000;
 			mask |= (mbytes[3] << 24) & 0xFF000000;
+
 			mask = (mask >> 0x1D) | (mask << 3);
 
-			for (size_t j = 0; j < 4; j++)
+			for (std::size_t j = 0; j < 4; ++j)
 			{
-				size_t value = mask >> (8 * j);
+				std::size_t value = mask >> (8 * j);
 				mbytes[j] = static_cast<uint8_t>(value & 0xFF);
 			}
 		}
 
-		for (size_t i = 0; i < 4; i++)
+		for (std::size_t i = 0; i < 4; ++i)
 		{
 			iv[i] = mbytes[i];
 		}
 	}
 
-	int8_t Cryptography::rollleft(int8_t data, size_t count) const
+	int8_t Cryptography::rollleft(int8_t data, std::size_t count) const
 	{
 		int32_t mask = (data & 0xFF) << (count % 8);
 		return static_cast<int8_t>((mask & 0xFF) | (mask >> 8));
 	}
 
-	int8_t Cryptography::rollright(int8_t data, size_t count) const
+	int8_t Cryptography::rollright(int8_t data, std::size_t count) const
 	{
 		int32_t mask = ((data & 0xFF) << 8) >> (count % 8);
 		return static_cast<int8_t>((mask & 0xFF) | (mask >> 8));
 	}
 
-	void Cryptography::aesofb(int8_t* bytes, size_t length, uint8_t* iv) const
+	void Cryptography::aesofb(int8_t* bytes, std::size_t length, uint8_t* iv) const
 	{
-		size_t blocklength = 0x5B0;
-		size_t offset = 0;
+		std::size_t blocklength = 0x5B0;
+		std::size_t offset = 0;
 		while (offset < length)
 		{
 			uint8_t miv[16];
-			for (size_t i = 0; i < 16; i++)
+			for (std::size_t i = 0; i < 16; ++i)
 			{
 				miv[i] = iv[i % 4];
 			}
 
-			size_t remaining = length - offset;
+			std::size_t remaining = length - offset;
 			if (remaining > blocklength)
 			{
 				remaining = blocklength;
 			}
 
-			for (size_t x = 0; x < remaining; x++)
+			for (std::size_t x = 0; x < remaining; ++x)
 			{
-				size_t relpos = x % 16;
+				std::size_t relpos = x % 16;
 				if (relpos == 0)
 				{
 					aesencrypt(miv);
@@ -256,7 +258,7 @@ namespace jrc
 		uint8_t round = 0;
 		addroundkey(bytes, round);
 
-		for (round = 1; round < 14; round++)
+		for (round = 1; round < 14; ++round)
 		{
 			subbytes(bytes);
 			shiftrows(bytes);
@@ -293,7 +295,7 @@ namespace jrc
 		};
 
 		uint8_t offset = round * 16;
-		for (uint8_t i = 0; i < 16; i++)
+		for (uint8_t i = 0; i < 16; ++i)
 		{
 			bytes[i] ^= maplekey[i + offset];
 		}
@@ -322,7 +324,7 @@ namespace jrc
 			0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 		};
 
-		for (uint8_t i = 0; i < 16; i++)
+		for (uint8_t i = 0; i < 16; ++i)
 		{
 			bytes[i] = subbox[bytes[i]];
 		}

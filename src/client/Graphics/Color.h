@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -47,7 +47,7 @@ namespace jrc
 			: rgba(comps) {}
 		// Create a color by real numbers [0.0f, 1.0f]
 		constexpr Color(float red, float green, float blue, float alpha)
-			: Color(underlying_t{ red, green, blue, alpha }) {}
+			: Color(underlying_t{ { red, green, blue, alpha } }) {}
 		// Create a color by an array of natural numbers [0, 255]
 		constexpr Color(const std::array<uint8_t, Color::LENGTH> comps)
 			: Color(comps[0], comps[1], comps[2], comps[3]) {}

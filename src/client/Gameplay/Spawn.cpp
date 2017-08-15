@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -17,11 +17,11 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "Spawn.h"
 
-#include "Maplemap/Npc.h"
-#include "Maplemap/Mob.h"
-#include "Maplemap/Reactor.h"
-#include "Maplemap/ItemDrop.h"
-#include "Maplemap/MesoDrop.h"
+#include "MapleMap/Npc.h"
+#include "MapleMap/Mob.h"
+#include "MapleMap/Reactor.h"
+#include "MapleMap/ItemDrop.h"
+#include "MapleMap/MesoDrop.h"
 #include "../Character/OtherChar.h"
 
 namespace jrc

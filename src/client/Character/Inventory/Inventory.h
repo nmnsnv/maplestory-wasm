@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -22,7 +22,7 @@
 #include "Pet.h"
 #include "Weapon.h"
 
-#include "../Look/Equipslot.h"
+#include "../Look/EquipSlot.h"
 
 #include "../../Template/EnumMap.h"
 #include "../../Template/Optional.h"

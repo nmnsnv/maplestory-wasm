@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -19,7 +19,7 @@
 //Define things here.
 
 // JOURNEY_USE_ASIO : Use asio for networking, if not defined use Winsock.
-//#define JOURNEY_USE_ASIO
+#define JOURNEY_USE_ASIO
 
 // JOURNEY_USE_XXHASH : Use xxhash for file check (additional dependency)
 //#define JOURNEY_USE_XXHASH

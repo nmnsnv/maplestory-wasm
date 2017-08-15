@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -66,7 +66,7 @@ namespace jrc
 					rawsettings.emplace(
 						line.substr(0, split - 1),
 						line.substr(split + 2)
-						);
+					);
 				}
 			}
 		}
@@ -121,12 +121,11 @@ namespace jrc
 
 	Point<int16_t> Configuration::PointEntry::load() const
 	{
-		std::string xstr = value
-			.substr(1, value
-			.find(",") - 1);
-		std::string ystr = value
-			.substr(value
-			.find(",") + 1, value.find(")") - value.find(",") - 1);
+		std::string xstr = value.substr(1, value.find(",") - 1);
+		std::string ystr = value.substr(
+			value.find(",") + 1,
+			value.find(")") - value.find(",") - 1
+		);
 
 		auto x = string_conversion::or_zero<int16_t>(xstr);
 		auto y = string_conversion::or_zero<int16_t>(ystr);

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "Footholdtree.h"
+#include "FootholdTree.h"
 
 #include "../../Console.h"
 
@@ -115,7 +115,7 @@ namespace jrc
 			{
 				wall = get_edge(phobj.fhid, left);
 				collision = left ?
-					crnt_x >= wall && next_x <= wall : 
+					crnt_x >= wall && next_x <= wall :
 					crnt_x <= wall && next_x >= wall;
 			}
 
@@ -242,6 +242,12 @@ namespace jrc
 		if (phobj.fhlayer == 0 || phobj.onground)
 		{
 			phobj.fhlayer = nextfh.layer();
+		}
+
+		if (phobj.fhid == 0)
+        {
+            phobj.fhid = curfh.id();
+            phobj.limitx(curfh.x1());
 		}
 	}
 

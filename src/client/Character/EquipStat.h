@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,22 +15,27 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "Monsterbook.h"
+#pragma once
+#include "../Template/Enumeration.h"
+
+#include <cstdint>
 
 namespace jrc
 {
-	Monsterbook::Monsterbook() 
+	namespace Equipstat
 	{
-		cover = 0;
-	}
+		enum Id
+		{
+			STR, DEX, INT, LUK, HP, MP,
+			WATK, MAGIC, WDEF, MDEF,
+			ACC, AVOID, HANDS, SPEED, JUMP,
+			LENGTH
+		};
 
-	void Monsterbook::set_cover(int32_t cov)
-	{
-		cover = cov;
-	}
+		Id by_id(size_t id);
+		int32_t value_of(Id value);
 
-	void Monsterbook::add_card(int16_t card, int8_t level)
-	{
-		cards[card] = level;
-	}
+		constexpr Enumeration<Id> values;
+		extern const char* names[LENGTH];
+	};
 }

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -20,15 +20,15 @@
 #include "Spawn.h"
 
 #include "Combat/Combat.h"
-#include "Maplemap/MapInfo.h"
-#include "Maplemap/MapTilesObjs.h"
-#include "Maplemap/MapBackgrounds.h"
-#include "Maplemap/MapPortals.h"
-#include "Maplemap/MapChars.h"
-#include "Maplemap/MapMobs.h"
-#include "Maplemap/MapReactors.h"
-#include "Maplemap/MapNpcs.h"
-#include "Maplemap/MapDrops.h"
+#include "MapleMap/MapInfo.h"
+#include "MapleMap/MapTilesObjs.h"
+#include "MapleMap/MapBackgrounds.h"
+#include "MapleMap/MapPortals.h"
+#include "MapleMap/MapChars.h"
+#include "MapleMap/MapMobs.h"
+#include "MapleMap/MapReactors.h"
+#include "MapleMap/MapNpcs.h"
+#include "MapleMap/MapDrops.h"
 #include "Physics/Physics.h"
 
 #include "../Character/Player.h"
@@ -45,7 +45,7 @@ namespace jrc
 
 		void init();
 
-		// Loads the map to display. 
+		// Loads the map to display.
 		void load(int32_t mapid, int8_t portalid);
 		// Remove all map objects and graphics.
 		void clear();

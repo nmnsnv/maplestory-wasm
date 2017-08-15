@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -23,7 +23,7 @@
 #include "Look/PetLook.h"
 
 #include "../Gameplay/Combat/DamageNumber.h"
-#include "../Gameplay/Maplemap/Mapobject.h"
+#include "../Gameplay/MapleMap/MapObject.h"
 #include "../Graphics/EffectLayer.h"
 #include "../IO/Components/ChatBalloon.h"
 #include "../Template/EnumMap.h"
@@ -36,7 +36,7 @@ namespace jrc
 	class Char : public MapObject
 	{
 	public:
-		// Player states which determine animation and state. 
+		// Player states which determine animation and state.
 		// Values are used in movement packets (add 1 if facing left).
 		enum State : int8_t
 		{

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -196,7 +196,7 @@ namespace jrc
 		// Return a point whose coordinates are the division of this and another points coordinates.
 		constexpr Point<T> operator / (Point<T> v) const
 		{
-			return{ 
+			return{
 				a / (v.a == 0 ? 1 : v.a),
 				b / (v.b == 0 ? 1 : v.b)
 			};

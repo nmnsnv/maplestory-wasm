@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -27,7 +27,7 @@
 
 namespace jrc
 {
-	Clothing::Clothing(int32_t id, const BodyDrawinfo& drawinfo) 
+	Clothing::Clothing(int32_t id, const BodyDrawinfo& drawinfo)
 		: itemid(id) {
 
 		const EquipData& equipdata = EquipData::get(itemid);
@@ -73,7 +73,7 @@ namespace jrc
 		nl::node src = nl::nx::character[category][strid + ".img"];
 		nl::node info = src["info"];
 
-		vslot = info["vslot"];
+		vslot = info["vslot"].get_string();
 
 		switch (int32_t standno = info["stand"])
 		{
@@ -164,7 +164,7 @@ namespace jrc
 						if (parent == "handMove")
 						{
 							shift += drawinfo.get_hand_position(stance, frame);
-						} 
+						}
 						else if (parent == "hand")
 						{
 							shift += drawinfo.get_arm_position(stance, frame);

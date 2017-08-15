@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,17 +15,35 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "Telerock.h"
+#pragma once
+#include "UILoginWait.h"
+
+#include "../../Graphics/Sprite.h"
+
+#include "nlnx/nx.hpp"
 
 namespace jrc
 {
-	void Telerock::addlocation(int32_t mapid)
+	UILoginwait::UILoginwait()
 	{
-		locations.push_back(mapid);
+		nl::node src = nl::nx::ui["Login.img"]["Notice"]["Loading"];
+
+		background = src["backgrnd"];
+		circle = { src["circle"], { 125, 72 } };
+
+		position = { 292, 200 };
+		dimension = { 282, 144 };
+		active = true;
 	}
 
-	void Telerock::addviplocation(int32_t mapid)
+	void UILoginwait::draw(float alpha) const
 	{
-		viplocations.push_back(mapid);
+		background.draw({ position });
+		circle.draw(position, alpha);
+	}
+
+	void UILoginwait::update()
+	{
+		circle.update();
 	}
 }

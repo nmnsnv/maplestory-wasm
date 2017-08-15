@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "UIStatusbar.h"
+#include "UIStatusBar.h"
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
@@ -26,6 +26,9 @@
 
 namespace jrc
 {
+	constexpr Point<int16_t> UIStatusbar::POSITION;
+	constexpr Point<int16_t> UIStatusbar::DIMENSION;
+
 	UIStatusbar::UIStatusbar(const CharStats& st)
 		: UIElement(POSITION, DIMENSION), chatbar(POSITION), stats(st) {
 
@@ -37,10 +40,10 @@ namespace jrc
 		sprites.emplace_back(mainbar["lvBacktrnd"]);
 		sprites.emplace_back(mainbar["lvCover"]);
 
-		expbar = { 
-			mainbar.resolve("gauge/exp/0"), 
+		expbar = {
+			mainbar.resolve("gauge/exp/0"),
 			mainbar.resolve("gauge/exp/1"),
-			mainbar.resolve("gauge/exp/2"), 
+			mainbar.resolve("gauge/exp/2"),
 			308, 0.0f
 		};
 		hpbar = {
@@ -198,7 +201,7 @@ namespace jrc
 			return;
 
 		std::string message{ Messages::messages[line] };
-	    chatbar.send_line(message, type);
+		chatbar.send_line(message, type);
 
 		message_cooldowns[line] = MESSAGE_COOLDOWN;
 	}

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "Mapinfo.h"
+#include "MapInfo.h"
 
 #include "../../Constants.h"
 
@@ -28,9 +28,9 @@ namespace jrc
 		{
 			mapwalls = { info["VRLeft"], info["VRRight"] };
 			mapborders = { info["VRTop"], info["VRBottom"] };
-			mapborders = { 
+			mapborders = {
 				mapborders.first() + Constants::VIEWYOFFSET,
-				mapborders.second() - Constants::VIEWYOFFSET 
+				mapborders.second() - Constants::VIEWYOFFSET
 			};
 		}
 		else
@@ -46,7 +46,7 @@ namespace jrc
 		cloud = info["cloud"].get_bool();
 		fieldlimit = info["fieldLimit"];
 		hideminimap = info["hideMinimap"].get_bool();
-		mapmark = info["mapMark"];
+		mapmark = info["mapMark"].get_string();
 		swim = info["swim"].get_bool();
 		town = info["town"].get_bool();
 

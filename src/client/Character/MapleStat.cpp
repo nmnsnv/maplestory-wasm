@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,59 +15,29 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#include "Skillbook.h"
+#include "MapleStat.h"
 
-#include "../Data/SkillData.h"
+#include "../Console.h"
+#include "../Util/Misc.h"
 
 namespace jrc
 {
-	void Skillbook::set_skill(int32_t id, int32_t level, int32_t mlevel, int64_t expire)
+	Maplestat::Id Maplestat::by_id(size_t id)
 	{
-		skillentries[id] = { level, mlevel, expire };
-	}
-
-	bool Skillbook::has_skill(int32_t id) const
-	{
-		return skillentries.count(id) > 0;
-	}
-
-	int32_t Skillbook::get_level(int32_t id) const
-	{
-		auto iter = skillentries.find(id);
-		if (iter == skillentries.end())
-			return 0;
-
-		return iter->second.level;
-	}
-
-	int32_t Skillbook::get_masterlevel(int32_t id) const
-	{
-		auto iter = skillentries.find(id);
-		if (iter == skillentries.end())
-			return 0;
-
-		return iter->second.masterlevel;
-	}
-
-	int64_t Skillbook::get_expiration(int32_t id) const
-	{
-		auto iter = skillentries.find(id);
-		if (iter == skillentries.end())
-			return 0;
-
-		return iter->second.expiration;
-	}
-
-	std::map<int32_t, int32_t> Skillbook::collect_passives() const
-	{
-		std::map<int32_t, int32_t> passives;
-		for (auto& iter : skillentries)
+		if (id >= LENGTH)
 		{
-			if (SkillData::get(iter.first).is_passive())
-			{
-				passives.emplace(iter.first, iter.second.level);
-			}
+			Console::get()
+				.print("Invalid Maplestat id: " + std::to_string(id));
 		}
-		return passives;
+		return static_cast<Id>(id);
 	}
+
+	const EnumMap<Maplestat::Id, int32_t> Maplestat::codes =
+	{
+		0x1, 0x2, 0x4, 0x10, 0x20,
+		0x40, 0x80, 0x100, 0x200,
+		0x400, 0x800, 0x1000, 0x2000,
+		0x4000, 0x8000, 0x10000,  0x20000, 0x40000,
+		0x180008, 0x200000
+	};
 }

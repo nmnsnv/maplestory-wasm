@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -15,35 +15,20 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
-#include "UILoginwait.h"
+#include "EquipSlot.h"
 
-#include "../../Graphics/Sprite.h"
-
-#include "nlnx/nx.hpp"
+#include "../../Console.h"
 
 namespace jrc
 {
-	UILoginwait::UILoginwait()
+	Equipslot::Id Equipslot::by_id(size_t id)
 	{
-		nl::node src = nl::nx::ui["Login.img"]["Notice"]["Loading"];
-
-		background = src["backgrnd"];
-		circle = { src["circle"], { 125, 72 } };
-
-		position = { 292, 200 };
-		dimension = { 282, 144 };
-		active = true;
-	}
-
-	void UILoginwait::draw(float alpha) const
-	{
-		background.draw({ position });
-		circle.draw(position, alpha);
-	}
-
-	void UILoginwait::update()
-	{
-		circle.update();
+		if (id >= LENGTH)
+		{
+			Console::get()
+				.print("Invalid Equipslot id: " + std::to_string(id));
+			return NONE;
+		}
+		return static_cast<Id>(id);
 	}
 }
