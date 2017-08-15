@@ -23,19 +23,19 @@
 
 namespace jrc
 {
-	// Represents a projectile on a map.
-	class Bullet
-	{
-	public:
-		Bullet(Animation animation, Point<int16_t> origin, bool toleft);
+    // Represents a projectile on a map.
+    class Bullet
+    {
+    public:
+        Bullet(Animation animation, Point<int16_t> origin, bool toleft);
 
-		void draw(double viewx, double viewy, float alpha) const;
-		bool settarget(Point<int16_t> target);
-		bool update(Point<int16_t> target);
+        void draw(double viewx, double viewy, float alpha) const;
+        bool settarget(Point<int16_t> target);
+        bool update(Point<int16_t> target);
 
-	private:
-		Animation animation;
-		MovingObject moveobj;
-		bool flip;
-	};
+    private:
+        Animation animation;
+        MovingObject moveobj;
+        bool flip;
+    };
 }

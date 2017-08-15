@@ -24,26 +24,26 @@
 
 namespace jrc
 {
-	UILoginwait::UILoginwait()
-	{
-		nl::node src = nl::nx::ui["Login.img"]["Notice"]["Loading"];
+    UILoginwait::UILoginwait()
+    {
+        nl::node src = nl::nx::ui["Login.img"]["Notice"]["Loading"];
 
-		background = src["backgrnd"];
-		circle = { src["circle"], { 125, 72 } };
+        background = src["backgrnd"];
+        circle = { src["circle"], { 125, 72 } };
 
-		position = { 292, 200 };
-		dimension = { 282, 144 };
-		active = true;
-	}
+        position = { 292, 200 };
+        dimension = { 282, 144 };
+        active = true;
+    }
 
-	void UILoginwait::draw(float alpha) const
-	{
-		background.draw({ position });
-		circle.draw(position, alpha);
-	}
+    void UILoginwait::draw(float alpha) const
+    {
+        background.draw({ position });
+        circle.draw(position, alpha);
+    }
 
-	void UILoginwait::update()
-	{
-		circle.update();
-	}
+    void UILoginwait::update()
+    {
+        circle.update();
+    }
 }

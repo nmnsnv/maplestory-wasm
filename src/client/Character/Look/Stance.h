@@ -23,27 +23,27 @@
 
 namespace jrc
 {
-	namespace Stance
-	{
-		enum Id : uint8_t
-		{
-			NONE, 
-			ALERT, DEAD, FLY, HEAL, JUMP, LADDER, PRONE, PRONESTAB,
-			ROPE, SHOT, SHOOT1, SHOOT2, SHOOTF, SIT, STABO1, STABO2, STABOF,
-			STABT1, STABT2, STABTF, STAND1, STAND2, SWINGO1, SWINGO2,
-			SWINGO3, SWINGOF, SWINGP1, SWINGP2, SWINGPF, SWINGT1, SWINGT2,
-			SWINGT3, SWINGTF, WALK1, WALK2,
-			LENGTH
-		};
+    namespace Stance
+    {
+        enum Id : uint8_t
+        {
+            NONE, 
+            ALERT, DEAD, FLY, HEAL, JUMP, LADDER, PRONE, PRONESTAB,
+            ROPE, SHOT, SHOOT1, SHOOT2, SHOOTF, SIT, STABO1, STABO2, STABOF,
+            STABT1, STABT2, STABTF, STAND1, STAND2, SWINGO1, SWINGO2,
+            SWINGO3, SWINGOF, SWINGP1, SWINGP2, SWINGPF, SWINGT1, SWINGT2,
+            SWINGT3, SWINGTF, WALK1, WALK2,
+            LENGTH
+        };
 
-		Id by_state(int8_t state);
-		Id by_id(uint8_t id);
-		Id by_string(const std::string& name);
+        Id by_state(int8_t state);
+        Id by_id(uint8_t id);
+        Id by_string(const std::string& name);
 
-		bool is_climbing(Id value);
-		Id baseof(Id value);
-		Id secondof(Id value);
+        bool is_climbing(Id value);
+        Id baseof(Id value);
+        Id secondof(Id value);
 
-		extern const EnumMap<Id, std::string> names;
-	};
+        extern const EnumMap<Id, std::string> names;
+    };
 }

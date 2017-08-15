@@ -23,45 +23,45 @@
 
 namespace jrc
 {
-	class UINpcTalk : public UIElement
-	{
-	public:
-		static constexpr Type TYPE = NPCTALK;
-		static constexpr bool FOCUSED = false;
-		static constexpr bool TOGGLED = true;
+    class UINpcTalk : public UIElement
+    {
+    public:
+        static constexpr Type TYPE = NPCTALK;
+        static constexpr bool FOCUSED = false;
+        static constexpr bool TOGGLED = true;
 
-		UINpcTalk();
+        UINpcTalk();
 
-		void draw(float inter) const override;
+        void draw(float inter) const override;
 
-		void change_text(int32_t npcid, int8_t msgtype, int16_t style, int8_t speaker, const std::string& text);
+        void change_text(int32_t npcid, int8_t msgtype, int16_t style, int8_t speaker, const std::string& text);
 
-	protected:
-		Button::State button_pressed(uint16_t buttonid) override;
+    protected:
+        Button::State button_pressed(uint16_t buttonid) override;
 
-	private:
-		enum Buttons
-		{
-			OK,
-			NEXT,
-			PREV,
-			END,
-			YES,
-			NO
-		};
+    private:
+        enum Buttons
+        {
+            OK,
+            NEXT,
+            PREV,
+            END,
+            YES,
+            NO
+        };
 
-		Texture top;
-		Texture fill;
-		Texture bottom;
-		Texture nametag;
+        Texture top;
+        Texture fill;
+        Texture bottom;
+        Texture nametag;
 
-		Text text;
-		Texture speaker;
-		Text name;
-		int16_t height;
-		int16_t vtile;
-		bool slider;
+        Text text;
+        Texture speaker;
+        Text name;
+        int16_t height;
+        int16_t vtile;
+        bool slider;
 
-		int8_t type;
-	};
+        int8_t type;
+    };
 }

@@ -19,20 +19,20 @@
 
 namespace jrc
 {
-	Equipstat::Id Equipstat::by_id(size_t id)
-	{
-		return static_cast<Id>(id);
-	}
+    Equipstat::Id Equipstat::by_id(size_t id)
+    {
+        return static_cast<Id>(id);
+    }
 
-	int32_t Equipstat::value_of(Id value)
-	{
-		return value;
-	}
+    int32_t Equipstat::value_of(Id value)
+    {
+        return value;
+    }
 
-	const char* Equipstat::names[LENGTH] =
-	{
-		"STR", "DEX", "INT", "LUK", "MAX HP", "MAX MP",
-		"WEAPON ATT", "MAGIC ATT", "WEAPON DEFENSE", "MAGIC DEFENSE",
-		"ACCURACY", "AVOID", "HANDS", "SPEED", "JUMP"
-	};
+    const char* Equipstat::names[LENGTH] =
+    {
+        "STR", "DEX", "INT", "LUK", "MAX HP", "MAX MP",
+        "WEAPON ATT", "MAGIC ATT", "WEAPON DEFENSE", "MAGIC DEFENSE",
+        "ACCURACY", "AVOID", "HANDS", "SPEED", "JUMP"
+    };
 }

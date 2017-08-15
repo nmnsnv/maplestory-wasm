@@ -23,72 +23,72 @@
 
 namespace jrc
 {
-	Icon::Icon(std::unique_ptr<Type> t, Texture tx, int16_t c) 
-		: type(std::move(t)), texture(tx), count(c) {
+    Icon::Icon(std::unique_ptr<Type> t, Texture tx, int16_t c) 
+        : type(std::move(t)), texture(tx), count(c) {
 
-		texture.shift({ 0, 32 });
-		showcount = c > -1;
-		dragged = false;
-	}
+        texture.shift({ 0, 32 });
+        showcount = c > -1;
+        dragged = false;
+    }
 
-	Icon::Icon() 
-		: Icon(std::make_unique<NullType>(), {}, -1) {}
+    Icon::Icon() 
+        : Icon(std::make_unique<NullType>(), {}, -1) {}
 
-	void Icon::draw(Point<int16_t> position) const
-	{
-		float opacity = dragged ? 0.5f : 1.0f;
-		texture.draw({ position, opacity });
+    void Icon::draw(Point<int16_t> position) const
+    {
+        float opacity = dragged ? 0.5f : 1.0f;
+        texture.draw({ position, opacity });
 
-		if (showcount)
-		{
-			static const Charset countset = { nl::nx::ui["Basic.img"]["ItemNo"], Charset::LEFT };
-			int16_t tempc = dragged ? (count - 1) : count;
-			std::string countstr = std::to_string(tempc);
-			countset.draw(countstr, position + Point<int16_t>(0, 20));
-		}
-	}
+        if (showcount)
+        {
+            static const Charset countset = { nl::nx::ui["Basic.img"]["ItemNo"], Charset::LEFT };
+            int16_t tempc = dragged ? (count - 1) : count;
+            std::string countstr = std::to_string(tempc);
+            countset.draw(countstr, position + Point<int16_t>(0, 20));
+        }
+    }
 
-	void Icon::dragdraw(Point<int16_t> cursorpos) const
-	{
-		if (dragged)
-		{
-			texture.draw({ cursorpos - cursoroffset, 0.5f });
-		}
-	}
+    void Icon::dragdraw(Point<int16_t> cursorpos) const
+    {
+        if (dragged)
+        {
+            texture.draw({ cursorpos - cursoroffset, 0.5f });
+        }
+    }
 
-	void Icon::drop_on_stage() const
-	{
-		type->drop_on_stage();
-	}
+    void Icon::drop_on_stage() const
+    {
+        type->drop_on_stage();
+    }
 
-	void Icon::drop_on_equips(Equipslot::Id eqslot) const
-	{
-		type->drop_on_equips(eqslot);
-	}
+    void Icon::drop_on_equips(Equipslot::Id eqslot) const
+    {
+        type->drop_on_equips(eqslot);
+    }
 
-	void Icon::drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const
-	{
-		type->drop_on_items(tab, eqslot, slot, equip);
-	}
+    void Icon::drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const
+    {
+        type->drop_on_items(tab, eqslot, slot, equip);
+    }
 
-	void Icon::start_drag(Point<int16_t> offset)
-	{
-		cursoroffset = offset;
-		dragged = true;
-	}
+    void Icon::start_drag(Point<int16_t> offset)
+    {
+        cursoroffset = offset;
+        dragged = true;
+    }
 
-	void Icon::reset()
-	{
-		dragged = false;
-	}
+    void Icon::reset()
+    {
+        dragged = false;
+    }
 
-	void Icon::set_count(int16_t c)
-	{
-		count = c;
-	}
+    void Icon::set_count(int16_t c)
+    {
+        count = c;
+    }
 
-	int16_t Icon::get_count() const
-	{
-		return count;
-	}
+    int16_t Icon::get_count() const
+    {
+        return count;
+    }
 }

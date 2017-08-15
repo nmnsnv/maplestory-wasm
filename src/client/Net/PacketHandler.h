@@ -20,12 +20,12 @@
 
 namespace jrc
 {
-	// Interface for classes that handle InPackets.
-	class PacketHandler
-	{
-	public:
-		virtual ~PacketHandler() {}
+    // Interface for classes that handle InPackets.
+    class PacketHandler
+    {
+    public:
+        virtual ~PacketHandler() {}
 
-		virtual void handle(InPacket& recv) const = 0;
-	};
+        virtual void handle(InPacket& recv) const = 0;
+    };
 }

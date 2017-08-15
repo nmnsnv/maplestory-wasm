@@ -28,51 +28,51 @@
 
 namespace jrc
 {
-	class PetLook
-	{
-	public:
-		enum Stance : uint8_t
-		{
-			MOVE,
-			STAND,
-			JUMP,
-			ALERT,
-			PRONE,
-			FLY,
-			HANG,
-			WARP,
-			LENGTH
-		};
+    class PetLook
+    {
+    public:
+        enum Stance : uint8_t
+        {
+            MOVE,
+            STAND,
+            JUMP,
+            ALERT,
+            PRONE,
+            FLY,
+            HANG,
+            WARP,
+            LENGTH
+        };
 
-		static Stance stancebyvalue(uint8_t value)
-		{
-			uint8_t valueh = value / 2;
-			return valueh >= LENGTH ? STAND : static_cast<Stance>(valueh);
-		}
+        static Stance stancebyvalue(uint8_t value)
+        {
+            uint8_t valueh = value / 2;
+            return valueh >= LENGTH ? STAND : static_cast<Stance>(valueh);
+        }
 
-		PetLook(int32_t iid, std::string name, int32_t uniqueid,
-			Point<int16_t> pos, uint8_t stance, int32_t fhid);
-		PetLook();
+        PetLook(int32_t iid, std::string name, int32_t uniqueid,
+            Point<int16_t> pos, uint8_t stance, int32_t fhid);
+        PetLook();
 
-		void draw(double viewx, double viewy, float alpha) const;
-		void update(const Physics& physics, Point<int16_t> charpos);
+        void draw(double viewx, double viewy, float alpha) const;
+        void update(const Physics& physics, Point<int16_t> charpos);
 
-		void set_position(int16_t xpos, int16_t ypos);
-		void set_stance(Stance stance);
-		void set_stance(uint8_t stancebyte);
+        void set_position(int16_t xpos, int16_t ypos);
+        void set_stance(Stance stance);
+        void set_stance(uint8_t stancebyte);
 
-		int32_t get_itemid() const;
-		Stance get_stance() const;
+        int32_t get_itemid() const;
+        Stance get_stance() const;
 
-	private:
-		int32_t itemid;
-		std::string name;
-		int32_t uniqueid;
-		Stance stance;
-		bool flip;
+    private:
+        int32_t itemid;
+        std::string name;
+        int32_t uniqueid;
+        Stance stance;
+        bool flip;
 
-		EnumMap<Stance, Animation> animations;
-		PhysicsObject phobj;
-		Text namelabel;
-	};
+        EnumMap<Stance, Animation> animations;
+        PhysicsObject phobj;
+        Text namelabel;
+    };
 }

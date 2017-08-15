@@ -22,29 +22,29 @@
 
 namespace jrc
 {
-	// Handler for a packet which contains all character information on first login
-	// or warps the player to a different map.
-	class SetfieldHandler : public PacketHandler
-	{
-	public:
-		void handle(InPacket& recv) const override;
+    // Handler for a packet which contains all character information on first login
+    // or warps the player to a different map.
+    class SetfieldHandler : public PacketHandler
+    {
+    public:
+        void handle(InPacket& recv) const override;
 
-	private:
-		void transition(int32_t mapid, uint8_t portalid) const;
-		void change_map(InPacket& recv, int32_t map_id) const;
-		void set_field(InPacket& recv) const;
+    private:
+        void transition(int32_t mapid, uint8_t portalid) const;
+        void change_map(InPacket& recv, int32_t map_id) const;
+        void set_field(InPacket& recv) const;
 
-		void parse_inventory(InPacket& recv, Inventory& inventory) const;
-		void parse_skillbook(InPacket& recv, Skillbook& skills) const;
-		void parse_cooldowns(InPacket& recv, Player& player) const;
-		void parse_questlog(InPacket& recv, Questlog& quests) const;
-		void parse_ring1(InPacket& recv) const;
-		void parse_ring2(InPacket& recv) const;
-		void parse_ring3(InPacket& recv) const;
-		void parse_minigame(InPacket& recv) const;
-		void parse_monsterbook(InPacket& recv, Monsterbook& monsterbook) const;
-		void parse_telerock(InPacket& recv, Telerock& telerock) const;
-		void parse_nyinfo(InPacket& recv) const;
-		void parse_areainfo(InPacket& recv) const;
-	};
+        void parse_inventory(InPacket& recv, Inventory& inventory) const;
+        void parse_skillbook(InPacket& recv, Skillbook& skills) const;
+        void parse_cooldowns(InPacket& recv, Player& player) const;
+        void parse_questlog(InPacket& recv, Questlog& quests) const;
+        void parse_ring1(InPacket& recv) const;
+        void parse_ring2(InPacket& recv) const;
+        void parse_ring3(InPacket& recv) const;
+        void parse_minigame(InPacket& recv) const;
+        void parse_monsterbook(InPacket& recv, Monsterbook& monsterbook) const;
+        void parse_telerock(InPacket& recv, Telerock& telerock) const;
+        void parse_nyinfo(InPacket& recv) const;
+        void parse_areainfo(InPacket& recv) const;
+    };
 }

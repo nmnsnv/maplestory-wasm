@@ -19,53 +19,53 @@
 
 namespace jrc
 {
-	Portal::Portal(const Animation* a, Type t, std::string nm, bool intramap,
-		Point<int16_t> p, int32_t tid, std::string tnm) 
-		: animation(a), type(t), name(nm), position(p), warpinfo(tid, intramap, tnm, nm) {
+    Portal::Portal(const Animation* a, Type t, std::string nm, bool intramap,
+        Point<int16_t> p, int32_t tid, std::string tnm) 
+        : animation(a), type(t), name(nm), position(p), warpinfo(tid, intramap, tnm, nm) {
 
-		touched = false;
-	}
+        touched = false;
+    }
 
-	Portal::Portal() 
-		: Portal(nullptr, SPAWN, "", false, Point<int16_t>(), 0, "") {}
+    Portal::Portal() 
+        : Portal(nullptr, SPAWN, "", false, Point<int16_t>(), 0, "") {}
 
-	void Portal::update(Point<int16_t> playerpos)
-	{
-		touched = bounds().contains(playerpos);
-	}
+    void Portal::update(Point<int16_t> playerpos)
+    {
+        touched = bounds().contains(playerpos);
+    }
 
-	void Portal::draw(Point<int16_t> viewpos, float inter) const
-	{
-		if (!animation || (type == HIDDEN && !touched))
-			return;
+    void Portal::draw(Point<int16_t> viewpos, float inter) const
+    {
+        if (!animation || (type == HIDDEN && !touched))
+            return;
 
-		animation->draw(position + viewpos, inter);
-	}
+        animation->draw(position + viewpos, inter);
+    }
 
-	std::string Portal::get_name() const
-	{
-		return name;
-	}
+    std::string Portal::get_name() const
+    {
+        return name;
+    }
 
-	Portal::Type Portal::get_type() const
-	{
-		return type;
-	}
+    Portal::Type Portal::get_type() const
+    {
+        return type;
+    }
 
-	Point<int16_t> Portal::get_position() const
-	{
-		return position;
-	}
+    Point<int16_t> Portal::get_position() const
+    {
+        return position;
+    }
 
-	Rectangle<int16_t> Portal::bounds() const
-	{
-		auto lt = position + Point<int16_t>(-25, -100);
-		auto rb = position + Point<int16_t>(25, 25);
-		return Rectangle<int16_t>(lt, rb);
-	}
+    Rectangle<int16_t> Portal::bounds() const
+    {
+        auto lt = position + Point<int16_t>(-25, -100);
+        auto rb = position + Point<int16_t>(25, 25);
+        return Rectangle<int16_t>(lt, rb);
+    }
 
-	Portal::WarpInfo Portal::getwarpinfo() const
-	{
-		return warpinfo;
-	}
+    Portal::WarpInfo Portal::getwarpinfo() const
+    {
+        return warpinfo;
+    }
 }

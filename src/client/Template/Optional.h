@@ -21,60 +21,60 @@
 
 namespace jrc
 {
-	template <typename T>
-	class Optional
-	{
-	public:
-		template <
-			typename R,
-			typename = std::enable_if_t<
-				std::is_base_of<R, T>::value ||
-				std::is_base_of<T, R>::value
-			>
-		>
-		constexpr Optional(R* r_val)
-			: val(static_cast<T*>(r_val)) {}
+    template <typename T>
+    class Optional
+    {
+    public:
+        template <
+            typename R,
+            typename = std::enable_if_t<
+                std::is_base_of<R, T>::value ||
+                std::is_base_of<T, R>::value
+            >
+        >
+        constexpr Optional(R* r_val)
+            : val(static_cast<T*>(r_val)) {}
 
-		template <
-			typename R,
-			typename = std::enable_if_t<
-			std::is_base_of<R, T>::value ||
-			std::is_base_of<T, R>::value
-			>
-		>
-		constexpr Optional(Optional<R> r_opt)
-			: Optional(r_opt.get()) {}
+        template <
+            typename R,
+            typename = std::enable_if_t<
+            std::is_base_of<R, T>::value ||
+            std::is_base_of<T, R>::value
+            >
+        >
+        constexpr Optional(Optional<R> r_opt)
+            : Optional(r_opt.get()) {}
 
-		constexpr Optional(T* p)
-			: val(p) {}
+        constexpr Optional(T* p)
+            : val(p) {}
 
-		constexpr Optional(T& p)
-			: val(&p) {}
+        constexpr Optional(T& p)
+            : val(&p) {}
 
-		constexpr Optional()
-			: val(nullptr) {}
+        constexpr Optional()
+            : val(nullptr) {}
 
-		explicit operator bool() const
-		{
-			return val != nullptr;
-		}
+        explicit operator bool() const
+        {
+            return val != nullptr;
+        }
 
-		T* get() const
-		{
-			return val;
-		}
+        T* get() const
+        {
+            return val;
+        }
 
-		T* operator ->() const
-		{
-			return val;
-		}
+        T* operator ->() const
+        {
+            return val;
+        }
 
-		T& operator *() const
-		{
-			return *val;
-		}
+        T& operator *() const
+        {
+            return *val;
+        }
 
-	private:
-		T* val;
-	};
+    private:
+        T* val;
+    };
 }

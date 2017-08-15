@@ -22,39 +22,39 @@
 
 namespace jrc
 {
-	class AttackHandler : public PacketHandler
-	{
-	public:
-		void handle(InPacket& recv) const override;
+    class AttackHandler : public PacketHandler
+    {
+    public:
+        void handle(InPacket& recv) const override;
 
-	protected:
-		AttackHandler(Attack::Type type);
+    protected:
+        AttackHandler(Attack::Type type);
 
-	private:
-		Attack::Type type;
-	};
-
-
-	class CloseAttackHandler : public AttackHandler
-	{
-	public:
-		CloseAttackHandler()
-			: AttackHandler(Attack::CLOSE) {}
-	};
+    private:
+        Attack::Type type;
+    };
 
 
-	class RangedAttackHandler : public AttackHandler
-	{
-	public:
-		RangedAttackHandler()
-			: AttackHandler(Attack::RANGED) {}
-	};
+    class CloseAttackHandler : public AttackHandler
+    {
+    public:
+        CloseAttackHandler()
+            : AttackHandler(Attack::CLOSE) {}
+    };
 
 
-	class MagicAttackHandler : public AttackHandler
-	{
-	public:
-		MagicAttackHandler()
-			: AttackHandler(Attack::MAGIC) {}
-	};
+    class RangedAttackHandler : public AttackHandler
+    {
+    public:
+        RangedAttackHandler()
+            : AttackHandler(Attack::RANGED) {}
+    };
+
+
+    class MagicAttackHandler : public AttackHandler
+    {
+    public:
+        MagicAttackHandler()
+            : AttackHandler(Attack::MAGIC) {}
+    };
 }

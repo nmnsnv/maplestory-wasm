@@ -22,33 +22,33 @@
 
 namespace jrc
 {
-	class Body
-	{
-	public:
-		enum Layer
-		{
-			NONE,
-			BODY, ARM, ARM_BELOW_HEAD, ARM_BELOW_HEAD_OVER_MAIL,
-			ARM_OVER_HAIR, ARM_OVER_HAIR_BELOW_WEAPON,
-			HAND_BELOW_WEAPON, HAND_OVER_HAIR, HAND_OVER_WEAPON, HEAD,
-			NUM_LAYERS
-		};
+    class Body
+    {
+    public:
+        enum Layer
+        {
+            NONE,
+            BODY, ARM, ARM_BELOW_HEAD, ARM_BELOW_HEAD_OVER_MAIL,
+            ARM_OVER_HAIR, ARM_OVER_HAIR_BELOW_WEAPON,
+            HAND_BELOW_WEAPON, HAND_OVER_HAIR, HAND_OVER_WEAPON, HEAD,
+            NUM_LAYERS
+        };
 
-		Body(int32_t skin, const BodyDrawinfo& drawinfo);
+        Body(int32_t skin, const BodyDrawinfo& drawinfo);
 
-		void draw(Stance::Id stance, Layer layer, uint8_t frame, const DrawArgument& args) const;
+        void draw(Stance::Id stance, Layer layer, uint8_t frame, const DrawArgument& args) const;
 
-		const std::string& get_name() const;
-
-
-		static Layer layer_by_name(const std::string& name);
-
-	private:
-		std::unordered_map<uint8_t, Texture> stances[Stance::LENGTH][Layer::NUM_LAYERS];
-		std::string name;
+        const std::string& get_name() const;
 
 
-		static const std::unordered_map<std::string, Layer> layers_by_name;
-	};
+        static Layer layer_by_name(const std::string& name);
+
+    private:
+        std::unordered_map<uint8_t, Texture> stances[Stance::LENGTH][Layer::NUM_LAYERS];
+        std::string name;
+
+
+        static const std::unordered_map<std::string, Layer> layers_by_name;
+    };
 }
 

@@ -24,190 +24,190 @@
 
 namespace jrc
 {
-	Background::Background(nl::node src)
-	{
-		nl::node backsrc = nl::nx::map["Back"];
-		animated = src["ani"].get_bool();
-		animation = backsrc[src["bS"] + ".img"][animated ? "ani" : "back"][src["no"]];
-		opacity = src["a"];
-		flipped = src["f"].get_bool();
-		cx = src["cx"];
-		cy = src["cy"];
-		rx = src["rx"];
-		ry = src["ry"];
-		moveobj.set_x(src["x"]);
-		moveobj.set_y(src["y"]);
+    Background::Background(nl::node src)
+    {
+        nl::node backsrc = nl::nx::map["Back"];
+        animated = src["ani"].get_bool();
+        animation = backsrc[src["bS"] + ".img"][animated ? "ani" : "back"][src["no"]];
+        opacity = src["a"];
+        flipped = src["f"].get_bool();
+        cx = src["cx"];
+        cy = src["cy"];
+        rx = src["rx"];
+        ry = src["ry"];
+        moveobj.set_x(src["x"]);
+        moveobj.set_y(src["y"]);
 
-		Type type = typebyid(src["type"]);
-		settype(type);
-	}
+        Type type = typebyid(src["type"]);
+        settype(type);
+    }
 
-	void Background::settype(Type type)
-	{
-		if (cx == 0)
-			cx = animation.get_dimensions().x();
-		if (cy == 0)
-			cy = animation.get_dimensions().y();
+    void Background::settype(Type type)
+    {
+        if (cx == 0)
+            cx = animation.get_dimensions().x();
+        if (cy == 0)
+            cy = animation.get_dimensions().y();
 
-		htile = 1;
-		vtile = 1;
-		switch (type)
-		{
-		case HTILED:
-		case HMOVEA:
-			htile = Constants::VIEWWIDTH / cx + 3;
-			break;
-		case VTILED:
-		case VMOVEA:
-			vtile = Constants::VIEWHEIGHT / cy + 3;
-			break;
-		case TILED:
-		case HMOVEB:
-		case VMOVEB:
-			htile = Constants::VIEWWIDTH / cx + 3;
-			vtile = Constants::VIEWHEIGHT / cy + 3;
-			break;
-		}
+        htile = 1;
+        vtile = 1;
+        switch (type)
+        {
+        case HTILED:
+        case HMOVEA:
+            htile = Constants::VIEWWIDTH / cx + 3;
+            break;
+        case VTILED:
+        case VMOVEA:
+            vtile = Constants::VIEWHEIGHT / cy + 3;
+            break;
+        case TILED:
+        case HMOVEB:
+        case VMOVEB:
+            htile = Constants::VIEWWIDTH / cx + 3;
+            vtile = Constants::VIEWHEIGHT / cy + 3;
+            break;
+        }
 
-		switch (type)
-		{
-		case HMOVEA:
-		case HMOVEB:
-			moveobj.hspeed = rx / 16;
-			break;
-		case VMOVEA:
-		case VMOVEB:
-			moveobj.vspeed = ry / 16;
-			break;
-		}
-	}
+        switch (type)
+        {
+        case HMOVEA:
+        case HMOVEB:
+            moveobj.hspeed = rx / 16;
+            break;
+        case VMOVEA:
+        case VMOVEB:
+            moveobj.vspeed = ry / 16;
+            break;
+        }
+    }
 
-	void Background::draw(double viewx, double viewy, float alpha) const
-	{
-		double x;
-		if (moveobj.hmobile())
-		{
-			x = moveobj.get_absolute_x(viewx, alpha);
-		}
-		else
-		{
-			double shift_x = rx * (WOFFSET - viewx) / 100 + WOFFSET;
-			x = moveobj.get_absolute_x(shift_x, alpha);
-		}
+    void Background::draw(double viewx, double viewy, float alpha) const
+    {
+        double x;
+        if (moveobj.hmobile())
+        {
+            x = moveobj.get_absolute_x(viewx, alpha);
+        }
+        else
+        {
+            double shift_x = rx * (WOFFSET - viewx) / 100 + WOFFSET;
+            x = moveobj.get_absolute_x(shift_x, alpha);
+        }
 
-		double y;
-		if (moveobj.vmobile())
-		{
-			y = moveobj.get_absolute_y(viewy, alpha);
-		}
-		else
-		{
-			double shift_y = ry * (HOFFSET - viewy) / 100 + HOFFSET;
-			y = moveobj.get_absolute_y(shift_y, alpha);
-		}
+        double y;
+        if (moveobj.vmobile())
+        {
+            y = moveobj.get_absolute_y(viewy, alpha);
+        }
+        else
+        {
+            double shift_y = ry * (HOFFSET - viewy) / 100 + HOFFSET;
+            y = moveobj.get_absolute_y(shift_y, alpha);
+        }
 
-		if (htile > 1)
-		{
-			while (x > 0)
-			{
-				x -= cx;
-			}
-			while (x < -cx)
-			{
-				x += cx;
-			}
-		}
+        if (htile > 1)
+        {
+            while (x > 0)
+            {
+                x -= cx;
+            }
+            while (x < -cx)
+            {
+                x += cx;
+            }
+        }
 
-		if (vtile > 1)
-		{
-			while (y > 0)
-			{
-				y -= cy;
-			}
-			while (y < -cy)
-			{
-				y += cy;
-			}
-		}
-		int16_t ix = static_cast<int16_t>(std::round(x));
-		int16_t iy = static_cast<int16_t>(std::round(y));
+        if (vtile > 1)
+        {
+            while (y > 0)
+            {
+                y -= cy;
+            }
+            while (y < -cy)
+            {
+                y += cy;
+            }
+        }
+        int16_t ix = static_cast<int16_t>(std::round(x));
+        int16_t iy = static_cast<int16_t>(std::round(y));
 
-		int16_t tw = cx * htile;
-		int16_t th = cy * vtile;
-		for (int16_t tx = 0; tx < tw; tx += cx)
-		{
-			for (int16_t ty = 0; ty < th; ty += cy)
-			{
-				animation.draw(DrawArgument(Point<int16_t>(ix + tx, iy + ty), flipped, opacity / 255), alpha);
-			}
-		}
-	}
+        int16_t tw = cx * htile;
+        int16_t th = cy * vtile;
+        for (int16_t tx = 0; tx < tw; tx += cx)
+        {
+            for (int16_t ty = 0; ty < th; ty += cy)
+            {
+                animation.draw(DrawArgument(Point<int16_t>(ix + tx, iy + ty), flipped, opacity / 255), alpha);
+            }
+        }
+    }
 
-	void Background::update()
-	{
-		moveobj.move();
-		animation.update();
-	}
-
-
-	MapBackgrounds::MapBackgrounds(nl::node src)
-	{
-		int16_t no = 0;
-		nl::node back = src[std::to_string(no)];
-		while (back.size() > 0)
-		{
-			bool front = back["front"].get_bool();
-			if (front)
-			{
-				foregrounds.push_back(back);
-			}
-			else
-			{
-				backgrounds.push_back(back);
-			}
-
-			no++;
-			back = src[std::to_string(no)];
-		}
-
-		black = src["0"]["bS"].get_string() == "";
-	}
+    void Background::update()
+    {
+        moveobj.move();
+        animation.update();
+    }
 
 
-	MapBackgrounds::MapBackgrounds() {}
+    MapBackgrounds::MapBackgrounds(nl::node src)
+    {
+        int16_t no = 0;
+        nl::node back = src[std::to_string(no)];
+        while (back.size() > 0)
+        {
+            bool front = back["front"].get_bool();
+            if (front)
+            {
+                foregrounds.push_back(back);
+            }
+            else
+            {
+                backgrounds.push_back(back);
+            }
 
-	void MapBackgrounds::drawbackgrounds(double viewx, double viewy, float alpha) const
-	{
-		if (black)
-		{
-			GraphicsGL::get()
-				.drawscreenfill(0.0f, 0.0f, 0.0f, 1.0f);
-		}
+            no++;
+            back = src[std::to_string(no)];
+        }
 
-		for (auto& background : backgrounds)
-		{
-			background.draw(viewx, viewy, alpha);
-		}
-	}
+        black = src["0"]["bS"].get_string() == "";
+    }
 
-	void MapBackgrounds::drawforegrounds(double viewx, double viewy, float alpha) const
-	{
-		for (auto& foreground : foregrounds)
-		{
-			foreground.draw(viewx, viewy, alpha);
-		}
-	}
 
-	void MapBackgrounds::update()
-	{
-		for (auto& background : backgrounds)
-		{
-			background.update();
-		}
+    MapBackgrounds::MapBackgrounds() {}
 
-		for (auto& foreground : foregrounds)
-		{
-			foreground.update();
-		}
-	}
+    void MapBackgrounds::drawbackgrounds(double viewx, double viewy, float alpha) const
+    {
+        if (black)
+        {
+            GraphicsGL::get()
+                .drawscreenfill(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+
+        for (auto& background : backgrounds)
+        {
+            background.draw(viewx, viewy, alpha);
+        }
+    }
+
+    void MapBackgrounds::drawforegrounds(double viewx, double viewy, float alpha) const
+    {
+        for (auto& foreground : foregrounds)
+        {
+            foreground.draw(viewx, viewy, alpha);
+        }
+    }
+
+    void MapBackgrounds::update()
+    {
+        for (auto& background : backgrounds)
+        {
+            background.update();
+        }
+
+        for (auto& foreground : foregrounds)
+        {
+            foreground.update();
+        }
+    }
 }

@@ -19,10 +19,10 @@
 
 namespace jrc
 {
-	const EnumMap<CharEffect::Id, const char*> CharEffect::PATHS =
-	{
-		"LevelUp", "JobChanged",
-		"Enchant/Success", "Enchant/Failure",
-		"MonsterBook/cardGet"
-	};
+    const EnumMap<CharEffect::Id, const char*> CharEffect::PATHS =
+    {
+        "LevelUp", "JobChanged",
+        "Enchant/Success", "Enchant/Failure",
+        "MonsterBook/cardGet"
+    };
 }

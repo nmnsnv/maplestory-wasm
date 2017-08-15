@@ -20,14 +20,14 @@
 
 namespace jrc
 {
-	// Interface for classes which can be controlled through key inputs.
-	class Playable
-	{
-	public:
-		virtual ~Playable(){}
+    // Interface for classes which can be controlled through key inputs.
+    class Playable
+    {
+    public:
+        virtual ~Playable(){}
 
-		// Sends a keystate to the object.
-		virtual void send_action(KeyAction::Id action, bool pressed) = 0;
-	};
+        // Sends a keystate to the object.
+        virtual void send_action(KeyAction::Id action, bool pressed) = 0;
+    };
 }
 

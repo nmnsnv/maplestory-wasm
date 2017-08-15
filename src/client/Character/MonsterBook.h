@@ -21,17 +21,17 @@
 
 namespace jrc
 {
-	// Class that represents the monster card collection of an individual character.
-	class Monsterbook
-	{
-	public:
-		Monsterbook();
+    // Class that represents the monster card collection of an individual character.
+    class Monsterbook
+    {
+    public:
+        Monsterbook();
 
-		void set_cover(int32_t);
-		void add_card(int16_t, int8_t);
-	private:
-		int32_t cover;
-		std::map<int16_t, int8_t> cards;
-	};
+        void set_cover(int32_t);
+        void add_card(int16_t, int8_t);
+    private:
+        int32_t cover;
+        std::map<int16_t, int8_t> cards;
+    };
 }
 

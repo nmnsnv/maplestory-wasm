@@ -21,14 +21,14 @@
 
 namespace jrc
 {
-	// Error which is thrown by packet handling functions.
-	class PacketError : public std::runtime_error
-	{
-	public:
-		PacketError(const std::string& msg) 
-			: std::runtime_error(PREFIX + msg) {}
+    // Error which is thrown by packet handling functions.
+    class PacketError : public std::runtime_error
+    {
+    public:
+        PacketError(const std::string& msg) 
+            : std::runtime_error(PREFIX + msg) {}
 
-	private:
-		static constexpr const char* PREFIX = "Packet Error: ";
-	};
+    private:
+        static constexpr const char* PREFIX = "Packet Error: ";
+    };
 }

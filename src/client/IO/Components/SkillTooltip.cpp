@@ -24,141 +24,141 @@
 
 namespace jrc
 {
-	SkillTooltip::SkillTooltip()
-		: line(318, Geometry::WHITE, 1.0f) {
+    SkillTooltip::SkillTooltip()
+        : line(318, Geometry::WHITE, 1.0f) {
 
-		nl::node itemtt = nl::nx::ui["UIToolTip.img"]["Item"];
+        nl::node itemtt = nl::nx::ui["UIToolTip.img"]["Item"];
 
-		frame = itemtt["Frame2"];
-		base = itemtt["ItemIcon"]["base"];
-		cover = itemtt["ItemIcon"]["cover"];
+        frame = itemtt["Frame2"];
+        base = itemtt["ItemIcon"]["base"];
+        cover = itemtt["ItemIcon"]["cover"];
 
-		skill_id = 0;
-	}
+        skill_id = 0;
+    }
 
-	void SkillTooltip::set_skill(int32_t id, int32_t level, 
-		int32_t mlevel, int64_t expiration) {
+    void SkillTooltip::set_skill(int32_t id, int32_t level, 
+        int32_t mlevel, int64_t expiration) {
 
-		if (skill_id == id)
-			return;
+        if (skill_id == id)
+            return;
 
-		skill_id = id;
+        skill_id = id;
 
-		if (skill_id == 0)
-			return;
+        if (skill_id == 0)
+            return;
 
-		const SkillData& data = SkillData::get(id);
+        const SkillData& data = SkillData::get(id);
 
-		int32_t masterlevel;
-		if (mlevel > 0)
-		{
-			masterlevel = mlevel;
-		}
-		else
-		{
-			masterlevel = data.get_masterlevel();
-		}
+        int32_t masterlevel;
+        if (mlevel > 0)
+        {
+            masterlevel = mlevel;
+        }
+        else
+        {
+            masterlevel = data.get_masterlevel();
+        }
 
-		std::string descstr = data.get_desc();
-		if (masterlevel > 0)
-		{
-			const std::string mltag = "Master Level";
-			const std::string mlstr = std::to_string(masterlevel);
-			size_t mlstart = descstr.find(mltag);
-			size_t mlpos = descstr.find(':', mlstart) + 2;
-			size_t mlend = descstr.find("]", mlstart);
-			if (mlpos < mlend && mlend != std::string::npos)
-			{
-				size_t mlsize = mlend - mlpos;
-				descstr.erase(mlpos, mlsize);
-				descstr.insert(mlpos, mlstr);
+        std::string descstr = data.get_desc();
+        if (masterlevel > 0)
+        {
+            const std::string mltag = "Master Level";
+            const std::string mlstr = std::to_string(masterlevel);
+            size_t mlstart = descstr.find(mltag);
+            size_t mlpos = descstr.find(':', mlstart) + 2;
+            size_t mlend = descstr.find("]", mlstart);
+            if (mlpos < mlend && mlend != std::string::npos)
+            {
+                size_t mlsize = mlend - mlpos;
+                descstr.erase(mlpos, mlsize);
+                descstr.insert(mlpos, mlstr);
 
-				// fixing errors in the files...
-				if (mlstart == 0)
-				{
-					descstr.insert(0, "[");
-					mlend++;
-				}
-				size_t linebreak = descstr.find("]\\n", mlstart);
-				if (linebreak != mlend)
-				{
-					descstr.insert(mlend + 1, "\\n");
-				}
-			}
-			else
-			{
-				descstr.insert(0, "[" + mltag + ": " + mlstr + "]\\n");
-			}
-		}
+                // fixing errors in the files...
+                if (mlstart == 0)
+                {
+                    descstr.insert(0, "[");
+                    mlend++;
+                }
+                size_t linebreak = descstr.find("]\\n", mlstart);
+                if (linebreak != mlend)
+                {
+                    descstr.insert(mlend + 1, "\\n");
+                }
+            }
+            else
+            {
+                descstr.insert(0, "[" + mltag + ": " + mlstr + "]\\n");
+            }
+        }
 
-		const std::string exptag = "#cAvailable until";
-		if (expiration > 0)
-		{
-			// TODO
-		}
-		else
-		{
-			size_t expstart = descstr.find(exptag);
-			size_t expend = descstr.find('#', expstart + 1);
-			if (expstart < expend && expend != std::string::npos)
-			{
-				size_t expsize = expend - expstart + 1;
-				descstr.erase(expstart, expsize);
-			}
-		}
+        const std::string exptag = "#cAvailable until";
+        if (expiration > 0)
+        {
+            // TODO
+        }
+        else
+        {
+            size_t expstart = descstr.find(exptag);
+            size_t expend = descstr.find('#', expstart + 1);
+            if (expstart < expend && expend != std::string::npos)
+            {
+                size_t expsize = expend - expstart + 1;
+                descstr.erase(expstart, expsize);
+            }
+        }
 
-		if (data.is_passive())
-		{
-			descstr += "\\r#cPassive Skill#";
-		}
+        if (data.is_passive())
+        {
+            descstr += "\\r#cPassive Skill#";
+        }
 
-		std::string levelstr;
-		bool current = level > 0;
-		bool next = level < masterlevel;
-		if (current)
-		{
-			levelstr += "[Current Level: " + std::to_string(level) + "]\\n"
-				+ data.get_level_desc(level);
-		}
-		if (current && next)
-		{
-			levelstr += "\\n";
-		}
-		if (next)
-		{
-			levelstr += "[Next Level: " + std::to_string(level + 1) + "]\\n"
-				+ data.get_level_desc(level + 1);
-		}
+        std::string levelstr;
+        bool current = level > 0;
+        bool next = level < masterlevel;
+        if (current)
+        {
+            levelstr += "[Current Level: " + std::to_string(level) + "]\\n"
+                + data.get_level_desc(level);
+        }
+        if (current && next)
+        {
+            levelstr += "\\n";
+        }
+        if (next)
+        {
+            levelstr += "[Next Level: " + std::to_string(level + 1) + "]\\n"
+                + data.get_level_desc(level + 1);
+        }
 
-		icon = data.get_icon(SkillData::NORMAL);
-		name = { Text::A12B, Text::LEFT, Text::WHITE, data.get_name(), 320 };
-		desc = { Text::A12M, Text::LEFT, Text::WHITE, descstr, 230 };
-		leveldesc = { Text::A12M, Text::LEFT, Text::WHITE, levelstr, 330 };
+        icon = data.get_icon(SkillData::NORMAL);
+        name = { Text::A12B, Text::LEFT, Text::WHITE, data.get_name(), 320 };
+        desc = { Text::A12M, Text::LEFT, Text::WHITE, descstr, 230 };
+        leveldesc = { Text::A12M, Text::LEFT, Text::WHITE, levelstr, 330 };
 
-		icon_offset = 4 + name.height();
-		level_offset = std::max<int16_t>(desc.height(), 92) + 16;
-		height = icon_offset + level_offset + leveldesc.height();
-	}
+        icon_offset = 4 + name.height();
+        level_offset = std::max<int16_t>(desc.height(), 92) + 16;
+        height = icon_offset + level_offset + leveldesc.height();
+    }
 
-	void SkillTooltip::draw(Point<int16_t> pos) const
-	{
-		if (skill_id == 0)
-			return;
+    void SkillTooltip::draw(Point<int16_t> pos) const
+    {
+        if (skill_id == 0)
+            return;
 
-		frame.draw(pos + Point<int16_t>(176, height + 16), 320, height);
-		name.draw(pos + Point<int16_t>(16, 8));
+        frame.draw(pos + Point<int16_t>(176, height + 16), 320, height);
+        name.draw(pos + Point<int16_t>(16, 8));
 
-		pos.shift_y(icon_offset);
+        pos.shift_y(icon_offset);
 
-		base.draw({ pos + Point<int16_t>(12, 16) });
-		icon.draw({ pos + Point<int16_t>(22, 90), 2.0f, 2.0f });
-		cover.draw({ pos + Point<int16_t>(12, 16) });
+        base.draw({ pos + Point<int16_t>(12, 16) });
+        icon.draw({ pos + Point<int16_t>(22, 90), 2.0f, 2.0f });
+        cover.draw({ pos + Point<int16_t>(12, 16) });
 
-		desc.draw(pos + Point<int16_t>(102, 12));
+        desc.draw(pos + Point<int16_t>(102, 12));
 
-		pos.shift_y(level_offset);
+        pos.shift_y(level_offset);
 
-		line.draw(pos + Point<int16_t>(14, 4));
-		leveldesc.draw(pos + Point<int16_t>(12, 12));
-	}
+        line.draw(pos + Point<int16_t>(14, 4));
+        leveldesc.draw(pos + Point<int16_t>(12, 12));
+    }
 }

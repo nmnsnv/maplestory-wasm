@@ -20,147 +20,147 @@
 
 namespace jrc
 {
-	const double GRAVFORCE = 0.14;
-	const double SWIMGRAVFORCE = 0.03;
-	const double FRICTION = 0.3;
-	const double SLOPEFACTOR = 0.1;
-	const double GROUNDSLIP = 3.0;
-	const double FLYFRICTION = 0.05;
-	const double SWIMFRICTION = 0.08;
+    const double GRAVFORCE = 0.14;
+    const double SWIMGRAVFORCE = 0.03;
+    const double FRICTION = 0.3;
+    const double SLOPEFACTOR = 0.1;
+    const double GROUNDSLIP = 3.0;
+    const double FLYFRICTION = 0.05;
+    const double SWIMFRICTION = 0.08;
 
-	Physics::Physics(nl::node src) 
-	{
-		fht = src;
-	}
+    Physics::Physics(nl::node src) 
+    {
+        fht = src;
+    }
 
-	Physics::Physics() {}
+    Physics::Physics() {}
 
-	void Physics::move_object(PhysicsObject& phobj) const
-	{
-		// Determine which platform the object is currently on.
-		fht.update_fh(phobj);
+    void Physics::move_object(PhysicsObject& phobj) const
+    {
+        // Determine which platform the object is currently on.
+        fht.update_fh(phobj);
 
-		// Use the appropriate physics for the terrain the object is on.
-		switch (phobj.type)
-		{
-		case PhysicsObject::NORMAL:
-			move_normal(phobj);
-			fht.limit_movement(phobj);
-			break;
-		case PhysicsObject::FLYING:
-			move_flying(phobj);
-			fht.limit_movement(phobj);
-			break;
-		case PhysicsObject::SWIMMING:
-			move_swimming(phobj);
-			fht.limit_movement(phobj);
-			break;
-		case PhysicsObject::FIXATED:
-			break;
-		}
+        // Use the appropriate physics for the terrain the object is on.
+        switch (phobj.type)
+        {
+        case PhysicsObject::NORMAL:
+            move_normal(phobj);
+            fht.limit_movement(phobj);
+            break;
+        case PhysicsObject::FLYING:
+            move_flying(phobj);
+            fht.limit_movement(phobj);
+            break;
+        case PhysicsObject::SWIMMING:
+            move_swimming(phobj);
+            fht.limit_movement(phobj);
+            break;
+        case PhysicsObject::FIXATED:
+            break;
+        }
 
-		// Move the object forward.
-		phobj.move();
-	}
+        // Move the object forward.
+        phobj.move();
+    }
 
-	void Physics::move_normal(PhysicsObject& phobj) const
-	{
-		phobj.vacc = 0.0;
-		phobj.hacc = 0.0;
-		if (phobj.onground)
-		{
-			phobj.vacc += phobj.vforce;
-			phobj.hacc += phobj.hforce;
+    void Physics::move_normal(PhysicsObject& phobj) const
+    {
+        phobj.vacc = 0.0;
+        phobj.hacc = 0.0;
+        if (phobj.onground)
+        {
+            phobj.vacc += phobj.vforce;
+            phobj.hacc += phobj.hforce;
 
-			if (phobj.hacc == 0.0 && phobj.hspeed < 0.1 && phobj.hspeed > -0.1)
-			{
-				phobj.hspeed = 0.0;
-			}
-			else
-			{
-				double inertia = phobj.hspeed / GROUNDSLIP;
-				double slopef = phobj.fhslope;
-				if (slopef > 0.5)
-				{
-					slopef = 0.5;
-				}
-				else if (slopef < -0.5)
-				{
-					slopef = -0.5;
-				}
-				phobj.hacc -= (FRICTION + SLOPEFACTOR * (1.0 + slopef * -inertia)) * inertia;
-			}
-		}
-		else if (phobj.is_flag_not_set(PhysicsObject::NOGRAVITY))
-		{
-			phobj.vacc += GRAVFORCE;
-		}
-		phobj.hforce = 0.0;
-		phobj.vforce = 0.0;
+            if (phobj.hacc == 0.0 && phobj.hspeed < 0.1 && phobj.hspeed > -0.1)
+            {
+                phobj.hspeed = 0.0;
+            }
+            else
+            {
+                double inertia = phobj.hspeed / GROUNDSLIP;
+                double slopef = phobj.fhslope;
+                if (slopef > 0.5)
+                {
+                    slopef = 0.5;
+                }
+                else if (slopef < -0.5)
+                {
+                    slopef = -0.5;
+                }
+                phobj.hacc -= (FRICTION + SLOPEFACTOR * (1.0 + slopef * -inertia)) * inertia;
+            }
+        }
+        else if (phobj.is_flag_not_set(PhysicsObject::NOGRAVITY))
+        {
+            phobj.vacc += GRAVFORCE;
+        }
+        phobj.hforce = 0.0;
+        phobj.vforce = 0.0;
 
-		phobj.hspeed += phobj.hacc;
-		phobj.vspeed += phobj.vacc;
-	}
+        phobj.hspeed += phobj.hacc;
+        phobj.vspeed += phobj.vacc;
+    }
 
-	void Physics::move_flying(PhysicsObject& phobj) const
-	{
-		phobj.hacc = phobj.hforce;
-		phobj.vacc = phobj.vforce;
-		phobj.hforce = 0.0;
-		phobj.vforce = 0.0;
+    void Physics::move_flying(PhysicsObject& phobj) const
+    {
+        phobj.hacc = phobj.hforce;
+        phobj.vacc = phobj.vforce;
+        phobj.hforce = 0.0;
+        phobj.vforce = 0.0;
 
-		phobj.hacc -= FLYFRICTION * phobj.hspeed;
-		phobj.vacc -= FLYFRICTION * phobj.vspeed;
+        phobj.hacc -= FLYFRICTION * phobj.hspeed;
+        phobj.vacc -= FLYFRICTION * phobj.vspeed;
 
-		phobj.hspeed += phobj.hacc;
-		phobj.vspeed += phobj.vacc;
+        phobj.hspeed += phobj.hacc;
+        phobj.vspeed += phobj.vacc;
 
-		if (phobj.hacc == 0.0 && phobj.hspeed < 0.1 && phobj.hspeed > -0.1)
-		{
-			phobj.hspeed = 0.0;
-		}
-		if (phobj.vacc == 0.0 && phobj.vspeed < 0.1 && phobj.vspeed > -0.1)
-		{
-			phobj.vspeed = 0.0;
-		}
-	}
+        if (phobj.hacc == 0.0 && phobj.hspeed < 0.1 && phobj.hspeed > -0.1)
+        {
+            phobj.hspeed = 0.0;
+        }
+        if (phobj.vacc == 0.0 && phobj.vspeed < 0.1 && phobj.vspeed > -0.1)
+        {
+            phobj.vspeed = 0.0;
+        }
+    }
 
-	void Physics::move_swimming(PhysicsObject& phobj) const
-	{
-		phobj.hacc = phobj.hforce;
-		phobj.vacc = phobj.vforce;
-		phobj.hforce = 0.0;
-		phobj.vforce = 0.0;
+    void Physics::move_swimming(PhysicsObject& phobj) const
+    {
+        phobj.hacc = phobj.hforce;
+        phobj.vacc = phobj.vforce;
+        phobj.hforce = 0.0;
+        phobj.vforce = 0.0;
 
-		phobj.hacc -= SWIMFRICTION * phobj.hspeed;
-		phobj.vacc -= SWIMFRICTION * phobj.vspeed;
+        phobj.hacc -= SWIMFRICTION * phobj.hspeed;
+        phobj.vacc -= SWIMFRICTION * phobj.vspeed;
 
-		if (phobj.is_flag_not_set(PhysicsObject::NOGRAVITY))
-		{
-			phobj.vacc += SWIMGRAVFORCE;
-		}
+        if (phobj.is_flag_not_set(PhysicsObject::NOGRAVITY))
+        {
+            phobj.vacc += SWIMGRAVFORCE;
+        }
 
-		phobj.hspeed += phobj.hacc;
-		phobj.vspeed += phobj.vacc;
+        phobj.hspeed += phobj.hacc;
+        phobj.vspeed += phobj.vacc;
 
-		if (phobj.hacc == 0.0 && phobj.hspeed < 0.1 && phobj.hspeed > -0.1)
-		{
-			phobj.hspeed = 0.0;
-		}
-		if (phobj.vacc == 0.0 && phobj.vspeed < 0.1 && phobj.vspeed > -0.1)
-		{
-			phobj.vspeed = 0.0f;
-		}
-	}
+        if (phobj.hacc == 0.0 && phobj.hspeed < 0.1 && phobj.hspeed > -0.1)
+        {
+            phobj.hspeed = 0.0;
+        }
+        if (phobj.vacc == 0.0 && phobj.vspeed < 0.1 && phobj.vspeed > -0.1)
+        {
+            phobj.vspeed = 0.0f;
+        }
+    }
 
-	Point<int16_t> Physics::get_y_below(Point<int16_t> position) const
-	{
-		int16_t ground = fht.get_y_below(position);
-		return Point<int16_t>(position.x(), ground - 1);
-	}
+    Point<int16_t> Physics::get_y_below(Point<int16_t> position) const
+    {
+        int16_t ground = fht.get_y_below(position);
+        return Point<int16_t>(position.x(), ground - 1);
+    }
 
-	const Footholdtree& Physics::get_fht() const
-	{
-		return fht;
-	}
+    const Footholdtree& Physics::get_fht() const
+    {
+        return fht;
+    }
 }

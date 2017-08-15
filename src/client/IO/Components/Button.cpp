@@ -21,31 +21,31 @@
 
 namespace jrc
 {
-	void Button::set_position(Point<int16_t> pos) 
-	{ 
-		position = pos; 
-	}
+    void Button::set_position(Point<int16_t> pos) 
+    { 
+        position = pos; 
+    }
 
-	void Button::set_state(State s)
-	{
-		if (s == IDENTITY)
-			return;
+    void Button::set_state(State s)
+    {
+        if (s == IDENTITY)
+            return;
 
-		state = s;
-	}
+        state = s;
+    }
 
-	void Button::set_active(bool a) 
-	{ 
-		active = a; 
-	}
+    void Button::set_active(bool a) 
+    { 
+        active = a; 
+    }
 
-	bool Button::is_active() const 
-	{ 
-		return active && state != DISABLED; 
-	}
+    bool Button::is_active() const 
+    { 
+        return active && state != DISABLED; 
+    }
 
-	Button::State Button::get_state() const 
-	{ 
-		return state; 
-	}
+    Button::State Button::get_state() const 
+    { 
+        return state; 
+    }
 }

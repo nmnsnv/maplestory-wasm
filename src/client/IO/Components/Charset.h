@@ -22,27 +22,27 @@
 
 namespace jrc
 {
-	class Charset
-	{
-	public:
-		enum Alignment
-		{
-			LEFT,
-			CENTER,
-			RIGHT
-		};
+    class Charset
+    {
+    public:
+        enum Alignment
+        {
+            LEFT,
+            CENTER,
+            RIGHT
+        };
 
-		Charset(nl::node source, Alignment alignment);
-		Charset();
+        Charset(nl::node source, Alignment alignment);
+        Charset();
 
-		void draw(int8_t character, const DrawArgument& args) const;
-		int16_t draw(const std::string& text, const DrawArgument& args) const;
-		int16_t draw(const std::string& text, int16_t hspace, const DrawArgument& args) const;
-		int16_t getw(int8_t character) const;
+        void draw(int8_t character, const DrawArgument& args) const;
+        int16_t draw(const std::string& text, const DrawArgument& args) const;
+        int16_t draw(const std::string& text, int16_t hspace, const DrawArgument& args) const;
+        int16_t getw(int8_t character) const;
 
-	private:
-		std::unordered_map<int8_t, Texture> chars;
-		Alignment alignment;
-	};
+    private:
+        std::unordered_map<int8_t, Texture> chars;
+        Alignment alignment;
+    };
 }
 

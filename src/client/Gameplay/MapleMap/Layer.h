@@ -20,14 +20,14 @@
 
 namespace jrc
 {
-	namespace Layer
-	{
-		enum Id
-		{
-			ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN,
-			LENGTH
-		};
+    namespace Layer
+    {
+        enum Id
+        {
+            ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN,
+            LENGTH
+        };
 
-		constexpr Enumeration<Id> IDs;
-	}
+        constexpr Enumeration<Id> IDs;
+    }
 }

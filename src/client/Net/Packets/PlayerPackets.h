@@ -22,28 +22,28 @@
 
 namespace jrc
 {
-	// Requests a stat increase by spending ap.
-	// Opcode: SPEND_AP(87)
-	class SpendApPacket : public OutPacket
-	{
-	public:
-		SpendApPacket(Maplestat::Id stat) : OutPacket(SPEND_AP)
-		{
-			write_time();
-			write_int(Maplestat::codes[stat]);
-		}
-	};
+    // Requests a stat increase by spending ap.
+    // Opcode: SPEND_AP(87)
+    class SpendApPacket : public OutPacket
+    {
+    public:
+        SpendApPacket(Maplestat::Id stat) : OutPacket(SPEND_AP)
+        {
+            write_time();
+            write_int(Maplestat::codes[stat]);
+        }
+    };
 
 
-	// Requests a skill level increase by spending sp.
-	// Opcode: SPEND_SP(90)
-	class SpendSpPacket : public OutPacket
-	{
-	public:
-		SpendSpPacket(int32_t skill_id) : OutPacket(SPEND_SP)
-		{
-			write_time();
-			write_int(skill_id);
-		}
-	};
+    // Requests a skill level increase by spending sp.
+    // Opcode: SPEND_SP(90)
+    class SpendSpPacket : public OutPacket
+    {
+    public:
+        SpendSpPacket(int32_t skill_id) : OutPacket(SPEND_SP)
+        {
+            write_time();
+            write_int(skill_id);
+        }
+    };
 }

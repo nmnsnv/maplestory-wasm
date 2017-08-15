@@ -21,48 +21,48 @@
 
 namespace jrc
 {
-	void MapReactors::draw(Layer::Id layer, double viewx, double viewy, float alpha) const
-	{
-		reactors.draw(layer, viewx, viewy, alpha);
-	}
+    void MapReactors::draw(Layer::Id layer, double viewx, double viewy, float alpha) const
+    {
+        reactors.draw(layer, viewx, viewy, alpha);
+    }
 
-	void MapReactors::update(const Physics& physics)
-	{
-		for (; !spawns.empty(); spawns.pop())
-		{
-			const ReactorSpawn& spawn = spawns.front();
+    void MapReactors::update(const Physics& physics)
+    {
+        for (; !spawns.empty(); spawns.pop())
+        {
+            const ReactorSpawn& spawn = spawns.front();
 
-			int32_t oid = spawn.get_oid();
-			if (auto reactor = reactors.get(oid))
-			{
-				reactor->makeactive();
-			}
-			else
-			{
-				reactors.add(spawn.instantiate(physics));
-			}
-		}
+            int32_t oid = spawn.get_oid();
+            if (auto reactor = reactors.get(oid))
+            {
+                reactor->makeactive();
+            }
+            else
+            {
+                reactors.add(spawn.instantiate(physics));
+            }
+        }
 
-		reactors.update(physics);
-	}
+        reactors.update(physics);
+    }
 
-	void MapReactors::spawn(ReactorSpawn&& spawn)
-	{
-		spawns.emplace(
-			std::move(spawn)
-		);
-	}
+    void MapReactors::spawn(ReactorSpawn&& spawn)
+    {
+        spawns.emplace(
+            std::move(spawn)
+        );
+    }
 
-	void MapReactors::remove(int32_t oid, int8_t state, Point<int16_t> position)
-	{
-		if (Optional<Reactor> reactor = reactors.get(oid))
-		{
-			reactor->destroy(state, position);
-		}
-	}
+    void MapReactors::remove(int32_t oid, int8_t state, Point<int16_t> position)
+    {
+        if (Optional<Reactor> reactor = reactors.get(oid))
+        {
+            reactor->destroy(state, position);
+        }
+    }
 
-	void MapReactors::clear()
-	{
-		reactors.clear();
-	}
+    void MapReactors::clear()
+    {
+        reactors.clear();
+    }
 }

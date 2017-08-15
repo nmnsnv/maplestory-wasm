@@ -22,25 +22,25 @@
 
 namespace jrc
 {
-	class MapleFrame
-	{
-	public:
-		MapleFrame(nl::node src);
-		MapleFrame();
+    class MapleFrame
+    {
+    public:
+        MapleFrame(nl::node src);
+        MapleFrame();
 
-		void draw(Point<int16_t> position, int16_t width, int16_t height) const;
+        void draw(Point<int16_t> position, int16_t width, int16_t height) const;
 
-	private:
-		Texture center;
-		Texture east;
-		Texture northeast;
-		Texture north;
-		Texture northwest;
-		Texture west;
-		Texture southwest;
-		Texture south;
-		Texture southeast;
-		int16_t xtile;
-		int16_t ytile;
-	};
+    private:
+        Texture center;
+        Texture east;
+        Texture northeast;
+        Texture north;
+        Texture northwest;
+        Texture west;
+        Texture southwest;
+        Texture south;
+        Texture southeast;
+        int16_t xtile;
+        int16_t ytile;
+    };
 }

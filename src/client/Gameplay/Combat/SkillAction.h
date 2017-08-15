@@ -22,62 +22,62 @@
 
 namespace jrc
 {
-	class SkillAction
-	{
-	public:
-		virtual ~SkillAction() {}
+    class SkillAction
+    {
+    public:
+        virtual ~SkillAction() {}
 
-		virtual void apply(Char& target, Attack::Type atype) const = 0;
-	};
-
-
-	class NoAction : public SkillAction
-	{
-	public:
-		void apply(Char&, Attack::Type) const override {}
-	};
+        virtual void apply(Char& target, Attack::Type atype) const = 0;
+    };
 
 
-	class RegularAction : public SkillAction
-	{
-	public:
-		void apply(Char& target, Attack::Type atype) const override;
-	};
+    class NoAction : public SkillAction
+    {
+    public:
+        void apply(Char&, Attack::Type) const override {}
+    };
 
 
-	class SingleAction : public SkillAction
-	{
-	public:
-		SingleAction(nl::node src);
-
-		void apply(Char& target, Attack::Type atype) const override;
-
-	private:
-		std::string action;
-	};
+    class RegularAction : public SkillAction
+    {
+    public:
+        void apply(Char& target, Attack::Type atype) const override;
+    };
 
 
-	class TwoHAction : public SkillAction
-	{
-	public:
-		TwoHAction(nl::node src);
+    class SingleAction : public SkillAction
+    {
+    public:
+        SingleAction(nl::node src);
 
-		void apply(Char& target, Attack::Type atype) const override;
+        void apply(Char& target, Attack::Type atype) const override;
 
-	private:
-		BoolPair<std::string> actions;
-	};
+    private:
+        std::string action;
+    };
 
 
-	class ByLevelAction : public SkillAction
-	{
-	public:
-		ByLevelAction(nl::node src, int32_t skillid);
+    class TwoHAction : public SkillAction
+    {
+    public:
+        TwoHAction(nl::node src);
 
-		void apply(Char& target, Attack::Type atype) const override;
+        void apply(Char& target, Attack::Type atype) const override;
 
-	private:
-		std::map<int32_t, std::string> actions;
-		int32_t skillid;
-	};
+    private:
+        BoolPair<std::string> actions;
+    };
+
+
+    class ByLevelAction : public SkillAction
+    {
+    public:
+        ByLevelAction(nl::node src, int32_t skillid);
+
+        void apply(Char& target, Attack::Type atype) const override;
+
+    private:
+        std::map<int32_t, std::string> actions;
+        int32_t skillid;
+    };
 }

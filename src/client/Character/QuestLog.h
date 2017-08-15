@@ -22,20 +22,20 @@
 
 namespace jrc
 {
-	// Class that stores information on the questlog of an individual character.
-	class Questlog
-	{
-	public:
-		void add_started(int16_t, const std::string& quest_data);
-		void add_in_progress(int16_t, int16_t, const std::string& quest_data);
-		void add_completed(int16_t, int64_t);
-		bool is_started(int16_t);
-		int16_t get_last_started();
+    // Class that stores information on the questlog of an individual character.
+    class Questlog
+    {
+    public:
+        void add_started(int16_t, const std::string& quest_data);
+        void add_in_progress(int16_t, int16_t, const std::string& quest_data);
+        void add_completed(int16_t, int64_t);
+        bool is_started(int16_t);
+        int16_t get_last_started();
 
-	private:
-		std::map<int16_t, std::string> started;
-		std::map<int16_t, std::pair<int16_t, std::string>> in_progress;
-		std::map<int16_t, int64_t> completed;
-	};
+    private:
+        std::map<int16_t, std::string> started;
+        std::map<int16_t, std::pair<int16_t, std::string>> in_progress;
+        std::map<int16_t, int64_t> completed;
+    };
 }
 

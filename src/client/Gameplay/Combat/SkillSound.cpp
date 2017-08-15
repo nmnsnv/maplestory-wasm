@@ -21,21 +21,21 @@
 
 namespace jrc
 {
-	SingleSkillSound::SingleSkillSound(std::string strid)
-	{
-		nl::node soundsrc = nl::nx::sound["Skill.img"][strid];
+    SingleSkillSound::SingleSkillSound(std::string strid)
+    {
+        nl::node soundsrc = nl::nx::sound["Skill.img"][strid];
 
-		usesound = soundsrc["Use"];
-		hitsound = soundsrc["Hit"];
-	}
+        usesound = soundsrc["Use"];
+        hitsound = soundsrc["Hit"];
+    }
 
-	void SingleSkillSound::play_use() const
-	{
-		usesound.play();
-	}
+    void SingleSkillSound::play_use() const
+    {
+        usesound.play();
+    }
 
-	void SingleSkillSound::play_hit() const
-	{
-		hitsound.play();
-	}
+    void SingleSkillSound::play_hit() const
+    {
+        hitsound.play();
+    }
 }

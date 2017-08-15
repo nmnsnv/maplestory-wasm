@@ -26,28 +26,28 @@
 
 namespace jrc
 {
-	Error NxFiles::init()
-	{
-		for (auto filename : NxFiles::filenames)
-		{
-			if (std::ifstream{ filename }.good() == false)
-				return{ Error::MISSING_FILE, filename };
-		}
+    Error NxFiles::init()
+    {
+        for (auto filename : NxFiles::filenames)
+        {
+            if (std::ifstream{ filename }.good() == false)
+                return{ Error::MISSING_FILE, filename };
+        }
 
-		try 
-		{
-			nl::nx::load_all();
-		}
-		catch (const std::exception& ex)
-		{
-			static const std::string message = ex.what();
-			return{ Error::NLNX, message.c_str() };
-		}
+        try 
+        {
+            nl::nx::load_all();
+        }
+        catch (const std::exception& ex)
+        {
+            static const std::string message = ex.what();
+            return{ Error::NLNX, message.c_str() };
+        }
 
-		constexpr const char* POSTCHAOS_BITMAP = "Login.img/WorldSelect/BtChannel/layer:bg";
-		if (nl::nx::ui.resolve(POSTCHAOS_BITMAP).data_type() != nl::node::type::bitmap)
-			return Error::WRONG_UI_FILE;
+        constexpr const char* POSTCHAOS_BITMAP = "Login.img/WorldSelect/BtChannel/layer:bg";
+        if (nl::nx::ui.resolve(POSTCHAOS_BITMAP).data_type() != nl::node::type::bitmap)
+            return Error::WRONG_UI_FILE;
 
-		return Error::NONE;
-	}
+        return Error::NONE;
+    }
 }

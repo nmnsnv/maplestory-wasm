@@ -19,60 +19,60 @@
 
 namespace jrc
 {
-	void RegularAttack::apply_useeffects(Char&) const {}
+    void RegularAttack::apply_useeffects(Char&) const {}
 
-	void RegularAttack::apply_actions(Char& user, Attack::Type type) const
-	{
-		action.apply(user, type);
-	}
+    void RegularAttack::apply_actions(Char& user, Attack::Type type) const
+    {
+        action.apply(user, type);
+    }
 
-	void RegularAttack::apply_stats(const Char& user, Attack& attack) const
-	{
-		attack.damagetype = Attack::DMG_WEAPON;
-		attack.skill = 0;
-		attack.mobcount = 1;
-		attack.hitcount = 1;
-		attack.stance = user.get_look().get_stance();
-		if (attack.type == Attack::CLOSE)
-		{
-			attack.range = user.get_afterimage().get_range();
-		}
-	}
+    void RegularAttack::apply_stats(const Char& user, Attack& attack) const
+    {
+        attack.damagetype = Attack::DMG_WEAPON;
+        attack.skill = 0;
+        attack.mobcount = 1;
+        attack.hitcount = 1;
+        attack.stance = user.get_look().get_stance();
+        if (attack.type == Attack::CLOSE)
+        {
+            attack.range = user.get_afterimage().get_range();
+        }
+    }
 
-	void RegularAttack::apply_hiteffects(const AttackUser&, Mob&) const {}
+    void RegularAttack::apply_hiteffects(const AttackUser&, Mob&) const {}
 
-	Animation RegularAttack::get_bullet(const Char& user, int32_t bulletid) const
-	{
-		return bullet.get(user, bulletid);
-	}
+    Animation RegularAttack::get_bullet(const Char& user, int32_t bulletid) const
+    {
+        return bullet.get(user, bulletid);
+    }
 
-	bool RegularAttack::is_attack() const
-	{
-		return true;
-	}
+    bool RegularAttack::is_attack() const
+    {
+        return true;
+    }
 
-	bool RegularAttack::is_skill() const
-	{
-		return false;
-	}
+    bool RegularAttack::is_skill() const
+    {
+        return false;
+    }
 
-	int32_t RegularAttack::get_id() const
-	{
-		return 0;
-	}
+    int32_t RegularAttack::get_id() const
+    {
+        return 0;
+    }
 
-	SpecialMove::ForbidReason RegularAttack::can_use(int32_t, Weapon::Type weapon, 
-		const Job&, uint16_t, uint16_t, uint16_t bullets) const {
+    SpecialMove::ForbidReason RegularAttack::can_use(int32_t, Weapon::Type weapon, 
+        const Job&, uint16_t, uint16_t, uint16_t bullets) const {
 
-		switch (weapon)
-		{
-		case Weapon::BOW:
-		case Weapon::CROSSBOW:
-		case Weapon::CLAW:
-		case Weapon::GUN:
-			return bullets ? FBR_NONE : FBR_BULLETCOST;
-		default:
-			return FBR_NONE;
-		}
-	}
+        switch (weapon)
+        {
+        case Weapon::BOW:
+        case Weapon::CROSSBOW:
+        case Weapon::CLAW:
+        case Weapon::GUN:
+            return bullets ? FBR_NONE : FBR_BULLETCOST;
+        default:
+            return FBR_NONE;
+        }
+    }
 }

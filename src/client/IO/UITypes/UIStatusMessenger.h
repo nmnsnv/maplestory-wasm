@@ -25,41 +25,41 @@
 
 namespace jrc
 {
-	class StatusInfo
-	{
-	public:
-		StatusInfo(const std::string& str, Text::Color color);
+    class StatusInfo
+    {
+    public:
+        StatusInfo(const std::string& str, Text::Color color);
 
-		void draw(Point<int16_t> position, float alpha) const;
-		bool update();
+        void draw(Point<int16_t> position, float alpha) const;
+        bool update();
 
-	private:
-		Text text;
-		Text shadow;
-		Linear<float> opacity;
+    private:
+        Text text;
+        Text shadow;
+        Linear<float> opacity;
 
-		// 8 seconds.
-		static constexpr int64_t FADE_DURATION = 8'000;
-	};
+        // 8 seconds.
+        static constexpr int64_t FADE_DURATION = 8'000;
+    };
 
 
-	class UIStatusMessenger : public UIElement
-	{
-	public:
-		static constexpr Type TYPE = STATUSMESSENGER;
-		static constexpr bool FOCUSED = false;
-		static constexpr bool TOGGLED = false;
+    class UIStatusMessenger : public UIElement
+    {
+    public:
+        static constexpr Type TYPE = STATUSMESSENGER;
+        static constexpr bool FOCUSED = false;
+        static constexpr bool TOGGLED = false;
 
-		UIStatusMessenger();
+        UIStatusMessenger();
 
-		void draw(float alpha) const override;
-		void update() override;
+        void draw(float alpha) const override;
+        void update() override;
 
-		void show_status(Text::Color color, const std::string& message);
+        void show_status(Text::Color color, const std::string& message);
 
-	private:
-		static constexpr size_t MAX_MESSAGES = 5;
+    private:
+        static constexpr size_t MAX_MESSAGES = 5;
 
-		std::deque<StatusInfo> statusinfos;
-	};
+        std::deque<StatusInfo> statusinfos;
+    };
 }

@@ -19,69 +19,69 @@
 
 namespace jrc
 {
-	void MapChars::draw(Layer::Id layer, double viewx, double viewy, float alpha) const
-	{
-		chars.draw(layer, viewx, viewy, alpha);
-	}
+    void MapChars::draw(Layer::Id layer, double viewx, double viewy, float alpha) const
+    {
+        chars.draw(layer, viewx, viewy, alpha);
+    }
 
-	void MapChars::update(const Physics& physics)
-	{
-		for (; !spawns.empty(); spawns.pop())
-		{
-			const CharSpawn& spawn = spawns.front();
+    void MapChars::update(const Physics& physics)
+    {
+        for (; !spawns.empty(); spawns.pop())
+        {
+            const CharSpawn& spawn = spawns.front();
 
-			int32_t cid = spawn.get_cid();
-			Optional<OtherChar> ochar = get_char(cid);
-			if (ochar)
-			{
+            int32_t cid = spawn.get_cid();
+            Optional<OtherChar> ochar = get_char(cid);
+            if (ochar)
+            {
 
-			}
-			else
-			{
-				chars.add(
-					spawn.instantiate()
-				);
-			}
-		}
+            }
+            else
+            {
+                chars.add(
+                    spawn.instantiate()
+                );
+            }
+        }
 
-		chars.update(physics);
-	}
+        chars.update(physics);
+    }
 
-	void MapChars::spawn(CharSpawn&& spawn)
-	{
-		spawns.emplace(
-			std::move(spawn)
-		);
-	}
+    void MapChars::spawn(CharSpawn&& spawn)
+    {
+        spawns.emplace(
+            std::move(spawn)
+        );
+    }
 
-	void MapChars::remove(int32_t cid)
-	{
-		chars.remove(cid);
-	}
+    void MapChars::remove(int32_t cid)
+    {
+        chars.remove(cid);
+    }
 
-	void MapChars::clear()
-	{
-		chars.clear();
-	}
+    void MapChars::clear()
+    {
+        chars.clear();
+    }
 
-	void MapChars::send_movement(int32_t cid, const std::vector<Movement>& movements)
-	{
-		if (Optional<OtherChar> otherchar = get_char(cid))
-		{
-			otherchar->send_movement(movements);
-		}
-	}
+    void MapChars::send_movement(int32_t cid, const std::vector<Movement>& movements)
+    {
+        if (Optional<OtherChar> otherchar = get_char(cid))
+        {
+            otherchar->send_movement(movements);
+        }
+    }
 
-	void MapChars::update_look(int32_t cid, const LookEntry& look)
-	{
-		if (Optional<OtherChar> otherchar = get_char(cid))
-		{
-			otherchar->update_look(look);
-		}
-	}
+    void MapChars::update_look(int32_t cid, const LookEntry& look)
+    {
+        if (Optional<OtherChar> otherchar = get_char(cid))
+        {
+            otherchar->update_look(look);
+        }
+    }
 
-	Optional<OtherChar> MapChars::get_char(int32_t cid)
-	{
-		return chars.get(cid);
-	}
+    Optional<OtherChar> MapChars::get_char(int32_t cid)
+    {
+        return chars.get(cid);
+    }
 }

@@ -21,9 +21,9 @@
 namespace jrc
 {
 #ifdef JOURNEY_USE_XXHASH
-	class NxCheckRequestHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    class NxCheckRequestHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 #endif
 }

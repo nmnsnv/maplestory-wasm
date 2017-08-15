@@ -20,15 +20,15 @@
 
 namespace jrc
 {
-	// Handler for a packet which contains npc dialogue.
-	class NpcDialogueHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Handler for a packet which contains npc dialogue.
+    class NpcDialogueHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
-	// Opens an npc shop defined by the packet's contents.
-	class OpenNpcShopHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Opens an npc shop defined by the packet's contents.
+    class OpenNpcShopHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 }

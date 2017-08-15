@@ -23,47 +23,47 @@
 
 namespace jrc
 {
-	class Icon
-	{
-	public:
-		class Type
-		{
-		public:
-			virtual ~Type() {}
+    class Icon
+    {
+    public:
+        class Type
+        {
+        public:
+            virtual ~Type() {}
 
-			virtual void drop_on_stage() const = 0;
-			virtual void drop_on_equips(Equipslot::Id eqslot) const = 0;
-			virtual void drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const = 0;
-		};
+            virtual void drop_on_stage() const = 0;
+            virtual void drop_on_equips(Equipslot::Id eqslot) const = 0;
+            virtual void drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const = 0;
+        };
 
 
-		class NullType : public Type
-		{
-			void drop_on_stage() const override {}
-			void drop_on_equips(Equipslot::Id) const override {}
-			void drop_on_items(InventoryType::Id, Equipslot::Id, int16_t, bool) const override {}
-		};
+        class NullType : public Type
+        {
+            void drop_on_stage() const override {}
+            void drop_on_equips(Equipslot::Id) const override {}
+            void drop_on_items(InventoryType::Id, Equipslot::Id, int16_t, bool) const override {}
+        };
 
-		Icon(std::unique_ptr<Type> type, Texture texture, int16_t count);
-		Icon();
+        Icon(std::unique_ptr<Type> type, Texture texture, int16_t count);
+        Icon();
 
-		void draw(Point<int16_t> position) const;
-		void dragdraw(Point<int16_t> cursorpos) const;
-		void drop_on_stage() const;
-		void drop_on_equips(Equipslot::Id eqslot) const;
-		void drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const;
-		void start_drag(Point<int16_t> offset);
-		void reset();
-		void set_count(int16_t count);
-		int16_t get_count() const;
+        void draw(Point<int16_t> position) const;
+        void dragdraw(Point<int16_t> cursorpos) const;
+        void drop_on_stage() const;
+        void drop_on_equips(Equipslot::Id eqslot) const;
+        void drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const;
+        void start_drag(Point<int16_t> offset);
+        void reset();
+        void set_count(int16_t count);
+        int16_t get_count() const;
 
-	private:
-		std::unique_ptr<Type> type;
-		Texture texture;
-		bool showcount;
-		int16_t count;
+    private:
+        std::unique_ptr<Type> type;
+        Texture texture;
+        bool showcount;
+        int16_t count;
 
-		bool dragged;
-		Point<int16_t> cursoroffset;
-	};
+        bool dragged;
+        Point<int16_t> cursoroffset;
+    };
 }

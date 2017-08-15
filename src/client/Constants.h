@@ -20,15 +20,15 @@
 
 namespace jrc
 {
-	namespace Constants
-	{
-		// Timestep, e.g. the granularity in which the game advances.
-		constexpr uint16_t TIMESTEP = 8;
-		// Window and screen width.
-		constexpr int16_t VIEWWIDTH = 800;
-		// Window and screen height.
-		constexpr int16_t VIEWHEIGHT = 600;
-		// View y offset.
-		constexpr int16_t VIEWYOFFSET = 10;
-	}
+    namespace Constants
+    {
+        // Timestep, e.g. the granularity in which the game advances.
+        constexpr uint16_t TIMESTEP = 8;
+        // Window and screen width.
+        constexpr int16_t VIEWWIDTH = 800;
+        // Window and screen height.
+        constexpr int16_t VIEWHEIGHT = 600;
+        // View y offset.
+        constexpr int16_t VIEWYOFFSET = 10;
+    }
 }

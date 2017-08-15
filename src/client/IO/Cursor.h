@@ -21,49 +21,49 @@
 
 namespace jrc
 {
-	// Class that represents the mouse cursor.
-	class Cursor
-	{
-	public:
-		// Maple-cursorstates, linked to the cursor's animation.
-		enum State
-		{
-			IDLE,
-			CANCLICK,
-			GAME,
-			HOUSE,
-			CANCLICK2,
-			CANGRAB,
-			GIFT,
-			VSCROLL,
-			HSCROLL,
-			VSCROLLIDLE,
-			HSCROLLIDLE,
-			GRABBING,
-			CLICKING,
-			RCLICK,
-			LENGTH
-		};
+    // Class that represents the mouse cursor.
+    class Cursor
+    {
+    public:
+        // Maple-cursorstates, linked to the cursor's animation.
+        enum State
+        {
+            IDLE,
+            CANCLICK,
+            GAME,
+            HOUSE,
+            CANCLICK2,
+            CANGRAB,
+            GIFT,
+            VSCROLL,
+            HSCROLL,
+            VSCROLLIDLE,
+            HSCROLLIDLE,
+            GRABBING,
+            CLICKING,
+            RCLICK,
+            LENGTH
+        };
 
-		Cursor();
+        Cursor();
 
-		void init();
+        void init();
 
-		void draw(float alpha) const;
-		void update();
-		void set_state(State state);
-		void set_position(Point<int16_t> position);
-		State get_state() const;
-		Point<int16_t> get_position() const;
+        void draw(float alpha) const;
+        void update();
+        void set_state(State state);
+        void set_position(Point<int16_t> position);
+        State get_state() const;
+        Point<int16_t> get_position() const;
 
-	private:
-		EnumMap<State, Animation> animations;
+    private:
+        EnumMap<State, Animation> animations;
 
-		State state;
-		Point<int16_t> position;
-		int32_t hide_counter;
+        State state;
+        Point<int16_t> position;
+        int32_t hide_counter;
 
-		static constexpr int64_t HIDE_TIME = 15'000;
-	};
+        static constexpr int64_t HIDE_TIME = 15'000;
+    };
 }
 

@@ -23,28 +23,28 @@
 
 namespace jrc
 {
-	class ItemTooltip : public Tooltip
-	{
-	public:
-		ItemTooltip();
+    class ItemTooltip : public Tooltip
+    {
+    public:
+        ItemTooltip();
 
-		void draw(Point<int16_t> position) const override;
+        void draw(Point<int16_t> position) const override;
 
-		bool set_item(int32_t itemid);
+        bool set_item(int32_t itemid);
 
-	private:
-		int32_t itemid;
-		int16_t filllength;
-		Texture itemicon;
+    private:
+        int32_t itemid;
+        int16_t filllength;
+        Texture itemicon;
 
-		Text name;
-		Text desc;
-		Texture top;
-		Texture mid;
-		Texture line;
-		Texture bot;
-		Texture base;
-		Texture cover;
-		Texture shade;
-	};
+        Text name;
+        Text desc;
+        Texture top;
+        Texture mid;
+        Texture line;
+        Texture bot;
+        Texture base;
+        Texture cover;
+        Texture shade;
+    };
 }

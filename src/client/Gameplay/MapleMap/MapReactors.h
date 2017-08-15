@@ -24,25 +24,25 @@
 
 namespace jrc
 {
-	// Collection of reactors on a map.
-	class MapReactors
-	{
-	public:
-		// Draw all reactors on a layer.
-		void draw(Layer::Id layer, double viewx, double viewy, float alpha) const;
-		// Update all reactors.
-		void update(const Physics& physics);
+    // Collection of reactors on a map.
+    class MapReactors
+    {
+    public:
+        // Draw all reactors on a layer.
+        void draw(Layer::Id layer, double viewx, double viewy, float alpha) const;
+        // Update all reactors.
+        void update(const Physics& physics);
 
-		// Spawn a new reactor.
-		void spawn(ReactorSpawn&& spawn);
-		// Remove a reactor.
-		void remove(int32_t oid, int8_t state, Point<int16_t> position);
-		// Remove all reactors.
-		void clear();
+        // Spawn a new reactor.
+        void spawn(ReactorSpawn&& spawn);
+        // Remove a reactor.
+        void remove(int32_t oid, int8_t state, Point<int16_t> position);
+        // Remove all reactors.
+        void clear();
 
-	private:
-		MapObjects reactors;
+    private:
+        MapObjects reactors;
 
-		std::queue<ReactorSpawn> spawns;
-	};
+        std::queue<ReactorSpawn> spawns;
+    };
 }

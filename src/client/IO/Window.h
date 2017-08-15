@@ -27,34 +27,34 @@
 
 namespace jrc
 {
-	class Window : public Singleton<Window>
-	{
-	public:
-		Window();
-		~Window();
+    class Window : public Singleton<Window>
+    {
+    public:
+        Window();
+        ~Window();
 
-		Error init();
-		Error initwindow();
+        Error init();
+        Error initwindow();
 
-		bool not_closed() const;
-		void update();
-		void begin() const;
-		void end() const;
-		void fadeout(float step, std::function<void()> fadeprocedure);
-		void check_events();
+        bool not_closed() const;
+        void update();
+        void begin() const;
+        void end() const;
+        void fadeout(float step, std::function<void()> fadeprocedure);
+        void check_events();
 
-		void setclipboard(const std::string& text) const;
-		std::string getclipboard() const;
+        void setclipboard(const std::string& text) const;
+        std::string getclipboard() const;
 
-	private:
-		void updateopc();
+    private:
+        void updateopc();
 
-		GLFWwindow* glwnd;
-		GLFWwindow* context;
-		bool fullscreen;
-		float opacity;
-		float opcstep;
-		std::function<void()> fadeprocedure;
-	};
+        GLFWwindow* glwnd;
+        GLFWwindow* context;
+        bool fullscreen;
+        float opacity;
+        float opcstep;
+        std::function<void()> fadeprocedure;
+    };
 }
 

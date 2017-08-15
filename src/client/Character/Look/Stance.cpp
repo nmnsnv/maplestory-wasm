@@ -21,78 +21,78 @@
 
 namespace jrc
 {
-	Stance::Id Stance::by_state(int8_t state)
-	{
-		int8_t index = (state / 2) - 1;
-		if (index < 0 || index > 10)
-			return WALK1;
+    Stance::Id Stance::by_state(int8_t state)
+    {
+        int8_t index = (state / 2) - 1;
+        if (index < 0 || index > 10)
+            return WALK1;
 
-		constexpr Id statevalues[10] =
-		{
-			WALK1, STAND1, JUMP, ALERT,
-			PRONE, FLY, LADDER, ROPE,
-			DEAD, SIT
-		};
-		return statevalues[index];
-	}
+        constexpr Id statevalues[10] =
+        {
+            WALK1, STAND1, JUMP, ALERT,
+            PRONE, FLY, LADDER, ROPE,
+            DEAD, SIT
+        };
+        return statevalues[index];
+    }
 
-	Stance::Id Stance::by_id(uint8_t id)
-	{
-		if (id <= NONE || id >= LENGTH)
-			return NONE;
+    Stance::Id Stance::by_id(uint8_t id)
+    {
+        if (id <= NONE || id >= LENGTH)
+            return NONE;
 
-		return static_cast<Stance::Id>(id);
-	}
+        return static_cast<Stance::Id>(id);
+    }
 
-	Stance::Id Stance::by_string(const std::string& name)
-	{
-		for (auto iter : names)
-		{
-			if (iter.second == name)
-				return iter.first;
-		}
+    Stance::Id Stance::by_string(const std::string& name)
+    {
+        for (auto iter : names)
+        {
+            if (iter.second == name)
+                return iter.first;
+        }
 
-		Console::get().print("Unhandled stance: " + name);
-		return NONE;
-	}
+        Console::get().print("Unhandled stance: " + name);
+        return NONE;
+    }
 
-	bool Stance::is_climbing(Id value)
-	{
-		return value == LADDER || value == ROPE;
-	}
+    bool Stance::is_climbing(Id value)
+    {
+        return value == LADDER || value == ROPE;
+    }
 
-	Stance::Id Stance::baseof(Id value)
-	{
-		switch (value)
-		{
-		case STAND2:
-			return STAND1;
-		case WALK2:
-			return WALK1;
-		default:
-			return value;
-		}
-	}
+    Stance::Id Stance::baseof(Id value)
+    {
+        switch (value)
+        {
+        case STAND2:
+            return STAND1;
+        case WALK2:
+            return WALK1;
+        default:
+            return value;
+        }
+    }
 
-	Stance::Id Stance::secondof(Id value)
-	{
-		switch (value)
-		{
-		case STAND1:
-			return STAND2;
-		case WALK1:
-			return WALK2;
-		default:
-			return value;
-		}
-	}
+    Stance::Id Stance::secondof(Id value)
+    {
+        switch (value)
+        {
+        case STAND1:
+            return STAND2;
+        case WALK1:
+            return WALK2;
+        default:
+            return value;
+        }
+    }
 
-	const EnumMap<Stance::Id, std::string> Stance::names =
-	{
-		"", "alert", "dead", "fly", "heal", "jump", "ladder", "prone", "proneStab",
-		"rope", "shot", "shoot1", "shoot2", "shootF", "sit", "stabO1", "stabO2", "stabOF",
-		"stabT1", "stabT2", "stabTF", "stand1", "stand2", "swingO1", "swingO2",
-		"swingO3", "swingOF", "swingP1", "swingP2", "swingPF", "swingT1", "swingT2",
-		"swingT3", "swingTF", "walk1", "walk2"
-	};
+    const EnumMap<Stance::Id, std::string> Stance::names =
+    {
+        "", "alert", "dead", "fly", "heal", "jump", "ladder", "prone", "proneStab",
+        "rope", "shot", "shoot1", "shoot2", "shootF", "sit", "stabO1", "stabO2", "stabOF",
+        "stabT1", "stabT2", "stabTF", "stand1", "stand2", "swingO1", "swingO2",
+        "swingO3", "swingOF", "swingP1", "swingP2", "swingPF", "swingT1", "swingT2",
+        "swingT3", "swingTF", "walk1", "walk2"
+    };
 }

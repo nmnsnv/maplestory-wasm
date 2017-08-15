@@ -22,22 +22,22 @@
 
 namespace jrc
 {
-	Maplestat::Id Maplestat::by_id(size_t id)
-	{
-		if (id >= LENGTH)
-		{
-			Console::get()
-				.print("Invalid Maplestat id: " + std::to_string(id));
-		}
-		return static_cast<Id>(id);
-	}
+    Maplestat::Id Maplestat::by_id(size_t id)
+    {
+        if (id >= LENGTH)
+        {
+            Console::get()
+                .print("Invalid Maplestat id: " + std::to_string(id));
+        }
+        return static_cast<Id>(id);
+    }
 
-	const EnumMap<Maplestat::Id, int32_t> Maplestat::codes =
-	{
-		0x1, 0x2, 0x4, 0x10, 0x20,
-		0x40, 0x80, 0x100, 0x200,
-		0x400, 0x800, 0x1000, 0x2000,
-		0x4000, 0x8000, 0x10000,  0x20000, 0x40000,
-		0x180008, 0x200000
-	};
+    const EnumMap<Maplestat::Id, int32_t> Maplestat::codes =
+    {
+        0x1, 0x2, 0x4, 0x10, 0x20,
+        0x40, 0x80, 0x100, 0x200,
+        0x400, 0x800, 0x1000, 0x2000,
+        0x4000, 0x8000, 0x10000,  0x20000, 0x40000,
+        0x180008, 0x200000
+    };
 }

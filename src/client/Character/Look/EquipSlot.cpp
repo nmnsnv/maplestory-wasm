@@ -21,14 +21,14 @@
 
 namespace jrc
 {
-	Equipslot::Id Equipslot::by_id(size_t id)
-	{
-		if (id >= LENGTH)
-		{
-			Console::get()
-				.print("Invalid Equipslot id: " + std::to_string(id));
-			return NONE;
-		}
-		return static_cast<Id>(id);
-	}
+    Equipslot::Id Equipslot::by_id(size_t id)
+    {
+        if (id >= LENGTH)
+        {
+            Console::get()
+                .print("Invalid Equipslot id: " + std::to_string(id));
+            return NONE;
+        }
+        return static_cast<Id>(id);
+    }
 }

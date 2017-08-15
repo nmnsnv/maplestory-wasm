@@ -24,38 +24,38 @@
 
 namespace jrc
 {
-	JobData::JobData(int32_t id)
-	{
-		std::string strid = string_format::extend_id(id, 3);
-		nl::node src = nl::nx::skill[strid + ".img"];
-		nl::node strsrc = nl::nx::string["Skill.img"][strid];
+    JobData::JobData(int32_t id)
+    {
+        std::string strid = string_format::extend_id(id, 3);
+        nl::node src = nl::nx::skill[strid + ".img"];
+        nl::node strsrc = nl::nx::string["Skill.img"][strid];
 
-		icon = src["info"]["icon"];
+        icon = src["info"]["icon"];
 
-		name = strsrc["bookName"].get_string();
+        name = strsrc["bookName"].get_string();
 
-		for (nl::node sub : src["skill"])
-		{
-			int32_t skill_id = string_conversion::or_zero<int32_t>(sub.name());
-			if (skill_id == 0)
-				continue;
+        for (nl::node sub : src["skill"])
+        {
+            int32_t skill_id = string_conversion::or_zero<int32_t>(sub.name());
+            if (skill_id == 0)
+                continue;
 
-			skills.push_back(skill_id);
-		}
-	}
+            skills.push_back(skill_id);
+        }
+    }
 
-	const std::vector<std::int32_t>& JobData::get_skills() const
-	{
-		return skills;
-	}
+    const std::vector<std::int32_t>& JobData::get_skills() const
+    {
+        return skills;
+    }
 
-	const std::string& JobData::get_name() const
-	{
-		return name;
-	}
+    const std::string& JobData::get_name() const
+    {
+        return name;
+    }
 
-	const Texture& JobData::get_icon() const
-	{
-		return icon;
-	}
+    const Texture& JobData::get_icon() const
+    {
+        return icon;
+    }
 }

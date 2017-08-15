@@ -26,56 +26,56 @@
 
 namespace jrc
 {
-	class Clothing
-	{
-	public:
-		enum Layer
-		{
-			CAPE, SHOES, PANTS, TOP, MAIL, MAILARM,
-			EARRINGS, FACEACC, EYEACC, PENDANT, BELT, MEDAL, RING,
-			CAP, CAP_BELOW_BODY, CAP_OVER_HAIR,
-			GLOVE, WRIST, GLOVE_OVER_HAIR, WRIST_OVER_HAIR, GLOVE_OVER_BODY, WRIST_OVER_BODY,
-			SHIELD, BACKSHIELD, SHIELD_BELOW_BODY, SHIELD_OVER_HAIR,
-			WEAPON, BACKWEAPON, WEAPON_BELOW_ARM, WEAPON_BELOW_BODY,
-			WEAPON_OVER_HAND, WEAPON_OVER_BODY, WEAPON_OVER_GLOVE,
-			NUM_LAYERS
-		};
+    class Clothing
+    {
+    public:
+        enum Layer
+        {
+            CAPE, SHOES, PANTS, TOP, MAIL, MAILARM,
+            EARRINGS, FACEACC, EYEACC, PENDANT, BELT, MEDAL, RING,
+            CAP, CAP_BELOW_BODY, CAP_OVER_HAIR,
+            GLOVE, WRIST, GLOVE_OVER_HAIR, WRIST_OVER_HAIR, GLOVE_OVER_BODY, WRIST_OVER_BODY,
+            SHIELD, BACKSHIELD, SHIELD_BELOW_BODY, SHIELD_OVER_HAIR,
+            WEAPON, BACKWEAPON, WEAPON_BELOW_ARM, WEAPON_BELOW_BODY,
+            WEAPON_OVER_HAND, WEAPON_OVER_BODY, WEAPON_OVER_GLOVE,
+            NUM_LAYERS
+        };
 
-		// Construct a new equip.
-		Clothing(int32_t itemid, const BodyDrawinfo& drawinfo);
+        // Construct a new equip.
+        Clothing(int32_t itemid, const BodyDrawinfo& drawinfo);
 
-		// Draw the equip.
-		void draw(Stance::Id stance, Layer layer, uint8_t frame, const DrawArgument& args) const;
-		// Check if a part of the equip lies on the specified layer while in the specified stance.
-		bool contains_layer(Stance::Id stance, Layer layer) const;
+        // Draw the equip.
+        void draw(Stance::Id stance, Layer layer, uint8_t frame, const DrawArgument& args) const;
+        // Check if a part of the equip lies on the specified layer while in the specified stance.
+        bool contains_layer(Stance::Id stance, Layer layer) const;
 
-		// Return wether the equip is invisble.
-		bool is_transparent() const;
-		// Return wether this equip uses twohanded stances.
-		bool is_twohanded() const;
-		// Return the item id.
-		int32_t get_id() const;
-		// Return the equip slot for this cloth.
-		Equipslot::Id get_eqslot() const;
-		// Return the standing stance to use while equipped.
-		Stance::Id get_stand() const;
-		// Return the walking stance to use while equipped.
-		Stance::Id get_walk() const;
-		// Return the vslot, used to distinguish some layering types.
-		const std::string& get_vslot() const;
+        // Return wether the equip is invisble.
+        bool is_transparent() const;
+        // Return wether this equip uses twohanded stances.
+        bool is_twohanded() const;
+        // Return the item id.
+        int32_t get_id() const;
+        // Return the equip slot for this cloth.
+        Equipslot::Id get_eqslot() const;
+        // Return the standing stance to use while equipped.
+        Stance::Id get_stand() const;
+        // Return the walking stance to use while equipped.
+        Stance::Id get_walk() const;
+        // Return the vslot, used to distinguish some layering types.
+        const std::string& get_vslot() const;
 
-	private:
-		EnumMap<Stance::Id, EnumMap<Layer, std::unordered_multimap<uint8_t, Texture>, NUM_LAYERS>> stances;
-		int32_t itemid;
-		Equipslot::Id eqslot;
-		Stance::Id walk;
-		Stance::Id stand;
-		std::string vslot;
-		bool twohanded;
-		bool transparent;
+    private:
+        EnumMap<Stance::Id, EnumMap<Layer, std::unordered_multimap<uint8_t, Texture>, NUM_LAYERS>> stances;
+        int32_t itemid;
+        Equipslot::Id eqslot;
+        Stance::Id walk;
+        Stance::Id stand;
+        std::string vslot;
+        bool twohanded;
+        bool transparent;
 
 
-		static const std::unordered_map<std::string, Layer> sublayernames;
-	};
+        static const std::unordered_map<std::string, Layer> sublayernames;
+    };
 }
 

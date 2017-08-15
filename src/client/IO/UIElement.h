@@ -29,65 +29,65 @@
 
 namespace jrc
 {
-	// Base class for all types of user interfaces on screen.
-	class UIElement
-	{
-	public:
-		using UPtr = std::unique_ptr<UIElement>;
+    // Base class for all types of user interfaces on screen.
+    class UIElement
+    {
+    public:
+        using UPtr = std::unique_ptr<UIElement>;
 
-		enum Type
-		{
-			NONE,
-			LOGIN,
-			LOGINWAIT,
-			LOGINNOTICE,
-			WORLDSELECT,
-			CHARSELECT,
-			CHARCREATION,
-			SOFTKEYBOARD,
-			STATUSMESSENGER,
-			STATUSBAR,
-			BUFFLIST,
-			NOTICE,
-			NPCTALK,
-			SHOP,
-			STATSINFO,
-			ITEMINVENTORY,
-			EQUIPINVENTORY,
-			SKILLBOOK,
-			NUM_TYPES
-		};
+        enum Type
+        {
+            NONE,
+            LOGIN,
+            LOGINWAIT,
+            LOGINNOTICE,
+            WORLDSELECT,
+            CHARSELECT,
+            CHARCREATION,
+            SOFTKEYBOARD,
+            STATUSMESSENGER,
+            STATUSBAR,
+            BUFFLIST,
+            NOTICE,
+            NPCTALK,
+            SHOP,
+            STATSINFO,
+            ITEMINVENTORY,
+            EQUIPINVENTORY,
+            SKILLBOOK,
+            NUM_TYPES
+        };
 
-		virtual ~UIElement() {}
+        virtual ~UIElement() {}
 
-		virtual void draw(float inter) const;
-		virtual void update();
+        virtual void draw(float inter) const;
+        virtual void update();
 
-		void makeactive();
-		void deactivate();
-		bool is_active() const;
+        void makeactive();
+        void deactivate();
+        bool is_active() const;
 
-		virtual void toggle_active();
-		virtual Button::State button_pressed(uint16_t buttonid);
-		virtual void send_icon(const Icon& icon, Point<int16_t> cursorpos);
+        virtual void toggle_active();
+        virtual Button::State button_pressed(uint16_t buttonid);
+        virtual void send_icon(const Icon& icon, Point<int16_t> cursorpos);
 
-		virtual void doubleclick(Point<int16_t> cursorpos);
-		virtual bool is_in_range(Point<int16_t> cursorpos) const;
-		virtual bool remove_cursor(bool clicked, Point<int16_t> cursorpos);
-		virtual Cursor::State send_cursor(bool clicked, Point<int16_t> cursorpos);
+        virtual void doubleclick(Point<int16_t> cursorpos);
+        virtual bool is_in_range(Point<int16_t> cursorpos) const;
+        virtual bool remove_cursor(bool clicked, Point<int16_t> cursorpos);
+        virtual Cursor::State send_cursor(bool clicked, Point<int16_t> cursorpos);
 
-	protected:
-		UIElement(Point<int16_t> position, Point<int16_t> dimension, bool active);
-		UIElement(Point<int16_t> position, Point<int16_t> dimension);
-		UIElement();
+    protected:
+        UIElement(Point<int16_t> position, Point<int16_t> dimension, bool active);
+        UIElement(Point<int16_t> position, Point<int16_t> dimension);
+        UIElement();
 
-		void draw_sprites(float alpha) const;
-		void draw_buttons(float alpha) const;
+        void draw_sprites(float alpha) const;
+        void draw_buttons(float alpha) const;
 
-		std::map<uint16_t, std::unique_ptr<Button>> buttons;
-		std::vector<Sprite> sprites;
-		Point<int16_t> position;
-		Point<int16_t> dimension;
-		bool active;
-	};
+        std::map<uint16_t, std::unique_ptr<Button>> buttons;
+        std::vector<Sprite> sprites;
+        Point<int16_t> position;
+        Point<int16_t> dimension;
+        bool active;
+    };
 }

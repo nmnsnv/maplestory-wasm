@@ -23,49 +23,49 @@
 
 namespace jrc
 {
-	MapleFrame::MapleFrame(nl::node src)
-	{
-		center = src["c"];
-		east = src["e"];
-		northeast = src["ne"];
-		north = src["n"];
-		northwest = src["nw"];
-		west = src["w"];
-		southwest = src["sw"];
-		south = src["s"];
-		southeast = src["se"];
+    MapleFrame::MapleFrame(nl::node src)
+    {
+        center = src["c"];
+        east = src["e"];
+        northeast = src["ne"];
+        north = src["n"];
+        northwest = src["nw"];
+        west = src["w"];
+        southwest = src["sw"];
+        south = src["s"];
+        southeast = src["se"];
 
-		xtile = std::max<int16_t>(north.width(), 1);
-		ytile = std::max<int16_t>(west.height(), 1);
-	}
+        xtile = std::max<int16_t>(north.width(), 1);
+        ytile = std::max<int16_t>(west.height(), 1);
+    }
 
-	MapleFrame::MapleFrame() {}
+    MapleFrame::MapleFrame() {}
 
-	void MapleFrame::draw(Point<int16_t> position, int16_t rwidth, int16_t rheight) const
-	{
-		int16_t numhor = rwidth / xtile + 2;
-		int16_t numver = rheight / ytile;
-		int16_t width = numhor * xtile;
-		int16_t height = numver * ytile;
-		int16_t left = position.x() - width / 2;
-		int16_t top = position.y() - height;
-		int16_t right = left + width;
-		int16_t bottom = top + height;
+    void MapleFrame::draw(Point<int16_t> position, int16_t rwidth, int16_t rheight) const
+    {
+        int16_t numhor = rwidth / xtile + 2;
+        int16_t numver = rheight / ytile;
+        int16_t width = numhor * xtile;
+        int16_t height = numver * ytile;
+        int16_t left = position.x() - width / 2;
+        int16_t top = position.y() - height;
+        int16_t right = left + width;
+        int16_t bottom = top + height;
 
-		northwest.draw({ left, top });
-		southwest.draw({ left, bottom });
-		for (int16_t y = top; y < bottom; y += ytile)
-		{
-			west.draw({ left, y });
-			east.draw({ right, y });
-		}
-		center.draw({ { left, top }, { width, height } });
-		for (int16_t x = left; x < right; x += xtile)
-		{
-			north.draw({ x, top });
-			south.draw({ x, bottom });
-		}
-		northeast.draw({ right, top });
-		southeast.draw({ right, bottom });
-	}
+        northwest.draw({ left, top });
+        southwest.draw({ left, bottom });
+        for (int16_t y = top; y < bottom; y += ytile)
+        {
+            west.draw({ left, y });
+            east.draw({ right, y });
+        }
+        center.draw({ { left, top }, { width, height } });
+        for (int16_t x = left; x < right; x += xtile)
+        {
+            north.draw({ x, top });
+            south.draw({ x, bottom });
+        }
+        northeast.draw({ right, top });
+        southeast.draw({ right, bottom });
+    }
 }

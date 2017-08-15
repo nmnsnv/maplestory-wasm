@@ -24,63 +24,63 @@
 
 namespace jrc
 {
-	ItemTooltip::ItemTooltip()
-	{
-		nl::node itemtt = nl::nx::ui["UIToolTip.img"]["Item"];
+    ItemTooltip::ItemTooltip()
+    {
+        nl::node itemtt = nl::nx::ui["UIToolTip.img"]["Item"];
 
-		top = itemtt["Frame"]["top"];
-		mid = itemtt["Frame"]["line"];
-		line = itemtt["Frame"]["dotline"];
-		bot = itemtt["Frame"]["bottom"];
-		base = itemtt["ItemIcon"]["base"];
-		cover = itemtt["ItemIcon"]["cover"];
-		shade = itemtt["ItemIcon"]["shade"];
+        top = itemtt["Frame"]["top"];
+        mid = itemtt["Frame"]["line"];
+        line = itemtt["Frame"]["dotline"];
+        bot = itemtt["Frame"]["bottom"];
+        base = itemtt["ItemIcon"]["base"];
+        cover = itemtt["ItemIcon"]["cover"];
+        shade = itemtt["ItemIcon"]["shade"];
 
-		itemid = 0;
-	}
+        itemid = 0;
+    }
 
-	bool ItemTooltip::set_item(int32_t iid)
-	{
-		if (itemid == iid)
-			return false;
+    bool ItemTooltip::set_item(int32_t iid)
+    {
+        if (itemid == iid)
+            return false;
 
-		itemid = iid;
+        itemid = iid;
 
-		if (itemid == 0)
-			return false;
+        if (itemid == 0)
+            return false;
 
-		const ItemData& idata = ItemData::get(itemid);
+        const ItemData& idata = ItemData::get(itemid);
 
-		itemicon = idata.get_icon(false);
-		name = { Text::A12B, Text::CENTER, Text::WHITE, idata.get_name(), 240 };
-		desc = { Text::A12M, Text::LEFT, Text::WHITE, idata.get_desc(), 150 };
+        itemicon = idata.get_icon(false);
+        name = { Text::A12B, Text::CENTER, Text::WHITE, idata.get_name(), 240 };
+        desc = { Text::A12M, Text::LEFT, Text::WHITE, idata.get_desc(), 150 };
 
-		filllength = 81 + name.height();
-		int16_t descdelta = desc.height() - 80;
-		if (descdelta > 0)
-			filllength += descdelta;
+        filllength = 81 + name.height();
+        int16_t descdelta = desc.height() - 80;
+        if (descdelta > 0)
+            filllength += descdelta;
 
-		return true;
-	}
+        return true;
+    }
 
-	void ItemTooltip::draw(Point<int16_t> pos) const
-	{
-		if (itemid == 0)
-			return;
+    void ItemTooltip::draw(Point<int16_t> pos) const
+    {
+        if (itemid == 0)
+            return;
 
-		top.draw(pos);
-		mid.draw({ pos + Point<int16_t>(0, 13), Point<int16_t>(0, filllength) });
-		bot.draw(pos + Point<int16_t>(0, filllength + 13));
+        top.draw(pos);
+        mid.draw({ pos + Point<int16_t>(0, 13), Point<int16_t>(0, filllength) });
+        bot.draw(pos + Point<int16_t>(0, filllength + 13));
 
-		name.draw(pos + Point<int16_t>(130, 3));
+        name.draw(pos + Point<int16_t>(130, 3));
 
-		pos.shift_y(4 + name.height());
+        pos.shift_y(4 + name.height());
 
-		base.draw(pos + Point<int16_t>(10, 10));
-		shade.draw(pos + Point<int16_t>(10, 10));
-		itemicon.draw({ pos + Point<int16_t>(20, 82), 2.0f, 2.0f });
-		cover.draw(pos + Point<int16_t>(10, 10));
+        base.draw(pos + Point<int16_t>(10, 10));
+        shade.draw(pos + Point<int16_t>(10, 10));
+        itemicon.draw({ pos + Point<int16_t>(20, 82), 2.0f, 2.0f });
+        cover.draw(pos + Point<int16_t>(10, 10));
 
-		desc.draw(pos + Point<int16_t>(100, 6));
-	}
+        desc.draw(pos + Point<int16_t>(100, 6));
+    }
 }

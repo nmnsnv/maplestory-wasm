@@ -23,43 +23,43 @@
 
 namespace jrc
 {
-	// Class that represents an item loaded from the game's files. Contains all shared data between concrete items.
-	class ItemData : public Cache<ItemData>
-	{
-	public:
-		// Returns wether the item was loaded correctly.
-		bool is_valid() const;
-		// Returns wether the item was loaded correctly.
-		explicit operator bool() const;
+    // Class that represents an item loaded from the game's files. Contains all shared data between concrete items.
+    class ItemData : public Cache<ItemData>
+    {
+    public:
+        // Returns wether the item was loaded correctly.
+        bool is_valid() const;
+        // Returns wether the item was loaded correctly.
+        explicit operator bool() const;
 
-		// Returns the item id.
-		int32_t get_id() const;
-		// Returns the item price.
-		int32_t get_price() const;
-		// Returns the item's name loaded from the String.nx file.
-		const std::string& get_name() const;
-		// Returns the item's description loaded from the String.nx file.
-		const std::string& get_desc() const;
-		// Return the item category (also the node name).
-		const std::string& get_category() const;
-		// Returns one of the item's icons. For each item there is a 'raw' icon and an icon with a drop shadow.
-		const Texture& get_icon(bool raw) const;
+        // Returns the item id.
+        int32_t get_id() const;
+        // Returns the item price.
+        int32_t get_price() const;
+        // Returns the item's name loaded from the String.nx file.
+        const std::string& get_name() const;
+        // Returns the item's description loaded from the String.nx file.
+        const std::string& get_desc() const;
+        // Return the item category (also the node name).
+        const std::string& get_category() const;
+        // Returns one of the item's icons. For each item there is a 'raw' icon and an icon with a drop shadow.
+        const Texture& get_icon(bool raw) const;
 
-	private:
-		// Allow the cache to use the constructor.
-		friend Cache<ItemData>;
-		// Creates an item from the game's Item.nx with the specified id.
-		ItemData(int32_t itemid);
+    private:
+        // Allow the cache to use the constructor.
+        friend Cache<ItemData>;
+        // Creates an item from the game's Item.nx with the specified id.
+        ItemData(int32_t itemid);
 
-		std::string get_eqcategory(int32_t) const;
+        std::string get_eqcategory(int32_t) const;
 
-		BoolPair<Texture> icons;
-		int32_t itemid;
-		int32_t price;
-		std::string name;
-		std::string desc;
-		std::string category;
+        BoolPair<Texture> icons;
+        int32_t itemid;
+        int32_t price;
+        std::string name;
+        std::string desc;
+        std::string category;
 
-		bool valid;
-	};
+        bool valid;
+    };
 }

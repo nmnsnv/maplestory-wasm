@@ -20,61 +20,61 @@
 
 namespace jrc
 {
-	SocketAsio::SocketAsio() : resolver(ioservice), socket(ioservice) {}
+    SocketAsio::SocketAsio() : resolver(ioservice), socket(ioservice) {}
 
-	SocketAsio::~SocketAsio() 
-	{
-		if (socket.is_open())
-		{
-			error_code error;
-			socket.close(error);
-		}
-	}
+    SocketAsio::~SocketAsio() 
+    {
+        if (socket.is_open())
+        {
+            error_code error;
+            socket.close(error);
+        }
+    }
 
-	bool SocketAsio::open(const char* adress, const char* port)
-	{
-		tcp::resolver::query query(adress, port);
-		tcp::resolver::iterator endpointiter = resolver.resolve(query);
-		error_code error;
-		asio::connect(socket, endpointiter, error);
-		if (!error)
-		{
-			size_t result = socket.read_some(asio::buffer(buffer), error);
-			return !error && (result == HANDSHAKE_LEN);
-		}
-		return !error;
-	}
+    bool SocketAsio::open(const char* adress, const char* port)
+    {
+        tcp::resolver::query query(adress, port);
+        tcp::resolver::iterator endpointiter = resolver.resolve(query);
+        error_code error;
+        asio::connect(socket, endpointiter, error);
+        if (!error)
+        {
+            size_t result = socket.read_some(asio::buffer(buffer), error);
+            return !error && (result == HANDSHAKE_LEN);
+        }
+        return !error;
+    }
 
-	bool SocketAsio::close()
-	{
-		error_code error;
-		socket.shutdown(tcp::socket::shutdown_both, error);
-		socket.close(error);
-		return !error;
-	}
+    bool SocketAsio::close()
+    {
+        error_code error;
+        socket.shutdown(tcp::socket::shutdown_both, error);
+        socket.close(error);
+        return !error;
+    }
 
-	size_t SocketAsio::receive(bool* recvok)
-	{
-		if (socket.available() > 0)
-		{
-			error_code error;
-			size_t result = socket.read_some(asio::buffer(buffer), error);
-			*recvok = !error;
-			return result;
-		}
-		return 0;
-	}
+    size_t SocketAsio::receive(bool* recvok)
+    {
+        if (socket.available() > 0)
+        {
+            error_code error;
+            size_t result = socket.read_some(asio::buffer(buffer), error);
+            *recvok = !error;
+            return result;
+        }
+        return 0;
+    }
 
-	const int8_t* SocketAsio::get_buffer() const
-	{
-		return buffer;
-	}
+    const int8_t* SocketAsio::get_buffer() const
+    {
+        return buffer;
+    }
 
-	bool SocketAsio::dispatch(const int8_t* bytes, size_t length)
-	{
-		error_code error;
-		size_t result = asio::write(socket, asio::buffer(bytes, length), error);
-		return !error && (result == length);
-	}
+    bool SocketAsio::dispatch(const int8_t* bytes, size_t length)
+    {
+        error_code error;
+        size_t result = asio::write(socket, asio::buffer(bytes, length), error);
+        return !error && (result == length);
+    }
 }
 #endif

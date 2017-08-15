@@ -19,13 +19,13 @@
 
 namespace jrc
 {
-	void Telerock::addlocation(int32_t mapid)
-	{
-		locations.push_back(mapid);
-	}
+    void Telerock::addlocation(int32_t mapid)
+    {
+        locations.push_back(mapid);
+    }
 
-	void Telerock::addviplocation(int32_t mapid)
-	{
-		viplocations.push_back(mapid);
-	}
+    void Telerock::addviplocation(int32_t mapid)
+    {
+        viplocations.push_back(mapid);
+    }
 }

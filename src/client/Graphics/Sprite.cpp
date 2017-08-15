@@ -19,30 +19,30 @@
 
 namespace jrc
 {
-	Sprite::Sprite(const Animation& a, const DrawArgument& args)
-		: animation(a), stateargs(args) {}
+    Sprite::Sprite(const Animation& a, const DrawArgument& args)
+        : animation(a), stateargs(args) {}
 
-	Sprite::Sprite(nl::node src, const DrawArgument& args)
-		: animation(src), stateargs(args) {}
+    Sprite::Sprite(nl::node src, const DrawArgument& args)
+        : animation(src), stateargs(args) {}
 
-	Sprite::Sprite(nl::node src)
-		: Sprite(src, {}) {}
+    Sprite::Sprite(nl::node src)
+        : Sprite(src, {}) {}
 
-	Sprite::Sprite() {}
+    Sprite::Sprite() {}
 
-	void Sprite::draw(Point<int16_t> parentpos, float alpha) const
-	{
-		auto absargs = stateargs + parentpos;
-		animation.draw(absargs, alpha);
-	}
+    void Sprite::draw(Point<int16_t> parentpos, float alpha) const
+    {
+        auto absargs = stateargs + parentpos;
+        animation.draw(absargs, alpha);
+    }
 
-	bool Sprite::update(uint16_t timestep)
-	{
-		return animation.update(timestep);
-	}
+    bool Sprite::update(uint16_t timestep)
+    {
+        return animation.update(timestep);
+    }
 
-	bool Sprite::update()
-	{
-		return animation.update();
-	}
+    bool Sprite::update()
+    {
+        return animation.update();
+    }
 }

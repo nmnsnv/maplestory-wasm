@@ -28,89 +28,89 @@
 
 namespace jrc
 {
-	UIWorldSelect::UIWorldSelect(std::vector<World> worlds, uint8_t worldcount)
-		: UIElement({ 0, 0 }, { 800, 600 }) {
+    UIWorldSelect::UIWorldSelect(std::vector<World> worlds, uint8_t worldcount)
+        : UIElement({ 0, 0 }, { 800, 600 }) {
 
-		worldid = Setting<DefaultWorld>::get().load();
-		channelid = Setting<DefaultChannel>::get().load();
+        worldid = Setting<DefaultWorld>::get().load();
+        channelid = Setting<DefaultChannel>::get().load();
 
-		nl::node back = nl::nx::map["Back"]["login.img"]["back"];
-		nl::node worldsrc = nl::nx::ui["Login.img"]["WorldSelect"]["BtWorld"]["release"];
-		nl::node channelsrc = nl::nx::ui["Login.img"]["WorldSelect"]["BtChannel"];
-		nl::node frame = nl::nx::ui["Login.img"]["Common"]["frame"];
+        nl::node back = nl::nx::map["Back"]["login.img"]["back"];
+        nl::node worldsrc = nl::nx::ui["Login.img"]["WorldSelect"]["BtWorld"]["release"];
+        nl::node channelsrc = nl::nx::ui["Login.img"]["WorldSelect"]["BtChannel"];
+        nl::node frame = nl::nx::ui["Login.img"]["Common"]["frame"];
 
-		sprites.emplace_back(back["11"], Point<int16_t>(370, 300));
-		sprites.emplace_back(worldsrc["layer:bg"], Point<int16_t>(650, 45));
-		sprites.emplace_back(frame, Point<int16_t>(400, 290));
+        sprites.emplace_back(back["11"], Point<int16_t>(370, 300));
+        sprites.emplace_back(worldsrc["layer:bg"], Point<int16_t>(650, 45));
+        sprites.emplace_back(frame, Point<int16_t>(400, 290));
 
-		buttons[BT_ENTERWORLD] = std::make_unique<MapleButton>(
-			channelsrc["button:GoWorld"], 
-			Point<int16_t>(200, 170)
-			);
+        buttons[BT_ENTERWORLD] = std::make_unique<MapleButton>(
+            channelsrc["button:GoWorld"], 
+            Point<int16_t>(200, 170)
+            );
 
-		if (worldcount <= 0)
-			return;
+        if (worldcount <= 0)
+            return;
 
-		const World& world = worlds.front();
+        const World& world = worlds.front();
 
-		buttons[BT_WORLD0] = std::make_unique<MapleButton>(worldsrc["button:15"], Point<int16_t>(650, 20));
-		buttons[BT_WORLD0]->set_state(Button::PRESSED);
+        buttons[BT_WORLD0] = std::make_unique<MapleButton>(worldsrc["button:15"], Point<int16_t>(650, 20));
+        buttons[BT_WORLD0]->set_state(Button::PRESSED);
 
-		sprites.emplace_back(channelsrc["layer:bg"], Point<int16_t>(200, 170));
-		sprites.emplace_back(channelsrc["release"]["layer:15"], Point<int16_t>(200, 170));
+        sprites.emplace_back(channelsrc["layer:bg"], Point<int16_t>(200, 170));
+        sprites.emplace_back(channelsrc["release"]["layer:15"], Point<int16_t>(200, 170));
 
-		if (channelid >= world.channelcount)
-			channelid = 0;
+        if (channelid >= world.channelcount)
+            channelid = 0;
 
-		for (uint8_t i = 0; i < world.channelcount; ++i)
-		{
-			nl::node chnode = channelsrc["button:" + std::to_string(i)];
-			buttons[BT_CHANNEL0 + i] = std::make_unique<TwoSpriteButton>(
-				chnode["normal"]["0"], chnode["keyFocused"]["0"],
-				Point<int16_t>(200, 170)
-				);
-			if (i == channelid)
-				buttons[BT_CHANNEL0 + i]->set_state(Button::PRESSED);
-		}
-	}
+        for (uint8_t i = 0; i < world.channelcount; ++i)
+        {
+            nl::node chnode = channelsrc["button:" + std::to_string(i)];
+            buttons[BT_CHANNEL0 + i] = std::make_unique<TwoSpriteButton>(
+                chnode["normal"]["0"], chnode["keyFocused"]["0"],
+                Point<int16_t>(200, 170)
+                );
+            if (i == channelid)
+                buttons[BT_CHANNEL0 + i]->set_state(Button::PRESSED);
+        }
+    }
 
-	void UIWorldSelect::draw(float alpha) const
-	{
-		UIElement::draw(alpha);
-	}
+    void UIWorldSelect::draw(float alpha) const
+    {
+        UIElement::draw(alpha);
+    }
 
-	uint8_t UIWorldSelect::get_world_id() const
-	{
-		return worldid;
-	}
+    uint8_t UIWorldSelect::get_world_id() const
+    {
+        return worldid;
+    }
 
-	uint8_t UIWorldSelect::get_channel_id() const
-	{
-		return channelid;
-	}
+    uint8_t UIWorldSelect::get_channel_id() const
+    {
+        return channelid;
+    }
 
-	Button::State UIWorldSelect::button_pressed(uint16_t id)
-	{
-		if (id == BT_ENTERWORLD)
-		{
-			UI::get().disable();
+    Button::State UIWorldSelect::button_pressed(uint16_t id)
+    {
+        if (id == BT_ENTERWORLD)
+        {
+            UI::get().disable();
 
-			CharlistRequestPacket(worldid, channelid)
-				.dispatch();
+            CharlistRequestPacket(worldid, channelid)
+                .dispatch();
 
-			return Button::PRESSED;
-		}
-		else if (id >= BT_WORLD0 && id < BT_CHANNEL0)
-		{
-			buttons[BT_WORLD0 + worldid]->set_state(Button::NORMAL);
-			worldid = static_cast<uint8_t>(id - BT_WORLD0);
-			return Button::PRESSED;
-		}
-		else
-		{
-			buttons[BT_CHANNEL0 + channelid]->set_state(Button::NORMAL);
-			channelid = static_cast<uint8_t>(id - BT_CHANNEL0);
-			return Button::PRESSED;
-		}
-	}
+            return Button::PRESSED;
+        }
+        else if (id >= BT_WORLD0 && id < BT_CHANNEL0)
+        {
+            buttons[BT_WORLD0 + worldid]->set_state(Button::NORMAL);
+            worldid = static_cast<uint8_t>(id - BT_WORLD0);
+            return Button::PRESSED;
+        }
+        else
+        {
+            buttons[BT_CHANNEL0 + channelid]->set_state(Button::NORMAL);
+            channelid = static_cast<uint8_t>(id - BT_CHANNEL0);
+            return Button::PRESSED;
+        }
+    }
 }

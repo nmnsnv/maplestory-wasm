@@ -20,24 +20,24 @@
 
 namespace jrc
 {
-	class Gauge
-	{
-	public:
-		Gauge(Texture front, Texture mid, Texture end, int16_t maximum, float percentage);
-		Gauge();
+    class Gauge
+    {
+    public:
+        Gauge(Texture front, Texture mid, Texture end, int16_t maximum, float percentage);
+        Gauge();
 
-		void draw(const DrawArgument& args) const;
-		void update(float target);
+        void draw(const DrawArgument& args) const;
+        void update(float target);
 
-	private:
-		Texture barfront;
-		Texture barmid;
-		Texture barend;
-		int16_t maximum;
+    private:
+        Texture barfront;
+        Texture barmid;
+        Texture barend;
+        int16_t maximum;
 
-		float percentage;
-		float target;
-		float step;
-	};
+        float percentage;
+        float target;
+        float step;
+    };
 }
 

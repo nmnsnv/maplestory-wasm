@@ -21,37 +21,37 @@
 
 namespace jrc
 {
-	InventoryType::Id InventoryType::by_item_id(int32_t item_id)
-	{
-		constexpr Id values_by_id[6] =
-		{
-			NONE, EQUIP, USE, SETUP, ETC, CASH
-		};
+    InventoryType::Id InventoryType::by_item_id(int32_t item_id)
+    {
+        constexpr Id values_by_id[6] =
+        {
+            NONE, EQUIP, USE, SETUP, ETC, CASH
+        };
 
-		int32_t prefix = item_id / 1000000;
-		return (prefix > NONE && prefix <= CASH) ? values_by_id[prefix] : NONE;
-	}
+        int32_t prefix = item_id / 1000000;
+        return (prefix > NONE && prefix <= CASH) ? values_by_id[prefix] : NONE;
+    }
 
-	InventoryType::Id InventoryType::by_value(int8_t value)
-	{
-		switch (value)
-		{
-		case -1:
-			return EQUIPPED;
-		case 1:
-			return EQUIP;
-		case 2:
-			return USE;
-		case 3:
-			return SETUP;
-		case 4:
-			return ETC;
-		case 5:
-			return CASH;
-		}
+    InventoryType::Id InventoryType::by_value(int8_t value)
+    {
+        switch (value)
+        {
+        case -1:
+            return EQUIPPED;
+        case 1:
+            return EQUIP;
+        case 2:
+            return USE;
+        case 3:
+            return SETUP;
+        case 4:
+            return ETC;
+        case 5:
+            return CASH;
+        }
 
-		Console::get()
-			.print("Unknown inventory type: " + std::to_string(value));
-		return NONE;
-	}
+        Console::get()
+            .print("Unknown inventory type: " + std::to_string(value));
+        return NONE;
+    }
 }

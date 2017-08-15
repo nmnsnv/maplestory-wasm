@@ -20,9 +20,9 @@
 
 namespace jrc
 {
-	namespace ExpTable
-	{
-		constexpr size_t LEVELCAP = 201;
-		extern const std::array<int64_t, LEVELCAP> values;
-	}
+    namespace ExpTable
+    {
+        constexpr size_t LEVELCAP = 201;
+        extern const std::array<int64_t, LEVELCAP> values;
+    }
 }

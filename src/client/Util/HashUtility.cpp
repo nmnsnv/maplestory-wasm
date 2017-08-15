@@ -25,73 +25,73 @@
 
 namespace jrc
 {
-	namespace HashUtility
-	{
-		// 128 MB.
-		const size_t CHUNK_SIZE = 134217728;
+    namespace HashUtility
+    {
+        // 128 MB.
+        const size_t CHUNK_SIZE = 134217728;
 
-		std::string get_filehash(const char* filename, uint64_t seed)
-		{
-			// Open file stream.
-			std::ifstream file(filename);
+        std::string get_filehash(const char* filename, uint64_t seed)
+        {
+            // Open file stream.
+            std::ifstream file(filename);
 
-			uint64_t result;
-			if (file.good())
-			{
-				// Get size of file.
-				file.seekg(0, std::ios_base::end);
-				size_t end = file.tellg();
-				file.seekg(0, std::ios_base::beg);
+            uint64_t result;
+            if (file.good())
+            {
+                // Get size of file.
+                file.seekg(0, std::ios_base::end);
+                size_t end = file.tellg();
+                file.seekg(0, std::ios_base::beg);
 
-				if (end < CHUNK_SIZE)
-				{
-					// File size is smaller than chunk size so process all at once.
-					char* buffer = new char[end];
-					file.read(buffer, end);
-					result = XXH64(buffer, end, seed);
-					delete[] buffer;
-				}
-				else
-				{
-					// Read file in chunks instead.
-					char* buffer = new char[CHUNK_SIZE];
-					XXH64_state_t xxhstate;
-					XXH_errorcode error;
+                if (end < CHUNK_SIZE)
+                {
+                    // File size is smaller than chunk size so process all at once.
+                    char* buffer = new char[end];
+                    file.read(buffer, end);
+                    result = XXH64(buffer, end, seed);
+                    delete[] buffer;
+                }
+                else
+                {
+                    // Read file in chunks instead.
+                    char* buffer = new char[CHUNK_SIZE];
+                    XXH64_state_t xxhstate;
+                    XXH_errorcode error;
 
-					error = XXH64_reset(&xxhstate, seed);
-					size_t offset = 0;
-					while (offset < end && error == XXH_OK)
-					{
-						file.read(buffer, CHUNK_SIZE);
-						error = XXH64_update(&xxhstate, buffer, CHUNK_SIZE);
-						offset += CHUNK_SIZE;
-					}
-					size_t remaining = offset - end;
-					if (remaining > 0)
-					{
-						file.read(buffer, CHUNK_SIZE);
-						error = XXH64_update(&xxhstate, buffer, remaining);
-					}
+                    error = XXH64_reset(&xxhstate, seed);
+                    size_t offset = 0;
+                    while (offset < end && error == XXH_OK)
+                    {
+                        file.read(buffer, CHUNK_SIZE);
+                        error = XXH64_update(&xxhstate, buffer, CHUNK_SIZE);
+                        offset += CHUNK_SIZE;
+                    }
+                    size_t remaining = offset - end;
+                    if (remaining > 0)
+                    {
+                        file.read(buffer, CHUNK_SIZE);
+                        error = XXH64_update(&xxhstate, buffer, remaining);
+                    }
 
-					if (error == XXH_OK)
-					{
-						result = XXH64_digest(&xxhstate);
-					}
-					else
-					{
-						result = 0;
-					}
-					delete[] buffer;
-				}
-			}
-			else
-			{
-				result = 0;
-			}
+                    if (error == XXH_OK)
+                    {
+                        result = XXH64_digest(&xxhstate);
+                    }
+                    else
+                    {
+                        result = 0;
+                    }
+                    delete[] buffer;
+                }
+            }
+            else
+            {
+                result = 0;
+            }
 
-			file.close();
-			return std::to_string(result);
-		}
-	}
+            file.close();
+            return std::to_string(result);
+        }
+    }
 }
 #endif

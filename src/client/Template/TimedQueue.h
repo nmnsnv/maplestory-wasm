@@ -24,65 +24,65 @@
 
 namespace jrc
 {
-	template <typename T>
-	class TimedQueue
-	{
-	public:
-		TimedQueue(std::function<void(const T&)> in_action)
-			: action(in_action) {
+    template <typename T>
+    class TimedQueue
+    {
+    public:
+        TimedQueue(std::function<void(const T&)> in_action)
+            : action(in_action) {
 
-			time = 0;
-		}
+            time = 0;
+        }
 
-		void push(int64_t delay, const T& t)
-		{
-			queue.emplace(time + delay, t);
-		}
+        void push(int64_t delay, const T& t)
+        {
+            queue.emplace(time + delay, t);
+        }
 
-		template <typename...Args>
-		void emplace(int64_t delay, Args&&...args)
-		{
-			queue.emplace(time + delay, std::move(args)...);
-		}
+        template <typename...Args>
+        void emplace(int64_t delay, Args&&...args)
+        {
+            queue.emplace(time + delay, std::move(args)...);
+        }
 
-		void update(int64_t timestep = Constants::TIMESTEP)
-		{
-			time += timestep;
+        void update(int64_t timestep = Constants::TIMESTEP)
+        {
+            time += timestep;
 
-			for (; !queue.empty(); queue.pop())
-			{
-				const Timed& top = queue.top();
-				if (top.when > time)
-					break;
+            for (; !queue.empty(); queue.pop())
+            {
+                const Timed& top = queue.top();
+                if (top.when > time)
+                    break;
 
-				action(top.value);
-			}
-		}
+                action(top.value);
+            }
+        }
 
-	private:
-		struct Timed
-		{
-			T value;
-			int64_t when;
+    private:
+        struct Timed
+        {
+            T value;
+            int64_t when;
 
-			Timed(int64_t w, const T& v)
-				: when{ w }, value{ v } {}
+            Timed(int64_t w, const T& v)
+                : when{ w }, value{ v } {}
 
-			template <typename...Args>
-			Timed(int64_t w, Args&&...args)
-				: when{ w }, value{ std::forward<Args>(args)... } {}
-		};
+            template <typename...Args>
+            Timed(int64_t w, Args&&...args)
+                : when{ w }, value{ std::forward<Args>(args)... } {}
+        };
 
-		struct TimedComparator
-		{
-			bool operator ()(const Timed& a, const Timed& b) const
-			{
-				return a.when > b.when;
-			}
-		};
+        struct TimedComparator
+        {
+            bool operator ()(const Timed& a, const Timed& b) const
+            {
+                return a.when > b.when;
+            }
+        };
 
-		std::priority_queue<Timed, std::vector<Timed>, TimedComparator> queue;
-		std::function<void(const T&)> action;
-		int64_t time;
-	};
+        std::priority_queue<Timed, std::vector<Timed>, TimedComparator> queue;
+        std::function<void(const T&)> action;
+        int64_t time;
+    };
 }

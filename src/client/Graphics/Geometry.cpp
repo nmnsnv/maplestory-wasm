@@ -21,115 +21,115 @@
 
 namespace jrc
 {
-	void Geometry::draw(int16_t x, int16_t y, int16_t w, int16_t h, Geometry::Color cid, float opacity) const
-	{
-		if (w == 0 || h == 0 || opacity <= 0.0f)
-			return;
+    void Geometry::draw(int16_t x, int16_t y, int16_t w, int16_t h, Geometry::Color cid, float opacity) const
+    {
+        if (w == 0 || h == 0 || opacity <= 0.0f)
+            return;
 
-		constexpr float colors[NUM_COLORS][3] =
-		{
-			{ 0.0f, 0.0f, 0.0f }, // Black
-			{ 1.0f, 1.0f, 1.0f }, // White
-			{ 0.0f, 1.0f, 0.0f }, // Mob-hp-bar lightgreen
-			{ 0.0f, 0.75f, 0.0f }, // Mob-hp-bar green
-			{ 0.0f, 0.5f, 0.0f } // Mob-hp-bar darkgreen
-		};
-		const float* color = colors[cid];
+        constexpr float colors[NUM_COLORS][3] =
+        {
+            { 0.0f, 0.0f, 0.0f }, // Black
+            { 1.0f, 1.0f, 1.0f }, // White
+            { 0.0f, 1.0f, 0.0f }, // Mob-hp-bar lightgreen
+            { 0.0f, 0.75f, 0.0f }, // Mob-hp-bar green
+            { 0.0f, 0.5f, 0.0f } // Mob-hp-bar darkgreen
+        };
+        const float* color = colors[cid];
 
-		GraphicsGL::get().drawrectangle(x, y, w, h, color[0], color[1], color[2], opacity);
-	}
-
-
-	ColorBox::ColorBox(int16_t w, int16_t h, Geometry::Color c, float o)
-		: width(w), height(h), color(c), opacity(o) {}
-
-	ColorBox::ColorBox()
-		: ColorBox(0, 0, Geometry::BLACK, 0.0f) {}
-
-	void ColorBox::setwidth(int16_t w)
-	{
-		width = w;
-	}
-
-	void ColorBox::setheight(int16_t h)
-	{
-		height = h;
-	}
-
-	void ColorBox::set_color(Geometry::Color c)
-	{
-		color = c;
-	}
-
-	void ColorBox::setopacity(float o)
-	{
-		opacity = o;
-	}
-
-	void ColorBox::draw(const DrawArgument& args) const
-	{
-		Point<int16_t> absp = args.getpos();
-		int16_t absw = args.getstretch().x();
-		if (absw == 0)
-			absw = width;
-		int16_t absh = args.getstretch().y();
-		if (absh == 0)
-			absh = height;
-		absw = static_cast<int16_t>(absw * args.get_xscale());
-		absh = static_cast<int16_t>(absh * args.get_yscale());
-		float absopc = opacity * args.get_color().a();
-		Geometry::draw(absp.x(), absp.y(), absw, absh, color, absopc);
-	}
+        GraphicsGL::get().drawrectangle(x, y, w, h, color[0], color[1], color[2], opacity);
+    }
 
 
-	ColorLine::ColorLine(int16_t w, Geometry::Color c, float o)
-		: width(w), color(c), opacity(o) {}
+    ColorBox::ColorBox(int16_t w, int16_t h, Geometry::Color c, float o)
+        : width(w), height(h), color(c), opacity(o) {}
 
-	ColorLine::ColorLine()
-		: ColorLine(0, Geometry::BLACK, 0.0f) {}
+    ColorBox::ColorBox()
+        : ColorBox(0, 0, Geometry::BLACK, 0.0f) {}
 
-	void ColorLine::setwidth(int16_t w)
-	{
-		width = w;
-	}
+    void ColorBox::setwidth(int16_t w)
+    {
+        width = w;
+    }
 
-	void ColorLine::set_color(Geometry::Color c)
-	{
-		color = c;
-	}
+    void ColorBox::setheight(int16_t h)
+    {
+        height = h;
+    }
 
-	void ColorLine::setopacity(float o)
-	{
-		opacity = o;
-	}
+    void ColorBox::set_color(Geometry::Color c)
+    {
+        color = c;
+    }
 
-	void ColorLine::draw(const DrawArgument& args) const
-	{
-		Point<int16_t> absp = args.getpos();
-		int16_t absw = args.getstretch().x();
-		if (absw == 0)
-			absw = width;
-		int16_t absh = args.getstretch().y();
-		if (absh == 0)
-			absh = 1;
-		absw = static_cast<int16_t>(absw * args.get_xscale());
-		absh = static_cast<int16_t>(absh * args.get_yscale());
-		float absopc = opacity * args.get_color().a();
-		Geometry::draw(absp.x(), absp.y(), absw, absh, color, absopc);
-	}
+    void ColorBox::setopacity(float o)
+    {
+        opacity = o;
+    }
+
+    void ColorBox::draw(const DrawArgument& args) const
+    {
+        Point<int16_t> absp = args.getpos();
+        int16_t absw = args.getstretch().x();
+        if (absw == 0)
+            absw = width;
+        int16_t absh = args.getstretch().y();
+        if (absh == 0)
+            absh = height;
+        absw = static_cast<int16_t>(absw * args.get_xscale());
+        absh = static_cast<int16_t>(absh * args.get_yscale());
+        float absopc = opacity * args.get_color().a();
+        Geometry::draw(absp.x(), absp.y(), absw, absh, color, absopc);
+    }
 
 
-	void MobHpBar::draw(Point<int16_t> position, int16_t hppercent) const
-	{
-		int16_t fillw = static_cast<int16_t>((WIDTH - 6) * static_cast<float>(hppercent) / 100);
-		int16_t x = position.x() - WIDTH / 2;
-		int16_t y = position.y() - HEIGHT * 3;
-		Geometry::draw(x, y, WIDTH, HEIGHT, BLACK, 1.0f);
-		Geometry::draw(x + 1, y + 1, WIDTH - 2, 1, WHITE, 1.0f);
-		Geometry::draw(x + 1, y + HEIGHT - 2, WIDTH - 2, 1, WHITE, 1.0f);
-		Geometry::draw(x + 1, y + 2, 1, HEIGHT - 4, WHITE, 1.0f);
-		Geometry::draw(x + WIDTH - 2, y + 2, 1, HEIGHT - 4, WHITE, 1.0f);
-		Geometry::draw(x + 3, y + 3, fillw, 3, HPBAR_LIGHTGREEN, 1.0f);
-		Geometry::draw(x + 3, y + 6, fillw, 1, HPBAR_DARKGREEN, 1.0f);
-	}
+    ColorLine::ColorLine(int16_t w, Geometry::Color c, float o)
+        : width(w), color(c), opacity(o) {}
+
+    ColorLine::ColorLine()
+        : ColorLine(0, Geometry::BLACK, 0.0f) {}
+
+    void ColorLine::setwidth(int16_t w)
+    {
+        width = w;
+    }
+
+    void ColorLine::set_color(Geometry::Color c)
+    {
+        color = c;
+    }
+
+    void ColorLine::setopacity(float o)
+    {
+        opacity = o;
+    }
+
+    void ColorLine::draw(const DrawArgument& args) const
+    {
+        Point<int16_t> absp = args.getpos();
+        int16_t absw = args.getstretch().x();
+        if (absw == 0)
+            absw = width;
+        int16_t absh = args.getstretch().y();
+        if (absh == 0)
+            absh = 1;
+        absw = static_cast<int16_t>(absw * args.get_xscale());
+        absh = static_cast<int16_t>(absh * args.get_yscale());
+        float absopc = opacity * args.get_color().a();
+        Geometry::draw(absp.x(), absp.y(), absw, absh, color, absopc);
+    }
+
+
+    void MobHpBar::draw(Point<int16_t> position, int16_t hppercent) const
+    {
+        int16_t fillw = static_cast<int16_t>((WIDTH - 6) * static_cast<float>(hppercent) / 100);
+        int16_t x = position.x() - WIDTH / 2;
+        int16_t y = position.y() - HEIGHT * 3;
+        Geometry::draw(x, y, WIDTH, HEIGHT, BLACK, 1.0f);
+        Geometry::draw(x + 1, y + 1, WIDTH - 2, 1, WHITE, 1.0f);
+        Geometry::draw(x + 1, y + HEIGHT - 2, WIDTH - 2, 1, WHITE, 1.0f);
+        Geometry::draw(x + 1, y + 2, 1, HEIGHT - 4, WHITE, 1.0f);
+        Geometry::draw(x + WIDTH - 2, y + 2, 1, HEIGHT - 4, WHITE, 1.0f);
+        Geometry::draw(x + 3, y + 3, fillw, 3, HPBAR_LIGHTGREEN, 1.0f);
+        Geometry::draw(x + 3, y + 6, fillw, 1, HPBAR_DARKGREEN, 1.0f);
+    }
 }

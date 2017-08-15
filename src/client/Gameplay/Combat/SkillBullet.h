@@ -23,56 +23,56 @@
 
 namespace jrc
 {
-	class SkillBullet
-	{
-	public:
-		virtual ~SkillBullet() {}
+    class SkillBullet
+    {
+    public:
+        virtual ~SkillBullet() {}
 
-		virtual Animation get(const Char& user, int32_t bulletid) const = 0;
+        virtual Animation get(const Char& user, int32_t bulletid) const = 0;
 
-	protected:
-		struct Ball
-		{
-			Animation animation;
+    protected:
+        struct Ball
+        {
+            Animation animation;
 
-			Ball(nl::node src)
-			{
-				animation = src;
-			}
+            Ball(nl::node src)
+            {
+                animation = src;
+            }
 
-			Ball() {}
-		};
-	};
-
-
-	class RegularBullet : public SkillBullet
-	{
-	public:
-		Animation get(const Char& user, int32_t bulletid) const override;
-	};
+            Ball() {}
+        };
+    };
 
 
-	class SingleBullet : public SkillBullet
-	{
-	public:
-		SingleBullet(nl::node src);
-
-		Animation get(const Char& user, int32_t bulletid) const override;
-
-	private:
-		Ball ball;
-	};
+    class RegularBullet : public SkillBullet
+    {
+    public:
+        Animation get(const Char& user, int32_t bulletid) const override;
+    };
 
 
-	class BySkillLevelBullet : public SkillBullet
-	{
-	public:
-		BySkillLevelBullet(nl::node src, int32_t skillid);
+    class SingleBullet : public SkillBullet
+    {
+    public:
+        SingleBullet(nl::node src);
 
-		Animation get(const Char& user, int32_t bulletid) const override;
+        Animation get(const Char& user, int32_t bulletid) const override;
 
-	private:
-		std::unordered_map<int32_t, Ball> bullets;
-		int32_t skillid;
-	};
+    private:
+        Ball ball;
+    };
+
+
+    class BySkillLevelBullet : public SkillBullet
+    {
+    public:
+        BySkillLevelBullet(nl::node src, int32_t skillid);
+
+        Animation get(const Char& user, int32_t bulletid) const override;
+
+    private:
+        std::unordered_map<int32_t, Ball> bullets;
+        int32_t skillid;
+    };
 }

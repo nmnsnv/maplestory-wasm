@@ -20,30 +20,30 @@
 
 namespace jrc
 {
-	namespace KeyType
-	{
-		// Keytypes determine how a keycode is interpreted.
-		enum Id
-		{
-			NONE = 0,
-			SKILL = 1,
-			ITEM = 2,
-			CASH = 3,
-			MENU = 4,
-			ACTION = 5,
-			FACE = 6,
-			MACRO = 8,
-			LETTER = 9,
-			NUMBER = 10,
-			LENGTH
-		};
+    namespace KeyType
+    {
+        // Keytypes determine how a keycode is interpreted.
+        enum Id
+        {
+            NONE = 0,
+            SKILL = 1,
+            ITEM = 2,
+            CASH = 3,
+            MENU = 4,
+            ACTION = 5,
+            FACE = 6,
+            MACRO = 8,
+            LETTER = 9,
+            NUMBER = 10,
+            LENGTH
+        };
 
-		inline Id typebyid(uint8_t id)
-		{
-			if (id <= NONE || id >= LENGTH)
-				return NONE;
+        inline Id typebyid(uint8_t id)
+        {
+            if (id <= NONE || id >= LENGTH)
+                return NONE;
 
-			return static_cast<Id>(id);
-		}
-	}
+            return static_cast<Id>(id);
+        }
+    }
 }

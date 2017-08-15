@@ -31,83 +31,83 @@
 
 namespace jrc
 {
-	class UI : public Singleton<UI>
-	{
-	public:
-		enum State
-		{
-			LOGIN,
-			GAME
-		};
+    class UI : public Singleton<UI>
+    {
+    public:
+        enum State
+        {
+            LOGIN,
+            GAME
+        };
 
-		UI();
+        UI();
 
-		void init();
-		void draw(float alpha) const;
-		void update();
+        void init();
+        void draw(float alpha) const;
+        void update();
 
-		void enable();
-		void disable();
-		void change_state(State state);
+        void enable();
+        void disable();
+        void change_state(State state);
 
-		void quit();
-		bool not_quitted() const;
+        void quit();
+        bool not_quitted() const;
 
-		void send_cursor(Point<int16_t> pos);
-		void send_cursor(bool pressed);
-		void send_cursor(Point<int16_t> cursorpos, Cursor::State cursorstate);
-		void doubleclick();
-		void send_key(int32_t keycode, bool pressed);
-		void send_menu(KeyAction::Id action);
+        void send_cursor(Point<int16_t> pos);
+        void send_cursor(bool pressed);
+        void send_cursor(Point<int16_t> cursorpos, Cursor::State cursorstate);
+        void doubleclick();
+        void send_key(int32_t keycode, bool pressed);
+        void send_menu(KeyAction::Id action);
 
-		void set_scrollnotice(const std::string& notice);
-		void focus_textfield(Textfield* textfield);
-		void drag_icon(Icon* icon);
+        void set_scrollnotice(const std::string& notice);
+        void focus_textfield(Textfield* textfield);
+        void drag_icon(Icon* icon);
 
-		void add_keymapping(uint8_t no, uint8_t type, int32_t action);
+        void add_keymapping(uint8_t no, uint8_t type, int32_t action);
 
-		void clear_tooltip(Tooltip::Parent parent);
-		void show_equip(Tooltip::Parent parent, int16_t slot);
-		void show_item(Tooltip::Parent parent, int32_t item_id);
-		void show_skill(Tooltip::Parent parent, int32_t skill_id,
-			int32_t level, int32_t masterlevel, int64_t expiration);
+        void clear_tooltip(Tooltip::Parent parent);
+        void show_equip(Tooltip::Parent parent, int16_t slot);
+        void show_item(Tooltip::Parent parent, int32_t item_id);
+        void show_skill(Tooltip::Parent parent, int32_t skill_id,
+            int32_t level, int32_t masterlevel, int64_t expiration);
 
-		template <class T, typename...Args>
-		Optional<T> emplace(Args&&...args);
-		template <class T>
-		Optional<T> get_element();
-		void remove(UIElement::Type type);
+        template <class T, typename...Args>
+        Optional<T> emplace(Args&&...args);
+        template <class T>
+        Optional<T> get_element();
+        void remove(UIElement::Type type);
 
-	private:
-		std::unique_ptr<UIState> state;
-		Keyboard keyboard;
-		Cursor cursor;
-		ScrollingNotice scrollingnotice;
+    private:
+        std::unique_ptr<UIState> state;
+        Keyboard keyboard;
+        Cursor cursor;
+        ScrollingNotice scrollingnotice;
 
-		Optional<Textfield> focusedtextfield;
-		std::unordered_map<int32_t, bool> is_key_down;
+        Optional<Textfield> focusedtextfield;
+        std::unordered_map<int32_t, bool> is_key_down;
 
-		bool enabled;
-		bool quitted;
-	};
+        bool enabled;
+        bool quitted;
+    };
 
-	template <class T, typename...Args>
-	Optional<T> UI::emplace(Args&&...args)
-	{
-		if (auto iter = state->pre_add(T::TYPE, T::TOGGLED, T::FOCUSED))
-		{
-			(*iter).second = std::make_unique<T>(
-				std::forward<Args>(args)...
-				);
-		}
-		return state->get(T::TYPE);
-	}
+    template <class T, typename...Args>
+    Optional<T> UI::emplace(Args&&...args)
+    {
+        if (auto iter = state->pre_add(T::TYPE, T::TOGGLED, T::FOCUSED))
+        {
+            (*iter).second = std::make_unique<T>(
+                std::forward<Args>(args)...
+                );
+        }
+        return state->get(T::TYPE);
+    }
 
-	template <class T>
-	Optional<T> UI::get_element()
-	{
-		UIElement::Type type = T::TYPE;
-		UIElement* element = state->get(type);
-		return static_cast<T*>(element);
-	}
+    template <class T>
+    Optional<T> UI::get_element()
+    {
+        UIElement::Type type = T::TYPE;
+        UIElement* element = state->get(type);
+        return static_cast<T*>(element);
+    }
 }

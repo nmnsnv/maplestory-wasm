@@ -25,25 +25,25 @@
 namespace jrc
 {
 #ifdef JOURNEY_USE_CRYPTO
-	const size_t HANDSHAKE_LEN = 16;
+    const size_t HANDSHAKE_LEN = 16;
 #else
-	const size_t HANDSHAKE_LEN = 2;
+    const size_t HANDSHAKE_LEN = 2;
 #endif
 
-	class SocketWinsock
-	{
-	public:
-		bool open(const char* adress, const char* port);
-		bool close();
+    class SocketWinsock
+    {
+    public:
+        bool open(const char* adress, const char* port);
+        bool close();
 
-		bool dispatch(const int8_t* bytes, size_t length) const;
-		size_t receive(bool* connected);
-		const int8_t* get_buffer() const;
+        bool dispatch(const int8_t* bytes, size_t length) const;
+        size_t receive(bool* connected);
+        const int8_t* get_buffer() const;
 
-	private:
-		uint64_t sock;
-		int8_t buffer[MAX_PACKET_LENGTH];
-	};
+    private:
+        uint64_t sock;
+        int8_t buffer[MAX_PACKET_LENGTH];
+    };
 }
 #endif
 

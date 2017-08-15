@@ -22,20 +22,20 @@
 
 namespace jrc
 {
-	namespace Maplestat
-	{
-		enum Id
-		{
-			SKIN, FACE, HAIR, LEVEL, JOB,
-			STR, DEX, INT, LUK,
-			HP, MAXHP, MP, MAXMP,
-			AP, SP, EXP, FAME, MESO,
-			PET, GACHAEXP,
-			LENGTH
-		};
+    namespace Maplestat
+    {
+        enum Id
+        {
+            SKIN, FACE, HAIR, LEVEL, JOB,
+            STR, DEX, INT, LUK,
+            HP, MAXHP, MP, MAXMP,
+            AP, SP, EXP, FAME, MESO,
+            PET, GACHAEXP,
+            LENGTH
+        };
 
-		Id by_id(size_t id);
+        Id by_id(size_t id);
 
-		extern const EnumMap<Id, int32_t> codes;
-	};
+        extern const EnumMap<Id, int32_t> codes;
+    };
 }

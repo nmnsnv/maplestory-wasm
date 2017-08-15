@@ -24,47 +24,47 @@
 
 namespace jrc
 {
-	// Contains information about a weapon.
-	class WeaponData : public Cache<WeaponData>
-	{
-	public:
-		// Returns wether the weapon was loaded correctly.
-		bool is_valid() const;
-		// Returns wether the weapon was loaded correctly.
-		explicit operator bool() const;
+    // Contains information about a weapon.
+    class WeaponData : public Cache<WeaponData>
+    {
+    public:
+        // Returns wether the weapon was loaded correctly.
+        bool is_valid() const;
+        // Returns wether the weapon was loaded correctly.
+        explicit operator bool() const;
 
-		// Return wether this weapon uses twohanded-stances.
-		bool is_twohanded() const;
-		// Return the attack speed.
-		uint8_t get_speed() const;
-		// Return the attack type.
-		uint8_t get_attack() const;
-		// Return the speed as displayed in a tooltip.
-		std::string getspeedstring() const;
-		// Return the attack delay.
-		uint8_t get_attackdelay() const;
-		// Return the weapon type.
-		Weapon::Type get_type() const;
-		// Return the sound to play when attacking.
-		Sound get_usesound(bool degenerate) const;
-		// Return the name of the afterimage.
-		const std::string& get_afterimage() const;
-		// Return the general equip data.
-		const EquipData& get_equipdata() const;
+        // Return wether this weapon uses twohanded-stances.
+        bool is_twohanded() const;
+        // Return the attack speed.
+        uint8_t get_speed() const;
+        // Return the attack type.
+        uint8_t get_attack() const;
+        // Return the speed as displayed in a tooltip.
+        std::string getspeedstring() const;
+        // Return the attack delay.
+        uint8_t get_attackdelay() const;
+        // Return the weapon type.
+        Weapon::Type get_type() const;
+        // Return the sound to play when attacking.
+        Sound get_usesound(bool degenerate) const;
+        // Return the name of the afterimage.
+        const std::string& get_afterimage() const;
+        // Return the general equip data.
+        const EquipData& get_equipdata() const;
 
-	private:
-		// Allow the cache to use the constructor.
-		friend Cache<WeaponData>;
-		// Load a weapon from the game files.
-		WeaponData(int32_t id);
+    private:
+        // Allow the cache to use the constructor.
+        friend Cache<WeaponData>;
+        // Load a weapon from the game files.
+        WeaponData(int32_t id);
 
-		const EquipData& equipdata;
+        const EquipData& equipdata;
 
-		Weapon::Type type;
-		bool twohanded;
-		uint8_t attackspeed;
-		uint8_t attack;
-		BoolPair<Sound> usesounds;
-		std::string afterimage;
-	};
+        Weapon::Type type;
+        bool twohanded;
+        uint8_t attackspeed;
+        uint8_t attack;
+        BoolPair<Sound> usesounds;
+        std::string afterimage;
+    };
 }

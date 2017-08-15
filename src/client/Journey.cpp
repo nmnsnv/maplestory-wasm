@@ -33,124 +33,124 @@
 
 namespace jrc
 {
-	Error init()
-	{
-		if (Error error = Session::get().init())
-			return error;
+    Error init()
+    {
+        if (Error error = Session::get().init())
+            return error;
 
-		if (Error error = NxFiles::init())
-			return error;
+        if (Error error = NxFiles::init())
+            return error;
 
-		if (Error error = Window::get().init())
-			return error;
+        if (Error error = Window::get().init())
+            return error;
 
-		if (Error error = Sound::init())
-			return error;
+        if (Error error = Sound::init())
+            return error;
 
-		if (Error error = Music::init())
-			return error;
+        if (Error error = Music::init())
+            return error;
 
-		Char::init();
-		DamageNumber::init();
-		MapPortals::init();
-		Stage::get().init();
-		UI::get().init();
+        Char::init();
+        DamageNumber::init();
+        MapPortals::init();
+        Stage::get().init();
+        UI::get().init();
 
-		return Error::NONE;
-	}
+        return Error::NONE;
+    }
 
-	void update()
-	{
-		Window::get().check_events();
-		Window::get().update();
-		Stage::get().update();
-		UI::get().update();
-		Session::get().read();
-	}
+    void update()
+    {
+        Window::get().check_events();
+        Window::get().update();
+        Stage::get().update();
+        UI::get().update();
+        Session::get().read();
+    }
 
-	void draw(float alpha)
-	{
-		Window::get().begin();
-		Stage::get().draw(alpha);
-		UI::get().draw(alpha);
-		Window::get().end();
-	}
+    void draw(float alpha)
+    {
+        Window::get().begin();
+        Stage::get().draw(alpha);
+        UI::get().draw(alpha);
+        Window::get().end();
+    }
 
-	bool running()
-	{
-		return Session::get().is_connected()
-			&& UI::get().not_quitted()
-			&& Window::get().not_closed();
-	}
+    bool running()
+    {
+        return Session::get().is_connected()
+            && UI::get().not_quitted()
+            && Window::get().not_closed();
+    }
 
-	void loop()
-	{
-		Timer::get().start();
-		int64_t timestep = Constants::TIMESTEP * 1000;
-		int64_t accumulator = timestep;
+    void loop()
+    {
+        Timer::get().start();
+        int64_t timestep = Constants::TIMESTEP * 1000;
+        int64_t accumulator = timestep;
 
-		int64_t period = 0;
-		int32_t samples = 0;
+        int64_t period = 0;
+        int32_t samples = 0;
 
-		while (running())
-		{
-			int64_t elapsed = Timer::get().stop();
+        while (running())
+        {
+            int64_t elapsed = Timer::get().stop();
 
-			// Update game with constant timestep as many times as possible.
-			for (accumulator += elapsed; accumulator >= timestep; accumulator -= timestep)
-			{
-				update();
-			}
+            // Update game with constant timestep as many times as possible.
+            for (accumulator += elapsed; accumulator >= timestep; accumulator -= timestep)
+            {
+                update();
+            }
 
-			// Draw the game. Interpolate to account for remaining time.
-			float alpha = static_cast<float>(accumulator) / timestep;
-			draw(alpha);
+            // Draw the game. Interpolate to account for remaining time.
+            float alpha = static_cast<float>(accumulator) / timestep;
+            draw(alpha);
 
-			if (samples < 100)
-			{
-				period += elapsed;
-				samples++;
-			}
-			else if (period)
-			{
-				int64_t fps = (samples * 1000000) / period;
-				std::cout << "FPS: " << fps << std::endl;
+            if (samples < 100)
+            {
+                period += elapsed;
+                samples++;
+            }
+            else if (period)
+            {
+                int64_t fps = (samples * 1000000) / period;
+                std::cout << "FPS: " << fps << std::endl;
 
-				period = 0;
-				samples = 0;
-			}
-		}
+                period = 0;
+                samples = 0;
+            }
+        }
 
-		Sound::close();
-	}
+        Sound::close();
+    }
 
-	void start()
-	{
-		// Initialize and check for errors.
-		if (Error error = init())
-		{
-			const char* message = error.get_message();
-			const char* args = error.get_args();
-			bool can_retry = error.can_retry();
+    void start()
+    {
+        // Initialize and check for errors.
+        if (Error error = init())
+        {
+            const char* message = error.get_message();
+            const char* args = error.get_args();
+            bool can_retry = error.can_retry();
 
-			std::cout << "Error: " << message << args << std::endl;
+            std::cout << "Error: " << message << args << std::endl;
 
-			std::string command;
-			std::cin >> command;
-			if (can_retry && command == "retry")
-			{
-				start();
-			}
-		}
-		else
-		{
-			loop();
-		}
-	}
+            std::string command;
+            std::cin >> command;
+            if (can_retry && command == "retry")
+            {
+                start();
+            }
+        }
+        else
+        {
+            loop();
+        }
+    }
 }
 
 int main()
 {
-	jrc::start();
-	return 0;
+    jrc::start();
+    return 0;
 }

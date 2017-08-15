@@ -20,17 +20,17 @@
 
 namespace jrc
 {
-	// An invisible button which is only defined by it's area.
-	class AreaButton : public Button
-	{
-	public:
-		AreaButton(Point<int16_t> position, Point<int16_t> dimensions);
+    // An invisible button which is only defined by it's area.
+    class AreaButton : public Button
+    {
+    public:
+        AreaButton(Point<int16_t> position, Point<int16_t> dimensions);
 
-		void draw(Point<int16_t>) const {}
-		Rectangle<int16_t> bounds(Point<int16_t> parentpos) const;
+        void draw(Point<int16_t>) const {}
+        Rectangle<int16_t> bounds(Point<int16_t> parentpos) const;
 
-	private:
-		Point<int16_t> dimension;
-	};
+    private:
+        Point<int16_t> dimension;
+    };
 }
 

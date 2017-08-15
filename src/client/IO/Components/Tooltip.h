@@ -22,23 +22,23 @@
 
 namespace jrc
 {
-	// Interface for tooltips, information windows about something
-	// the mouse cursor is pointed at.
-	class Tooltip
-	{
-	public:
-		// Possible parent UIs for Tooltips.
-		enum Parent
-		{
-			NONE,
-			EQUIPINVENTORY,
-			ITEMINVENTORY,
-			SKILLBOOK,
-			SHOP
-		};
+    // Interface for tooltips, information windows about something
+    // the mouse cursor is pointed at.
+    class Tooltip
+    {
+    public:
+        // Possible parent UIs for Tooltips.
+        enum Parent
+        {
+            NONE,
+            EQUIPINVENTORY,
+            ITEMINVENTORY,
+            SKILLBOOK,
+            SHOP
+        };
 
-		virtual ~Tooltip() {}
+        virtual ~Tooltip() {}
 
-		virtual void draw(Point<int16_t> cursorpos) const = 0;
-	};
+        virtual void draw(Point<int16_t> cursorpos) const = 0;
+    };
 }

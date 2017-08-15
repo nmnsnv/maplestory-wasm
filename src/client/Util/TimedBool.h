@@ -22,74 +22,74 @@
 
 namespace jrc
 {
-	class TimedBool
-	{
-	public:
-		TimedBool()
-		{
-			value = false;
-			delay = 0;
-			last = 0;
-		}
+    class TimedBool
+    {
+    public:
+        TimedBool()
+        {
+            value = false;
+            delay = 0;
+            last = 0;
+        }
 
-		explicit operator bool() const
-		{
-			return value;
-		}
+        explicit operator bool() const
+        {
+            return value;
+        }
 
-		void set_for(int64_t millis)
-		{
-			last = millis;
-			delay = millis;
-			value = true;
-		}
+        void set_for(int64_t millis)
+        {
+            last = millis;
+            delay = millis;
+            value = true;
+        }
 
-		void update()
-		{
-			update(Constants::TIMESTEP);
-		}
+        void update()
+        {
+            update(Constants::TIMESTEP);
+        }
 
-		void update(uint16_t timestep)
-		{
-			if (value)
-			{
-				if (timestep >= delay)
-				{
-					value = false;
-					delay = 0;
-				}
-				else
-				{
-					delay -= timestep;
-				}
-			}
-		}
+        void update(uint16_t timestep)
+        {
+            if (value)
+            {
+                if (timestep >= delay)
+                {
+                    value = false;
+                    delay = 0;
+                }
+                else
+                {
+                    delay -= timestep;
+                }
+            }
+        }
 
-		void operator = (bool b)
-		{
-			value = b;
-			delay = 0;
-			last = 0;
-		}
+        void operator = (bool b)
+        {
+            value = b;
+            delay = 0;
+            last = 0;
+        }
 
-		bool operator == (bool b) const
-		{
-			return value == b;
-		}
+        bool operator == (bool b) const
+        {
+            return value == b;
+        }
 
-		bool operator != (bool b) const
-		{
-			return value != b;
-		}
+        bool operator != (bool b) const
+        {
+            return value != b;
+        }
 
-		float alpha() const
-		{
-			return 1.0f - static_cast<float>(static_cast<float>(delay) / last);
-		}
+        float alpha() const
+        {
+            return 1.0f - static_cast<float>(static_cast<float>(delay) / last);
+        }
 
-	private:
-		int64_t last;
-		int64_t delay;
-		bool value;
-	};
+    private:
+        int64_t last;
+        int64_t delay;
+        bool value;
+    };
 }

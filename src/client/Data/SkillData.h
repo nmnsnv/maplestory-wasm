@@ -27,103 +27,103 @@
 
 namespace jrc
 {
-	// Contains information about a skill.
-	class SkillData : public Cache<SkillData>
-	{
-	public:
-		// The stats of one level.
-		struct Stats
-		{
-			float damage;
-			int32_t matk;
-			int32_t fixdamage;
-			int32_t mastery;
-			uint8_t attackcount;
-			uint8_t mobcount;
-			uint8_t bulletcount;
-			int16_t bulletcost;
-			int32_t hpcost;
-			int32_t mpcost;
-			float chance;
-			float critical;
-			float ignoredef;
-			float hrange;
-			Rectangle<int16_t> range;
+    // Contains information about a skill.
+    class SkillData : public Cache<SkillData>
+    {
+    public:
+        // The stats of one level.
+        struct Stats
+        {
+            float damage;
+            int32_t matk;
+            int32_t fixdamage;
+            int32_t mastery;
+            uint8_t attackcount;
+            uint8_t mobcount;
+            uint8_t bulletcount;
+            int16_t bulletcost;
+            int32_t hpcost;
+            int32_t mpcost;
+            float chance;
+            float critical;
+            float ignoredef;
+            float hrange;
+            Rectangle<int16_t> range;
 
-			constexpr Stats(float damage, int32_t matk, int32_t fixdamage, int32_t mastery,
-				uint8_t attackcount, uint8_t mobcount, uint8_t bulletcount, int16_t bulletcost,
-				int32_t hpcost, int32_t mpcost, float chance, float critical, float ignoredef,
-				float hrange, Rectangle<int16_t> range) :
-				damage(damage), matk(matk), fixdamage(fixdamage), mastery(mastery),
-				attackcount(attackcount), mobcount(mobcount), bulletcount(bulletcount), bulletcost(bulletcost),
-				hpcost(hpcost), mpcost(mpcost), chance(chance), critical(critical), ignoredef(ignoredef),
-				hrange(hrange), range(range) {}
-		};
+            constexpr Stats(float damage, int32_t matk, int32_t fixdamage, int32_t mastery,
+                uint8_t attackcount, uint8_t mobcount, uint8_t bulletcount, int16_t bulletcost,
+                int32_t hpcost, int32_t mpcost, float chance, float critical, float ignoredef,
+                float hrange, Rectangle<int16_t> range) :
+                damage(damage), matk(matk), fixdamage(fixdamage), mastery(mastery),
+                attackcount(attackcount), mobcount(mobcount), bulletcount(bulletcount), bulletcost(bulletcost),
+                hpcost(hpcost), mpcost(mpcost), chance(chance), critical(critical), ignoredef(ignoredef),
+                hrange(hrange), range(range) {}
+        };
 
-		// Skill flags, unfortunately these just have to be hardcoded
-		enum Flags
-		{
-			NONE = 0x0000,
-			ATTACK = 0x0001,
-			RANGED = 0x0002
-		};
+        // Skill flags, unfortunately these just have to be hardcoded
+        enum Flags
+        {
+            NONE = 0x0000,
+            ATTACK = 0x0001,
+            RANGED = 0x0002
+        };
 
-		// Icon types
-		enum Icon
-		{
-			NORMAL,
-			DISABLED,
-			MOUSEOVER,
-			NUM_ICONS
-		};
+        // Icon types
+        enum Icon
+        {
+            NORMAL,
+            DISABLED,
+            MOUSEOVER,
+            NUM_ICONS
+        };
 
-		// Return wether the skill is passive.
-		bool is_passive() const;
-		// Return wether the skill is an attack skill.
-		bool is_attack() const;
-		// Return wether this skill is invisible in the skill book ui.
-		bool is_invisible() const;
-		// Return the default masterlevel.
-		int32_t get_masterlevel() const;
-		// Return the required weapon.
-		Weapon::Type get_required_weapon() const;
-		// Return the stats of one level.
-		// If there are no stats for that level, a default object is returned.
-		const Stats& get_stats(int32_t level) const;
+        // Return wether the skill is passive.
+        bool is_passive() const;
+        // Return wether the skill is an attack skill.
+        bool is_attack() const;
+        // Return wether this skill is invisible in the skill book ui.
+        bool is_invisible() const;
+        // Return the default masterlevel.
+        int32_t get_masterlevel() const;
+        // Return the required weapon.
+        Weapon::Type get_required_weapon() const;
+        // Return the stats of one level.
+        // If there are no stats for that level, a default object is returned.
+        const Stats& get_stats(int32_t level) const;
 
-		// Return the name of the skill.
-		const std::string& get_name() const;
-		// Return the description of the skill.
-		const std::string& get_desc() const;
-		// Return the description of a level.
-		// If there is no description for this level, a warning message is returned.
-		const std::string& get_level_desc(int32_t level) const;
+        // Return the name of the skill.
+        const std::string& get_name() const;
+        // Return the description of the skill.
+        const std::string& get_desc() const;
+        // Return the description of a level.
+        // If there is no description for this level, a warning message is returned.
+        const std::string& get_level_desc(int32_t level) const;
 
-		// Return one of the skill icons.
-		// Cannot fail if type is a valid enum.
-		const Texture& get_icon(Icon icon) const;
+        // Return one of the skill icons.
+        // Cannot fail if type is a valid enum.
+        const Texture& get_icon(Icon icon) const;
 
-	private:
-		// Allow the cache to use the constructor.
-		friend Cache<SkillData>;
-		// Load a skill from the game files.
-		SkillData(int32_t id);
+    private:
+        // Allow the cache to use the constructor.
+        friend Cache<SkillData>;
+        // Load a skill from the game files.
+        SkillData(int32_t id);
 
-		// Get some hardcoded information.
-		int32_t flags_of(int32_t id) const;
+        // Get some hardcoded information.
+        int32_t flags_of(int32_t id) const;
 
-		std::unordered_map<int32_t, Stats> stats;
-		std::string element;
-		Weapon::Type reqweapon;
-		int32_t masterlevel;
-		int32_t flags;
-		bool passive;
-		bool invisible;
+        std::unordered_map<int32_t, Stats> stats;
+        std::string element;
+        Weapon::Type reqweapon;
+        int32_t masterlevel;
+        int32_t flags;
+        bool passive;
+        bool invisible;
 
-		std::string name;
-		std::string desc;
-		std::unordered_map<int32_t, std::string> levels;
+        std::string name;
+        std::string desc;
+        std::unordered_map<int32_t, std::string> levels;
 
-		std::array<Texture, NUM_ICONS> icons;
-	};
+        std::array<Texture, NUM_ICONS> icons;
+    };
 }

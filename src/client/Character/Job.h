@@ -24,51 +24,51 @@
 
 namespace jrc
 {
-	class Job
-	{
-	public:
-		enum Level : uint16_t
-		{
-			BEGINNER,
-			FIRST,
-			SECOND,
-			THIRD,
-			FOURTHT
-		};
+    class Job
+    {
+    public:
+        enum Level : uint16_t
+        {
+            BEGINNER,
+            FIRST,
+            SECOND,
+            THIRD,
+            FOURTHT
+        };
 
-		static Level get_next_level(Level level)
-		{
-			switch (level)
-			{
-			case BEGINNER:
-				return FIRST;
-			case FIRST:
-				return SECOND;
-			case SECOND:
-				return THIRD;
-			default:
-				return FOURTHT;
-			}
-		}
+        static Level get_next_level(Level level)
+        {
+            switch (level)
+            {
+            case BEGINNER:
+                return FIRST;
+            case FIRST:
+                return SECOND;
+            case SECOND:
+                return THIRD;
+            default:
+                return FOURTHT;
+            }
+        }
 
-		Job(uint16_t id);
-		Job();
+        Job(uint16_t id);
+        Job();
 
-		void change_job(uint16_t id);
-		bool is_sub_job(uint16_t subid) const;
-		bool can_use(int32_t skill_id) const;
-		uint16_t get_id() const;
-		uint16_t get_subjob(Level level) const;
-		Level get_level() const;
-		const std::string& get_name() const;
-		Equipstat::Id get_primary(Weapon::Type weapontype) const;
-		Equipstat::Id get_secondary(Weapon::Type weapontype) const;
+        void change_job(uint16_t id);
+        bool is_sub_job(uint16_t subid) const;
+        bool can_use(int32_t skill_id) const;
+        uint16_t get_id() const;
+        uint16_t get_subjob(Level level) const;
+        Level get_level() const;
+        const std::string& get_name() const;
+        Equipstat::Id get_primary(Weapon::Type weapontype) const;
+        Equipstat::Id get_secondary(Weapon::Type weapontype) const;
 
-	private:
-		std::string get_name(uint16_t id) const;
+    private:
+        std::string get_name(uint16_t id) const;
 
-		std::string name;
-		uint16_t id;
-		Level level;
-	};
+        std::string name;
+        uint16_t id;
+        Level level;
+    };
 }

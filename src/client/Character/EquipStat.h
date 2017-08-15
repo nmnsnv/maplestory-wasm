@@ -22,20 +22,20 @@
 
 namespace jrc
 {
-	namespace Equipstat
-	{
-		enum Id
-		{
-			STR, DEX, INT, LUK, HP, MP,
-			WATK, MAGIC, WDEF, MDEF,
-			ACC, AVOID, HANDS, SPEED, JUMP,
-			LENGTH
-		};
+    namespace Equipstat
+    {
+        enum Id
+        {
+            STR, DEX, INT, LUK, HP, MP,
+            WATK, MAGIC, WDEF, MDEF,
+            ACC, AVOID, HANDS, SPEED, JUMP,
+            LENGTH
+        };
 
-		Id by_id(size_t id);
-		int32_t value_of(Id value);
+        Id by_id(size_t id);
+        int32_t value_of(Id value);
 
-		constexpr Enumeration<Id> values;
-		extern const char* names[LENGTH];
-	};
+        constexpr Enumeration<Id> values;
+        extern const char* names[LENGTH];
+    };
 }

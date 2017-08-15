@@ -20,74 +20,74 @@
 
 namespace jrc
 {
-	// Packet which requests a dialogue with a server-sided npc.
-	// Opcode: TALK_TO_NPC(58)
-	class TalkToNPCPacket : public OutPacket
-	{
-	public:
-		TalkToNPCPacket(int32_t oid) : OutPacket(TALK_TO_NPC)
-		{
-			write_int(oid);
-		}
-	};
+    // Packet which requests a dialogue with a server-sided npc.
+    // Opcode: TALK_TO_NPC(58)
+    class TalkToNPCPacket : public OutPacket
+    {
+    public:
+        TalkToNPCPacket(int32_t oid) : OutPacket(TALK_TO_NPC)
+        {
+            write_int(oid);
+        }
+    };
 
-	// Packet which sends a response to an npc dialogue to the server.
-	// Opcode: NPC_TALK_MORE(60)
-	class NpcTalkMorePacket : public OutPacket
-	{
-	public:
-		NpcTalkMorePacket(int8_t lastmsg, int8_t response) : OutPacket(NPC_TALK_MORE)
-		{
-			write_byte(lastmsg);
-			write_byte(response);
-		}
+    // Packet which sends a response to an npc dialogue to the server.
+    // Opcode: NPC_TALK_MORE(60)
+    class NpcTalkMorePacket : public OutPacket
+    {
+    public:
+        NpcTalkMorePacket(int8_t lastmsg, int8_t response) : OutPacket(NPC_TALK_MORE)
+        {
+            write_byte(lastmsg);
+            write_byte(response);
+        }
 
-		NpcTalkMorePacket(const std::string& response) : NpcTalkMorePacket(2, 1)
-		{
-			write_string(response);
-		}
+        NpcTalkMorePacket(const std::string& response) : NpcTalkMorePacket(2, 1)
+        {
+            write_string(response);
+        }
 
-		NpcTalkMorePacket(int32_t selection) : NpcTalkMorePacket(4, 1)
-		{
-			write_int(selection);
-		}
-	};
+        NpcTalkMorePacket(int32_t selection) : NpcTalkMorePacket(4, 1)
+        {
+            write_int(selection);
+        }
+    };
 
 
-	// Packet which tells the server of an interaction with an npc shop.
-	// Opcode: NPC_SHOP_ACTION(61)
-	class NpcShopActionPacket : public OutPacket
-	{
-	public:
-		// Requests that an item should be bought from or sold to a npc shop.
-		NpcShopActionPacket(int16_t slot, int32_t itemid, int16_t qty, bool buy) 
-			: NpcShopActionPacket(buy ? BUY : SELL) {
+    // Packet which tells the server of an interaction with an npc shop.
+    // Opcode: NPC_SHOP_ACTION(61)
+    class NpcShopActionPacket : public OutPacket
+    {
+    public:
+        // Requests that an item should be bought from or sold to a npc shop.
+        NpcShopActionPacket(int16_t slot, int32_t itemid, int16_t qty, bool buy) 
+            : NpcShopActionPacket(buy ? BUY : SELL) {
 
-			write_short(slot);
-			write_int(itemid);
-			write_short(qty);
-		}
+            write_short(slot);
+            write_int(itemid);
+            write_short(qty);
+        }
 
-		// Requests that an item should be recharged at a npc shop.
-		NpcShopActionPacket(int16_t slot) 
-			: NpcShopActionPacket(RECHARGE) {
+        // Requests that an item should be recharged at a npc shop.
+        NpcShopActionPacket(int16_t slot) 
+            : NpcShopActionPacket(RECHARGE) {
 
-			write_short(slot);
-		}
+            write_short(slot);
+        }
 
-		// Requests exiting from a npc shop.
-		NpcShopActionPacket() 
-			: NpcShopActionPacket(LEAVE) {}
+        // Requests exiting from a npc shop.
+        NpcShopActionPacket() 
+            : NpcShopActionPacket(LEAVE) {}
 
-	protected:
-		enum Mode : int8_t
-		{
-			BUY, SELL, RECHARGE, LEAVE
-		};
+    protected:
+        enum Mode : int8_t
+        {
+            BUY, SELL, RECHARGE, LEAVE
+        };
 
-		NpcShopActionPacket(Mode mode) : OutPacket(NPC_SHOP_ACTION)
-		{
-			write_byte(mode);
-		}
-	};
+        NpcShopActionPacket(Mode mode) : OutPacket(NPC_SHOP_ACTION)
+        {
+            write_byte(mode);
+        }
+    };
 }

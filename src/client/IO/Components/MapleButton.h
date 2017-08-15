@@ -22,19 +22,19 @@
 
 namespace jrc
 {
-	// A standard maplestory-button with 4 states and a texture for each state.
-	class MapleButton : public Button
-	{
-	public:
-		MapleButton(nl::node src, Point<int16_t> position);
-		MapleButton(nl::node src, int16_t x, int16_t y);
-		MapleButton(nl::node src);
+    // A standard maplestory-button with 4 states and a texture for each state.
+    class MapleButton : public Button
+    {
+    public:
+        MapleButton(nl::node src, Point<int16_t> position);
+        MapleButton(nl::node src, int16_t x, int16_t y);
+        MapleButton(nl::node src);
 
-		void draw(Point<int16_t> position) const;
-		Rectangle<int16_t> bounds(Point<int16_t> parentpos) const;
+        void draw(Point<int16_t> position) const;
+        Rectangle<int16_t> bounds(Point<int16_t> parentpos) const;
 
-	private:
-		Texture textures[NUM_STATES];
-	};
+    private:
+        Texture textures[NUM_STATES];
+    };
 }
 

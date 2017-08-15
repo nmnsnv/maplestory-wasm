@@ -19,37 +19,37 @@
 
 namespace jrc
 {
-	// Interface for skill sound.
-	class SkillSound
-	{
-	public:
-		virtual ~SkillSound() {}
+    // Interface for skill sound.
+    class SkillSound
+    {
+    public:
+        virtual ~SkillSound() {}
 
-		virtual void play_use() const = 0;
-		virtual void play_hit() const = 0;
-	};
-
-
-	// No sound.
-	class NoSkillSound : public SkillSound
-	{
-	public:
-		void play_use() const override {}
-		void play_hit() const override {}
-	};
+        virtual void play_use() const = 0;
+        virtual void play_hit() const = 0;
+    };
 
 
-	// Plays one use and one hit sound.
-	class SingleSkillSound : public SkillSound
-	{
-	public:
-		SingleSkillSound(std::string strid);
+    // No sound.
+    class NoSkillSound : public SkillSound
+    {
+    public:
+        void play_use() const override {}
+        void play_hit() const override {}
+    };
 
-		void play_use() const override;
-		void play_hit() const override;
 
-	private:
-		Sound usesound;
-		Sound hitsound;
-	};
+    // Plays one use and one hit sound.
+    class SingleSkillSound : public SkillSound
+    {
+    public:
+        SingleSkillSound(std::string strid);
+
+        void play_use() const override;
+        void play_hit() const override;
+
+    private:
+        Sound usesound;
+        Sound hitsound;
+    };
 }

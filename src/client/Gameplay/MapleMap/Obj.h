@@ -21,23 +21,23 @@
 
 namespace jrc
 {
-	// Represents an obj (map decoration) on a map.
-	class Obj
-	{
-	public:
-		Obj(nl::node source);
+    // Represents an obj (map decoration) on a map.
+    class Obj
+    {
+    public:
+        Obj(nl::node source);
 
-		// Update animation.
-		void update();
-		// Draw the obj at the specified position.
-		void draw(Point<int16_t> viewpos, float inter) const;
-		// Return depth of the obj.
-		uint8_t getz() const;
+        // Update animation.
+        void update();
+        // Draw the obj at the specified position.
+        void draw(Point<int16_t> viewpos, float inter) const;
+        // Return depth of the obj.
+        uint8_t getz() const;
 
-	private:
-		Animation animation;
-		Point<int16_t> pos;
-		uint8_t z;
-		bool flip;
-	};
+    private:
+        Animation animation;
+        Point<int16_t> pos;
+        uint8_t z;
+        bool flip;
+    };
 }

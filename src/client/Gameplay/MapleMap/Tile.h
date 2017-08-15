@@ -26,21 +26,21 @@
 
 namespace jrc
 {
-	// Represents a tile on a map.
-	class Tile
-	{
-	public:
-		Tile(nl::node src, const std::string& tileset);
+    // Represents a tile on a map.
+    class Tile
+    {
+    public:
+        Tile(nl::node src, const std::string& tileset);
 
-		// Draw the tile.
-		void draw(Point<int16_t> viewpos) const;
-		// Returns depth of the tile.
-		uint8_t getz() const;
+        // Draw the tile.
+        void draw(Point<int16_t> viewpos) const;
+        // Returns depth of the tile.
+        uint8_t getz() const;
 
-	private:
-		Texture texture;
-		Point<int16_t> pos;
-		uint8_t z;
-	};
+    private:
+        Texture texture;
+        Point<int16_t> pos;
+        uint8_t z;
+    };
 }
 

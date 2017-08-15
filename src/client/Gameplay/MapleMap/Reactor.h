@@ -24,21 +24,21 @@
 
 namespace jrc
 {
-	class Reactor : public MapObject
-	{
-	public:
-		Reactor(int32_t oid, int32_t rid,
-			int8_t state, Point<int16_t> position);
+    class Reactor : public MapObject
+    {
+    public:
+        Reactor(int32_t oid, int32_t rid,
+            int8_t state, Point<int16_t> position);
 
-		void draw(double viewx, double viewy, float alpha) const override;
+        void draw(double viewx, double viewy, float alpha) const override;
 
-		void destroy(int8_t state, Point<int16_t> position);
+        void destroy(int8_t state, Point<int16_t> position);
 
-	private:
-		int32_t oid;
-		int32_t rid;
-		int8_t state;
+    private:
+        int32_t oid;
+        int32_t rid;
+        int8_t state;
 
-		Animation normal;
-	};
+        Animation normal;
+    };
 }

@@ -21,57 +21,57 @@
 
 namespace jrc
 {
-	StatusInfo::StatusInfo(const std::string& str, Text::Color color)
-	{
-		text = { Text::A12M, Text::RIGHT, color, str };
-		shadow = { Text::A12M, Text::RIGHT, Text::BLACK, str };
-		opacity.set(1.0f);
-	}
+    StatusInfo::StatusInfo(const std::string& str, Text::Color color)
+    {
+        text = { Text::A12M, Text::RIGHT, color, str };
+        shadow = { Text::A12M, Text::RIGHT, Text::BLACK, str };
+        opacity.set(1.0f);
+    }
 
-	void StatusInfo::draw(Point<int16_t> position, float alpha) const
-	{
-		float interopc = opacity.get(alpha);
-		shadow.draw({ position + Point<int16_t>(1, 1), interopc });
-		text.draw({ position, interopc });
-	}
+    void StatusInfo::draw(Point<int16_t> position, float alpha) const
+    {
+        float interopc = opacity.get(alpha);
+        shadow.draw({ position + Point<int16_t>(1, 1), interopc });
+        text.draw({ position, interopc });
+    }
 
-	bool StatusInfo::update()
-	{
-		constexpr float FADE_STEP = Constants::TIMESTEP * 1.0f / FADE_DURATION;
+    bool StatusInfo::update()
+    {
+        constexpr float FADE_STEP = Constants::TIMESTEP * 1.0f / FADE_DURATION;
 
-		opacity -= FADE_STEP;
-		return opacity.last() < FADE_STEP;
-	}
+        opacity -= FADE_STEP;
+        return opacity.last() < FADE_STEP;
+    }
 
 
-	UIStatusMessenger::UIStatusMessenger()
-	{
-		position = { 790, 500 };
-	}
+    UIStatusMessenger::UIStatusMessenger()
+    {
+        position = { 790, 500 };
+    }
 
-	void UIStatusMessenger::draw(float inter) const
-	{
-		Point<int16_t> infopos = { position.x(), position.y() };
-		for (const StatusInfo& info : statusinfos)
-		{
-			info.draw(infopos, inter);
-			infopos.shift_y(-16);
-		}
-	}
+    void UIStatusMessenger::draw(float inter) const
+    {
+        Point<int16_t> infopos = { position.x(), position.y() };
+        for (const StatusInfo& info : statusinfos)
+        {
+            info.draw(infopos, inter);
+            infopos.shift_y(-16);
+        }
+    }
 
-	void UIStatusMessenger::update()
-	{
-		for (StatusInfo& info : statusinfos)
-		{
-			info.update();
-		}
-	}
+    void UIStatusMessenger::update()
+    {
+        for (StatusInfo& info : statusinfos)
+        {
+            info.update();
+        }
+    }
 
-	void UIStatusMessenger::show_status(Text::Color color, const std::string& message)
-	{
-		statusinfos.push_front({ message, color });
+    void UIStatusMessenger::show_status(Text::Color color, const std::string& message)
+    {
+        statusinfos.push_front({ message, color });
 
-		if (statusinfos.size() > MAX_MESSAGES)
-			statusinfos.pop_back();
-	}
+        if (statusinfos.size() > MAX_MESSAGES)
+            statusinfos.pop_back();
+    }
 }

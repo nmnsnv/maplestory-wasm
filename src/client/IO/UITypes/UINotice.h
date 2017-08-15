@@ -25,78 +25,78 @@
 
 namespace jrc
 {
-	class UINotice : public UIElement
-	{
-	public:
-		static constexpr Type TYPE = NOTICE;
-		static constexpr bool FOCUSED = true;
-		static constexpr bool TOGGLED = false;
+    class UINotice : public UIElement
+    {
+    public:
+        static constexpr Type TYPE = NOTICE;
+        static constexpr bool FOCUSED = true;
+        static constexpr bool TOGGLED = false;
 
-	protected:
-		UINotice(std::string question);
+    protected:
+        UINotice(std::string question);
 
-		void draw(bool textfield) const;
+        void draw(bool textfield) const;
 
-		int16_t box2offset() const;
+        int16_t box2offset() const;
 
-	private:
-		Texture top;
-		Texture center;
-		Texture centerbox;
-		Texture box;
-		Texture box2;
-		Texture bottom;
-		Texture bottombox;
-		Text question;
-		int16_t height;
-	};
-
-
-	class UIYesNo : public UINotice
-	{
-	public:
-		UIYesNo(std::string question, std::function<void(bool yes)> yesnohandler);
-
-		void draw(float alpha) const override;
-
-	protected:
-		Button::State button_pressed(uint16_t buttonid) override;
-
-	private:
-		enum Buttons : int16_t
-		{
-			YES, NO
-		};
-
-		std::function<void(bool yes)> yesnohandler;
-	};
+    private:
+        Texture top;
+        Texture center;
+        Texture centerbox;
+        Texture box;
+        Texture box2;
+        Texture bottom;
+        Texture bottombox;
+        Text question;
+        int16_t height;
+    };
 
 
-	class UIEnterNumber : public UINotice
-	{
-	public:
-		UIEnterNumber(std::string question, std::function<void(int32_t number)> numhandler,
-			int32_t min, int32_t max, int32_t def);
+    class UIYesNo : public UINotice
+    {
+    public:
+        UIYesNo(std::string question, std::function<void(bool yes)> yesnohandler);
 
-		void draw(float alpha) const override;
-		void update() override;
+        void draw(float alpha) const override;
 
-		Cursor::State send_cursor(bool pressed, Point<int16_t> cursorpos) override;
+    protected:
+        Button::State button_pressed(uint16_t buttonid) override;
 
-	protected:
-		Button::State button_pressed(uint16_t buttonid) override;
+    private:
+        enum Buttons : int16_t
+        {
+            YES, NO
+        };
 
-	private:
-		void handlestring(std::string numstr);
+        std::function<void(bool yes)> yesnohandler;
+    };
 
-		enum Buttons : int16_t
-		{
-			OK, CANCEL
-		};
 
-		std::function<void(int32_t number)> numhandler;
-		Textfield numfield;
-		int32_t min;
-		int32_t max;
-	};
+    class UIEnterNumber : public UINotice
+    {
+    public:
+        UIEnterNumber(std::string question, std::function<void(int32_t number)> numhandler,
+            int32_t min, int32_t max, int32_t def);
+
+        void draw(float alpha) const override;
+        void update() override;
+
+        Cursor::State send_cursor(bool pressed, Point<int16_t> cursorpos) override;
+
+    protected:
+        Button::State button_pressed(uint16_t buttonid) override;
+
+    private:
+        void handlestring(std::string numstr);
+
+        enum Buttons : int16_t
+        {
+            OK, CANCEL
+        };
+
+        std::function<void(int32_t number)> numhandler;
+        Textfield numfield;
+        int32_t min;
+        int32_t max;
+    };
 }

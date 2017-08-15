@@ -20,62 +20,62 @@
 
 namespace jrc
 {
-	constexpr char* MACS = "68-5D-43-F8-B8-6C, 7A-79-19-8B-31-3F";
-	constexpr char* HWID = "685D43F8_B86C7A79";
+    constexpr char* MACS = "68-5D-43-F8-B8-6C, 7A-79-19-8B-31-3F";
+    constexpr char* HWID = "685D43F8_B86C7A79";
 
-	// Tell the server which character was picked.
-	// Opcode: SELECT_CHAR(19)
-	class SelectCharPacket : public OutPacket
-	{
-	public:
-		SelectCharPacket(int32_t cid) : OutPacket(SELECT_CHAR)
-		{
-			write_int(cid);
-			write_string(MACS);
-			write_string(HWID);
-		}
-	};
+    // Tell the server which character was picked.
+    // Opcode: SELECT_CHAR(19)
+    class SelectCharPacket : public OutPacket
+    {
+    public:
+        SelectCharPacket(int32_t cid) : OutPacket(SELECT_CHAR)
+        {
+            write_int(cid);
+            write_string(MACS);
+            write_string(HWID);
+        }
+    };
 
-	// Registers a pic and tells the server which character was picked.
-	// Opcode: REGISTER_PIC(29)
-	class RegisterPicPacket : public OutPacket
-	{
-	public:
-		RegisterPicPacket(int32_t cid, const std::string& pic) : OutPacket(REGISTER_PIC)
-		{
-			skip(1);
+    // Registers a pic and tells the server which character was picked.
+    // Opcode: REGISTER_PIC(29)
+    class RegisterPicPacket : public OutPacket
+    {
+    public:
+        RegisterPicPacket(int32_t cid, const std::string& pic) : OutPacket(REGISTER_PIC)
+        {
+            skip(1);
 
-			write_int(cid);
-			write_string(MACS);
-			write_string(HWID);
-			write_string(pic);
-		}
-	};
+            write_int(cid);
+            write_string(MACS);
+            write_string(HWID);
+            write_string(pic);
+        }
+    };
 
-	// Requests using the specified character with the specified pic.
-	// Opcode: SELECT_CHAR_PIC(30)
-	class SelectCharPicPacket : public OutPacket
-	{
-	public:
-		SelectCharPicPacket(const std::string& pic, int32_t cid) : OutPacket(SELECT_CHAR_PIC)
-		{
-			write_string(pic);
-			write_int(cid);
-			write_string(MACS);
-			write_string(HWID);
-		}
-	};
+    // Requests using the specified character with the specified pic.
+    // Opcode: SELECT_CHAR_PIC(30)
+    class SelectCharPicPacket : public OutPacket
+    {
+    public:
+        SelectCharPicPacket(const std::string& pic, int32_t cid) : OutPacket(SELECT_CHAR_PIC)
+        {
+            write_string(pic);
+            write_int(cid);
+            write_string(MACS);
+            write_string(HWID);
+        }
+    };
 
 
-	// Requests deleting the specified character with the specified pic.
-	// Opcode: DELETE_PIC(23)
-	class DeleteCharPacket : public OutPacket
-	{
-	public:
-		DeleteCharPacket(const std::string& pic, int32_t cid) : OutPacket(DELETE_CHAR)
-		{
-			write_string(pic);
-			write_int(cid);
-		}
-	};
+    // Requests deleting the specified character with the specified pic.
+    // Opcode: DELETE_PIC(23)
+    class DeleteCharPacket : public OutPacket
+    {
+    public:
+        DeleteCharPacket(const std::string& pic, int32_t cid) : OutPacket(DELETE_CHAR)
+        {
+            write_string(pic);
+            write_int(cid);
+        }
+    };
 }

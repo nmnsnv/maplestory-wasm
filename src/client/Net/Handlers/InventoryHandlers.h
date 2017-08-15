@@ -20,21 +20,21 @@
 
 namespace jrc
 {
-	// Handler for a packet which signifies that inventory items were gathered.
-	class GatherResultHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Handler for a packet which signifies that inventory items were gathered.
+    class GatherResultHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
-	// Handler for a packet which signifies that inventory items were sorted.
-	class SortResultHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Handler for a packet which signifies that inventory items were sorted.
+    class SortResultHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
-	// Handler for a packet which modifies the player's inventory.
-	class ModifyInventoryHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Handler for a packet which modifies the player's inventory.
+    class ModifyInventoryHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 }

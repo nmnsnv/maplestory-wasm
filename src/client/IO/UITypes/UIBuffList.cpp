@@ -25,95 +25,95 @@
 
 namespace jrc
 {
-	BuffIcon::BuffIcon(int32_t buff, int32_t dur)
-		: cover(IconCover::BUFF, dur - FLASH_TIME) {
+    BuffIcon::BuffIcon(int32_t buff, int32_t dur)
+        : cover(IconCover::BUFF, dur - FLASH_TIME) {
 
-		buffid = buff;
-		duration = dur;
-		opacity.set(1.0f);
-		opcstep = -0.05f;
+        buffid = buff;
+        duration = dur;
+        opacity.set(1.0f);
+        opcstep = -0.05f;
 
-		if (buffid >= 0)
-		{
-			std::string strid = string_format::extend_id(buffid, 7);
-			nl::node src = nl::nx::skill[strid.substr(0, 3) + ".img"]["skill"][strid];
-			icon = src["icon"];
-		}
-		else
-		{
-			icon = ItemData::get(-buffid)
-				.get_icon(true);
-		}
-	}
+        if (buffid >= 0)
+        {
+            std::string strid = string_format::extend_id(buffid, 7);
+            nl::node src = nl::nx::skill[strid.substr(0, 3) + ".img"]["skill"][strid];
+            icon = src["icon"];
+        }
+        else
+        {
+            icon = ItemData::get(-buffid)
+                .get_icon(true);
+        }
+    }
 
-	void BuffIcon::draw(Point<int16_t> position, float alpha) const
-	{
-		icon.draw({ position, opacity.get(alpha) });
-		cover.draw(position + Point<int16_t>(1, -31), alpha);
-	}
+    void BuffIcon::draw(Point<int16_t> position, float alpha) const
+    {
+        icon.draw({ position, opacity.get(alpha) });
+        cover.draw(position + Point<int16_t>(1, -31), alpha);
+    }
 
-	bool BuffIcon::update()
-	{
-		if (duration <= FLASH_TIME)
-		{
-			opacity += opcstep;
+    bool BuffIcon::update()
+    {
+        if (duration <= FLASH_TIME)
+        {
+            opacity += opcstep;
 
-			bool fadedout = opcstep < 0.0f && opacity.last() <= 0.0f;
-			bool fadedin = opcstep > 0.0f && opacity.last() >= 1.0f;
-			if (fadedout || fadedin)
-				opcstep = -opcstep;
-		}
+            bool fadedout = opcstep < 0.0f && opacity.last() <= 0.0f;
+            bool fadedin = opcstep > 0.0f && opacity.last() >= 1.0f;
+            if (fadedout || fadedin)
+                opcstep = -opcstep;
+        }
 
-		cover.update();
+        cover.update();
 
-		duration -= Constants::TIMESTEP;
-		return duration < Constants::TIMESTEP;
-	}
+        duration -= Constants::TIMESTEP;
+        return duration < Constants::TIMESTEP;
+    }
 
 
-	UIBuffList::UIBuffList() 
-	{
-		position = { 750, 40 };
-		active = true;
-	}
+    UIBuffList::UIBuffList() 
+    {
+        position = { 750, 40 };
+        active = true;
+    }
 
-	void UIBuffList::draw(float alpha) const
-	{
-		Point<int16_t> icpos = position;
-		for (auto& icon : icons)
-		{
-			icon.second.draw(icpos, alpha);
-			icpos.shift_x(-32);
-		}
-	}
+    void UIBuffList::draw(float alpha) const
+    {
+        Point<int16_t> icpos = position;
+        for (auto& icon : icons)
+        {
+            icon.second.draw(icpos, alpha);
+            icpos.shift_x(-32);
+        }
+    }
 
-	void UIBuffList::update()
-	{
-		for (auto iter = icons.begin(); iter != icons.end();)
-		{
-			bool expired = iter->second.update();
-			if (expired)
-			{
-				iter = icons.erase(iter);
-			}
-			else
-			{
-				iter++;
-			}
-		}
-	}
+    void UIBuffList::update()
+    {
+        for (auto iter = icons.begin(); iter != icons.end();)
+        {
+            bool expired = iter->second.update();
+            if (expired)
+            {
+                iter = icons.erase(iter);
+            }
+            else
+            {
+                iter++;
+            }
+        }
+    }
 
-	Cursor::State UIBuffList::send_cursor(bool pressed, Point<int16_t> cursorposition)
-	{
-		return UIElement::send_cursor(pressed, cursorposition);
-	}
+    Cursor::State UIBuffList::send_cursor(bool pressed, Point<int16_t> cursorposition)
+    {
+        return UIElement::send_cursor(pressed, cursorposition);
+    }
 
-	void UIBuffList::add_buff(int32_t buffid, int32_t duration)
-	{
-		icons.emplace(
-			std::piecewise_construct,
-			std::forward_as_tuple(buffid),
-			std::forward_as_tuple(buffid, duration)
-		);
-	}
+    void UIBuffList::add_buff(int32_t buffid, int32_t duration)
+    {
+        icons.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(buffid),
+            std::forward_as_tuple(buffid, duration)
+        );
+    }
 }

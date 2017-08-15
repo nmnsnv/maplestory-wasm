@@ -24,70 +24,70 @@
 
 namespace jrc
 {
-	Texture::Texture(nl::node src)
-	{
-		if (src.data_type() == nl::node::type::bitmap)
-		{
-			std::string link = src["source"];
-			if (link != "")
-			{
-				nl::node srcfile = src;
-				while (srcfile != srcfile.root())
-				{
-					srcfile = srcfile.root();
-				}
-				src = srcfile.resolve(link.substr(link.find('/') + 1));
-			}
+    Texture::Texture(nl::node src)
+    {
+        if (src.data_type() == nl::node::type::bitmap)
+        {
+            std::string link = src["source"];
+            if (link != "")
+            {
+                nl::node srcfile = src;
+                while (srcfile != srcfile.root())
+                {
+                    srcfile = srcfile.root();
+                }
+                src = srcfile.resolve(link.substr(link.find('/') + 1));
+            }
 
-			bitmap = src;
-			origin = src["origin"];
-			dimensions = Point<int16_t>(bitmap.width(),  bitmap.height());
+            bitmap = src;
+            origin = src["origin"];
+            dimensions = Point<int16_t>(bitmap.width(),  bitmap.height());
 
-			GraphicsGL::get().addbitmap(bitmap);
-		}
-	}
+            GraphicsGL::get().addbitmap(bitmap);
+        }
+    }
 
-	Texture::Texture() {}
+    Texture::Texture() {}
 
-	Texture::~Texture() {}
+    Texture::~Texture() {}
 
-	void Texture::draw(const DrawArgument& args) const
-	{
-		size_t id = bitmap.id();
-		if (id == 0)
-			return;
+    void Texture::draw(const DrawArgument& args) const
+    {
+        size_t id = bitmap.id();
+        if (id == 0)
+            return;
 
-		GraphicsGL::get()
-			.draw(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), args.get_angle());
-	}
+        GraphicsGL::get()
+            .draw(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), args.get_angle());
+    }
 
-	void Texture::shift(Point<int16_t> amount)
-	{
-		origin -= amount;
-	}
+    void Texture::shift(Point<int16_t> amount)
+    {
+        origin -= amount;
+    }
 
-	bool Texture::is_valid() const
-	{
-		return bitmap.id() > 0;
-	}
+    bool Texture::is_valid() const
+    {
+        return bitmap.id() > 0;
+    }
 
-	int16_t Texture::width() const
-	{
-		return dimensions.x();
-	}
+    int16_t Texture::width() const
+    {
+        return dimensions.x();
+    }
 
-	int16_t Texture::height() const
-	{
-		return dimensions.y();
-	}
+    int16_t Texture::height() const
+    {
+        return dimensions.y();
+    }
 
-	Point<int16_t> Texture::get_origin() const
-	{
-		return origin;
-	}
+    Point<int16_t> Texture::get_origin() const
+    {
+        return origin;
+    }
 
-	Point<int16_t> Texture::get_dimensions() const
-	{
-		return dimensions;
-	}
+    Point<int16_t> Texture::get_dimensions() const
+    {
+        return dimensions;
+    }
 }

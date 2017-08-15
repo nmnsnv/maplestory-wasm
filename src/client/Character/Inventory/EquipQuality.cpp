@@ -21,38 +21,38 @@
 
 namespace jrc
 {
-	EquipQuality::Id EquipQuality::check_quality(int32_t item_id, bool scrolled, const EnumMap<Equipstat::Id, uint16_t>& stats)
-	{
-		const EquipData& data = EquipData::get(item_id);
+    EquipQuality::Id EquipQuality::check_quality(int32_t item_id, bool scrolled, const EnumMap<Equipstat::Id, uint16_t>& stats)
+    {
+        const EquipData& data = EquipData::get(item_id);
 
-		int16_t delta = 0;
-		for (auto iter : stats)
-		{
-			Equipstat::Id es = iter.first;
-			uint16_t stat = iter.second;
-			uint16_t defstat = data.get_defstat(es);
-			delta += stat - defstat;
-		}
+        int16_t delta = 0;
+        for (auto iter : stats)
+        {
+            Equipstat::Id es = iter.first;
+            uint16_t stat = iter.second;
+            uint16_t defstat = data.get_defstat(es);
+            delta += stat - defstat;
+        }
 
-		if (delta < -5)
-		{
-			return scrolled ? ORANGE : GREY;
-		}
-		else if (delta < 7)
-		{
-			return scrolled ? ORANGE : WHITE;
-		}
-		else if (delta < 14)
-		{
-			return BLUE;
-		}
-		else if (delta < 21)
-		{
-			return VIOLET;
-		}
-		else
-		{
-			return GOLD;
-		}
-	}
+        if (delta < -5)
+        {
+            return scrolled ? ORANGE : GREY;
+        }
+        else if (delta < 7)
+        {
+            return scrolled ? ORANGE : WHITE;
+        }
+        else if (delta < 14)
+        {
+            return BLUE;
+        }
+        else if (delta < 21)
+        {
+            return VIOLET;
+        }
+        else
+        {
+            return GOLD;
+        }
+    }
 }

@@ -23,83 +23,83 @@
 
 namespace jrc
 {
-	// Parses keymappings and sends them to the Keyboard.
-	class KeymapHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Parses keymappings and sends them to the Keyboard.
+    class KeymapHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
 
-	// Parses skill macros.
-	class SkillMacrosHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Parses skill macros.
+    class SkillMacrosHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
 
-	// Notifies the client of changes in character stats.
-	// Opcode: CHANGE_STATS(31)
-	class ChangeStatsHandler : public PacketHandler
-	{
-	public:
-		void handle(InPacket& recv) const override;
+    // Notifies the client of changes in character stats.
+    // Opcode: CHANGE_STATS(31)
+    class ChangeStatsHandler : public PacketHandler
+    {
+    public:
+        void handle(InPacket& recv) const override;
 
-	private:
-		bool handle_stat(Maplestat::Id stat, InPacket& recv) const;
-		bool need_statsinfo_update(Maplestat::Id stat) const;
-		bool need_skillbook_update(Maplestat::Id stat) const;
-	};
-
-
-	// Base class for packets which need to parse buffstats.
-	class BuffHandler : public PacketHandler
-	{
-	public:
-		void handle(InPacket& recv) const override;
-
-	protected:
-		virtual void handle_buff(InPacket& recv, Buffstat::Id stat) const = 0;
-	};
+    private:
+        bool handle_stat(Maplestat::Id stat, InPacket& recv) const;
+        bool need_statsinfo_update(Maplestat::Id stat) const;
+        bool need_skillbook_update(Maplestat::Id stat) const;
+    };
 
 
-	// Notifies the client that a buff was applied to the player.
-	// Opcode: GIVE_BUFF(32)
-	class ApplyBuffHandler : public BuffHandler
-	{
-	protected:
-		void handle_buff(InPacket& recv, Buffstat::Id stat) const override;
-	};
+    // Base class for packets which need to parse buffstats.
+    class BuffHandler : public PacketHandler
+    {
+    public:
+        void handle(InPacket& recv) const override;
+
+    protected:
+        virtual void handle_buff(InPacket& recv, Buffstat::Id stat) const = 0;
+    };
 
 
-	// Notifies the client that a buff was cancelled.
-	// Opcode: CANCEL_BUFF(33)
-	class CancelBuffHandler : public BuffHandler
-	{
-	protected:
-		void handle_buff(InPacket& recv, Buffstat::Id stat) const override;
-	};
+    // Notifies the client that a buff was applied to the player.
+    // Opcode: GIVE_BUFF(32)
+    class ApplyBuffHandler : public BuffHandler
+    {
+    protected:
+        void handle_buff(InPacket& recv, Buffstat::Id stat) const override;
+    };
 
 
-	// Force a stats recalculation.
-	// Opcode: RECALCULATE_STATS(35)
-	class RecalculateStatsHandler : public PacketHandler
-	{
-		void handle(InPacket&) const override;
-	};
+    // Notifies the client that a buff was cancelled.
+    // Opcode: CANCEL_BUFF(33)
+    class CancelBuffHandler : public BuffHandler
+    {
+    protected:
+        void handle_buff(InPacket& recv, Buffstat::Id stat) const override;
+    };
 
 
-	// Updates the player's skills with the client.
-	// Opcode: UPDATE_SKILL(36)
-	class UpdateSkillHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Force a stats recalculation.
+    // Opcode: RECALCULATE_STATS(35)
+    class RecalculateStatsHandler : public PacketHandler
+    {
+        void handle(InPacket&) const override;
+    };
 
 
-	// Notifies the client that a skill is on cooldown.
-	// Opcode: ADD_COOLDOWN(234)
-	class AddCooldownHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Updates the player's skills with the client.
+    // Opcode: UPDATE_SKILL(36)
+    class UpdateSkillHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
+
+
+    // Notifies the client that a skill is on cooldown.
+    // Opcode: ADD_COOLDOWN(234)
+    class AddCooldownHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 }

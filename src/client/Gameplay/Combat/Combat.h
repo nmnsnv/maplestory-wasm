@@ -28,67 +28,67 @@
 
 namespace jrc
 {
-	class Combat
-	{
-	public:
-		Combat(Player& player, MapChars& chars, MapMobs& mobs);
+    class Combat
+    {
+    public:
+        Combat(Player& player, MapChars& chars, MapMobs& mobs);
 
-		// Draw bullets, damage numbers etc.
-		void draw(double viewx, double viewy, float alpha) const;
-		// Poll attacks, damage effects, etc.
-		void update();
+        // Draw bullets, damage numbers etc.
+        void draw(double viewx, double viewy, float alpha) const;
+        // Poll attacks, damage effects, etc.
+        void update();
 
-		// Make the player use a special move.
-		void use_move(int32_t move_id);
+        // Make the player use a special move.
+        void use_move(int32_t move_id);
 
-		// Add an attack to the attack queue.
-		void push_attack(const AttackResult& attack);
-		// Show a buff effect.
-		void show_buff(int32_t cid, int32_t skillid, int8_t level);
-		// Show a buff effect.
-		void show_player_buff(int32_t skillid);
+        // Add an attack to the attack queue.
+        void push_attack(const AttackResult& attack);
+        // Show a buff effect.
+        void show_buff(int32_t cid, int32_t skillid, int8_t level);
+        // Show a buff effect.
+        void show_player_buff(int32_t skillid);
 
-	private:
-		struct DamageEffect
-		{
-			AttackUser user;
-			DamageNumber number;
-			int32_t damage;
-			bool toleft;
-			int32_t target_oid;
-			int32_t move_id;
-		};
+    private:
+        struct DamageEffect
+        {
+            AttackUser user;
+            DamageNumber number;
+            int32_t damage;
+            bool toleft;
+            int32_t target_oid;
+            int32_t move_id;
+        };
 
-		struct BulletEffect
-		{
-			DamageEffect damageeffect;
-			Bullet bullet;
-			Point<int16_t> target;
-		};
+        struct BulletEffect
+        {
+            DamageEffect damageeffect;
+            Bullet bullet;
+            Point<int16_t> target;
+        };
 
-		void apply_attack(const AttackResult& attack);
-		void apply_move(const SpecialMove& move);
-		void apply_use_movement(const SpecialMove& move);
-		void apply_result_movement(const SpecialMove& move, const AttackResult& result);
-		void apply_rush(const AttackResult& result);
-		void apply_bullet_effect(const BulletEffect& effect);
-		void apply_damage_effect(const DamageEffect& effect);
-		void extract_effects(const Char& user, const SpecialMove& move, const AttackResult& result);
-		std::vector<DamageNumber> place_numbers(int32_t oid, const std::vector<std::pair<int32_t, bool>>& damagelines);
-		const SpecialMove& get_move(int32_t move_id);
+        void apply_attack(const AttackResult& attack);
+        void apply_move(const SpecialMove& move);
+        void apply_use_movement(const SpecialMove& move);
+        void apply_result_movement(const SpecialMove& move, const AttackResult& result);
+        void apply_rush(const AttackResult& result);
+        void apply_bullet_effect(const BulletEffect& effect);
+        void apply_damage_effect(const DamageEffect& effect);
+        void extract_effects(const Char& user, const SpecialMove& move, const AttackResult& result);
+        std::vector<DamageNumber> place_numbers(int32_t oid, const std::vector<std::pair<int32_t, bool>>& damagelines);
+        const SpecialMove& get_move(int32_t move_id);
 
-		Player& player;
-		MapChars& chars;
-		MapMobs& mobs;
+        Player& player;
+        MapChars& chars;
+        MapMobs& mobs;
 
-		std::unordered_map<int32_t, Skill> skills;
-		RegularAttack regularattack;
+        std::unordered_map<int32_t, Skill> skills;
+        RegularAttack regularattack;
 
-		TimedQueue<AttackResult> attackresults;
-		TimedQueue<BulletEffect> bulleteffects;
-		TimedQueue<DamageEffect> damageeffects;
+        TimedQueue<AttackResult> attackresults;
+        TimedQueue<BulletEffect> bulleteffects;
+        TimedQueue<DamageEffect> damageeffects;
 
-		std::list<BulletEffect> bullets;
-		std::list<DamageNumber> damagenumbers;
-	};
+        std::list<BulletEffect> bullets;
+        std::list<DamageNumber> damagenumbers;
+    };
 }

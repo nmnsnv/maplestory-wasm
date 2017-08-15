@@ -21,25 +21,25 @@
 
 namespace jrc
 {
-	// A transparent rectangle with icon size (30x30).
-	class IconCover
-	{
-	public:
-		enum Type
-		{
-			BUFF,
-			COOLDOWN
-		};
+    // A transparent rectangle with icon size (30x30).
+    class IconCover
+    {
+    public:
+        enum Type
+        {
+            BUFF,
+            COOLDOWN
+        };
 
-		IconCover(Type type, int32_t duration);
+        IconCover(Type type, int32_t duration);
 
-		void draw(Point<int16_t> position, float alpha) const;
-		void update();
+        void draw(Point<int16_t> position, float alpha) const;
+        void update();
 
-	private:
-		ColorBox cover;
-		Linear<float> yscale;
-		float scalestep;
-		Type type;
-	};
+    private:
+        ColorBox cover;
+        Linear<float> yscale;
+        float scalestep;
+        Type type;
+    };
 }

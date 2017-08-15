@@ -21,8 +21,8 @@
 
 namespace jrc
 {
-	void PingHandler::handle(InPacket&) const
-	{
-		PongPacket().dispatch();
-	}
+    void PingHandler::handle(InPacket&) const
+    {
+        PongPacket().dispatch();
+    }
 }

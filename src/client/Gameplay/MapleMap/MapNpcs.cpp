@@ -23,72 +23,72 @@
 
 namespace jrc
 {
-	void MapNpcs::draw(Layer::Id layer, double viewx, double viewy, float alpha) const
-	{
-		npcs.draw(layer, viewx, viewy, alpha);
-	}
+    void MapNpcs::draw(Layer::Id layer, double viewx, double viewy, float alpha) const
+    {
+        npcs.draw(layer, viewx, viewy, alpha);
+    }
 
-	void MapNpcs::update(const Physics& physics)
-	{
-		for (; !spawns.empty(); spawns.pop())
-		{
-			const NpcSpawn& spawn = spawns.front();
+    void MapNpcs::update(const Physics& physics)
+    {
+        for (; !spawns.empty(); spawns.pop())
+        {
+            const NpcSpawn& spawn = spawns.front();
 
-			int32_t oid = spawn.get_oid();
-			Optional<MapObject> npc = npcs.get(oid);
-			if (npc)
-			{
-				npc->makeactive();
-			}
-			else
-			{
-				npcs.add(
-					spawn.instantiate(physics)
-				);
-			}
-		}
+            int32_t oid = spawn.get_oid();
+            Optional<MapObject> npc = npcs.get(oid);
+            if (npc)
+            {
+                npc->makeactive();
+            }
+            else
+            {
+                npcs.add(
+                    spawn.instantiate(physics)
+                );
+            }
+        }
 
-		npcs.update(physics);
-	}
+        npcs.update(physics);
+    }
 
-	void MapNpcs::spawn(NpcSpawn&& spawn)
-	{
-		spawns.emplace(
-			std::move(spawn)
-		);
-	}
+    void MapNpcs::spawn(NpcSpawn&& spawn)
+    {
+        spawns.emplace(
+            std::move(spawn)
+        );
+    }
 
-	void MapNpcs::remove(int32_t oid)
-	{
-		if (auto npc = npcs.get(oid))
-			npc->deactivate();
-	}
+    void MapNpcs::remove(int32_t oid)
+    {
+        if (auto npc = npcs.get(oid))
+            npc->deactivate();
+    }
 
-	void MapNpcs::clear()
-	{
-		npcs.clear();
-	}
+    void MapNpcs::clear()
+    {
+        npcs.clear();
+    }
 
-	Cursor::State MapNpcs::send_cursor(bool pressed, Point<int16_t> position, Point<int16_t> viewpos)
-	{
-		for (auto& mmo : npcs)
-		{
-			Npc* npc = static_cast<Npc*>(mmo.second.get());
-			if (npc && npc->is_active() && npc->inrange(position, viewpos))
-			{
-				if (pressed)
-				{
-					// TODO: try finding dialogue first
-					TalkToNPCPacket(npc->get_oid())
-						.dispatch();
-					return Cursor::IDLE;
-				}
-				else
-				{
-					return Cursor::CANCLICK;
-				}
-			}
-		}
-		return Cursor::IDLE;
-	}
+    Cursor::State MapNpcs::send_cursor(bool pressed, Point<int16_t> position, Point<int16_t> viewpos)
+    {
+        for (auto& mmo : npcs)
+        {
+            Npc* npc = static_cast<Npc*>(mmo.second.get());
+            if (npc && npc->is_active() && npc->inrange(position, viewpos))
+            {
+                if (pressed)
+                {
+                    // TODO: try finding dialogue first
+                    TalkToNPCPacket(npc->get_oid())
+                        .dispatch();
+                    return Cursor::IDLE;
+                }
+                else
+                {
+                    return Cursor::CANCLICK;
+                }
+            }
+        }
+        return Cursor::IDLE;
+    }
 }

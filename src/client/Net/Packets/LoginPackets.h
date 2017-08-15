@@ -20,58 +20,58 @@
 
 namespace jrc
 {
-	// Accept the Terms of Service.
-	// Opcode: ACCEPT_TOS(7)
-	class TOSPacket : public OutPacket
-	{
-	public:
-		TOSPacket() : OutPacket(ACCEPT_TOS)
-		{
-			write_byte(1);
-		}
-	};
+    // Accept the Terms of Service.
+    // Opcode: ACCEPT_TOS(7)
+    class TOSPacket : public OutPacket
+    {
+    public:
+        TOSPacket() : OutPacket(ACCEPT_TOS)
+        {
+            write_byte(1);
+        }
+    };
 
-	// Request to be logged-in to an account.
-	// Opcode: LOGIN(1) [LOGIN_PASSWORD(1) for OdinMS-based sources]
-	class LoginPacket : public OutPacket
-	{
-	public:
-		LoginPacket(const std::string& acc, const std::string& pass) : OutPacket(LOGIN)
-		{
-			write_string(acc);
-			write_string(pass);
-		}
-	};
+    // Request to be logged-in to an account.
+    // Opcode: LOGIN(1) [LOGIN_PASSWORD(1) for OdinMS-based sources]
+    class LoginPacket : public OutPacket
+    {
+    public:
+        LoginPacket(const std::string& acc, const std::string& pass) : OutPacket(LOGIN)
+        {
+            write_string(acc);
+            write_string(pass);
+        }
+    };
 
-	// Requests the list of worlds and channels.
-	// Opcode: SERVERLIST_REQUEST(11)
-	class ServerRequestPacket : public OutPacket
-	{
-	public:
-		ServerRequestPacket() : OutPacket(SERVERLIST_REQUEST) {}
-	};
+    // Requests the list of worlds and channels.
+    // Opcode: SERVERLIST_REQUEST(11)
+    class ServerRequestPacket : public OutPacket
+    {
+    public:
+        ServerRequestPacket() : OutPacket(SERVERLIST_REQUEST) {}
+    };
 
-	// Requests the list of characters on a world.
-	// Opcode: CHARLIST_REQUEST(5)
-	class CharlistRequestPacket : public OutPacket
-	{
-	public:
-		CharlistRequestPacket(uint8_t world, uint8_t channel) : OutPacket(CHARLIST_REQUEST)
-		{
-			write_byte(0);
-			write_byte(world);
-			write_byte(channel);
-		}
-	};
+    // Requests the list of characters on a world.
+    // Opcode: CHARLIST_REQUEST(5)
+    class CharlistRequestPacket : public OutPacket
+    {
+    public:
+        CharlistRequestPacket(uint8_t world, uint8_t channel) : OutPacket(CHARLIST_REQUEST)
+        {
+            write_byte(0);
+            write_byte(world);
+            write_byte(channel);
+        }
+    };
 
-	// Requests being logged-in to a channel server with the specified character.
-	// Opcode: PLAYER_LOGIN(20) [PLAYER_LOGGEDIN(20) for OdinMS-based sources]
-	class PlayerLoginPacket : public OutPacket
-	{
-	public:
-		PlayerLoginPacket(int32_t cid) : OutPacket(PLAYER_LOGIN)
-		{
-			write_int(cid);
-		}
-	};
+    // Requests being logged-in to a channel server with the specified character.
+    // Opcode: PLAYER_LOGIN(20) [PLAYER_LOGGEDIN(20) for OdinMS-based sources]
+    class PlayerLoginPacket : public OutPacket
+    {
+    public:
+        PlayerLoginPacket(int32_t cid) : OutPacket(PLAYER_LOGIN)
+        {
+            write_int(cid);
+        }
+    };
 }

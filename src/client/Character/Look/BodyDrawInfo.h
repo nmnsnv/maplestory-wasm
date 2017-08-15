@@ -27,96 +27,96 @@
 
 namespace jrc
 {
-	// A frame of animation for a skill or similiar 'meta-stance'. 
-	// This simply redirects to a different stance and frame to use.
-	class BodyAction
-	{
-	public:
-		BodyAction(nl::node src)
-		{
-			stance = Stance::by_string(src["action"]);
-			frame = src["frame"];
-			move = src["move"];
+    // A frame of animation for a skill or similiar 'meta-stance'. 
+    // This simply redirects to a different stance and frame to use.
+    class BodyAction
+    {
+    public:
+        BodyAction(nl::node src)
+        {
+            stance = Stance::by_string(src["action"]);
+            frame = src["frame"];
+            move = src["move"];
 
-			int16_t sgndelay = src["delay"];
-			if (sgndelay == 0)
-				sgndelay = 100;
-			if (sgndelay > 0)
-			{
-				delay = sgndelay;
-				attackframe = true;
-			}
-			else if (sgndelay < 0)
-			{
-				delay = -sgndelay;
-				attackframe = false;
-			}
-		}
+            int16_t sgndelay = src["delay"];
+            if (sgndelay == 0)
+                sgndelay = 100;
+            if (sgndelay > 0)
+            {
+                delay = sgndelay;
+                attackframe = true;
+            }
+            else if (sgndelay < 0)
+            {
+                delay = -sgndelay;
+                attackframe = false;
+            }
+        }
 
-		BodyAction() {}
+        BodyAction() {}
 
-		bool isattackframe() const
-		{
-			return attackframe;
-		}
+        bool isattackframe() const
+        {
+            return attackframe;
+        }
 
-		uint8_t get_frame() const
-		{
-			return frame;
-		}
+        uint8_t get_frame() const
+        {
+            return frame;
+        }
 
-		uint16_t get_delay() const
-		{
-			return delay;
-		}
+        uint16_t get_delay() const
+        {
+            return delay;
+        }
 
-		Point<int16_t> get_move() const
-		{
-			return move;
-		}
+        Point<int16_t> get_move() const
+        {
+            return move;
+        }
 
-		Stance::Id get_stance() const
-		{
-			return stance;
-		}
+        Stance::Id get_stance() const
+        {
+            return stance;
+        }
 
-	private:
-		Stance::Id stance;
-		uint8_t frame;
-		uint16_t delay;
-		Point<int16_t> move;
-		bool attackframe;
-	};
+    private:
+        Stance::Id stance;
+        uint8_t frame;
+        uint16_t delay;
+        Point<int16_t> move;
+        bool attackframe;
+    };
 
 
-	class BodyDrawinfo
-	{
-	public:
-		void init();
+    class BodyDrawinfo
+    {
+    public:
+        void init();
 
-		Point<int16_t> get_body_position(Stance::Id stance, uint8_t frame) const;
-		Point<int16_t> get_arm_position(Stance::Id stance, uint8_t frame) const;
-		Point<int16_t> get_hand_position(Stance::Id stance, uint8_t frame) const;
-		Point<int16_t> get_head_position(Stance::Id stance, uint8_t frame) const;
-		Point<int16_t> gethairpos(Stance::Id stance, uint8_t frame) const;
-		Point<int16_t> getfacepos(Stance::Id stance, uint8_t frame) const;
-		uint8_t nextframe(Stance::Id stance, uint8_t frame) const;
-		uint16_t get_delay(Stance::Id stance, uint8_t frame) const;
+        Point<int16_t> get_body_position(Stance::Id stance, uint8_t frame) const;
+        Point<int16_t> get_arm_position(Stance::Id stance, uint8_t frame) const;
+        Point<int16_t> get_hand_position(Stance::Id stance, uint8_t frame) const;
+        Point<int16_t> get_head_position(Stance::Id stance, uint8_t frame) const;
+        Point<int16_t> gethairpos(Stance::Id stance, uint8_t frame) const;
+        Point<int16_t> getfacepos(Stance::Id stance, uint8_t frame) const;
+        uint8_t nextframe(Stance::Id stance, uint8_t frame) const;
+        uint16_t get_delay(Stance::Id stance, uint8_t frame) const;
 
-		uint16_t get_attackdelay(std::string action, size_t no) const;
-		uint8_t next_actionframe(std::string action, uint8_t frame) const;
-		const BodyAction* get_action(std::string action, uint8_t frame) const;
+        uint16_t get_attackdelay(std::string action, size_t no) const;
+        uint8_t next_actionframe(std::string action, uint8_t frame) const;
+        const BodyAction* get_action(std::string action, uint8_t frame) const;
 
-	private:
-		std::unordered_map<uint8_t, Point<int16_t>> body_positions[Stance::LENGTH];
-		std::unordered_map<uint8_t, Point<int16_t>> arm_positions[Stance::LENGTH];
-		std::unordered_map<uint8_t, Point<int16_t>> hand_positions[Stance::LENGTH];
-		std::unordered_map<uint8_t, Point<int16_t>> head_positions[Stance::LENGTH];
-		std::unordered_map<uint8_t, Point<int16_t>> hair_positions[Stance::LENGTH];
-		std::unordered_map<uint8_t, Point<int16_t>> face_positions[Stance::LENGTH];
-		std::unordered_map<uint8_t, uint16_t> stance_delays[Stance::LENGTH];
+    private:
+        std::unordered_map<uint8_t, Point<int16_t>> body_positions[Stance::LENGTH];
+        std::unordered_map<uint8_t, Point<int16_t>> arm_positions[Stance::LENGTH];
+        std::unordered_map<uint8_t, Point<int16_t>> hand_positions[Stance::LENGTH];
+        std::unordered_map<uint8_t, Point<int16_t>> head_positions[Stance::LENGTH];
+        std::unordered_map<uint8_t, Point<int16_t>> hair_positions[Stance::LENGTH];
+        std::unordered_map<uint8_t, Point<int16_t>> face_positions[Stance::LENGTH];
+        std::unordered_map<uint8_t, uint16_t> stance_delays[Stance::LENGTH];
 
-		std::unordered_map<std::string, std::unordered_map<uint8_t, BodyAction>> body_actions;
-		std::unordered_map<std::string, std::vector<uint16_t>> attack_delays;
-	};
+        std::unordered_map<std::string, std::unordered_map<uint8_t, BodyAction>> body_actions;
+        std::unordered_map<std::string, std::vector<uint16_t>> attack_delays;
+    };
 }

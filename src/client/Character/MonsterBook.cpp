@@ -19,18 +19,18 @@
 
 namespace jrc
 {
-	Monsterbook::Monsterbook()
-	{
-		cover = 0;
-	}
+    Monsterbook::Monsterbook()
+    {
+        cover = 0;
+    }
 
-	void Monsterbook::set_cover(int32_t cov)
-	{
-		cover = cov;
-	}
+    void Monsterbook::set_cover(int32_t cov)
+    {
+        cover = cov;
+    }
 
-	void Monsterbook::add_card(int16_t card, int8_t level)
-	{
-		cards[card] = level;
-	}
+    void Monsterbook::add_card(int16_t card, int8_t level)
+    {
+        cards[card] = level;
+    }
 }

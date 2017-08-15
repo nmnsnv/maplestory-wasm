@@ -19,97 +19,97 @@
 
 namespace jrc
 {
-	Charset::Charset(nl::node src, Alignment alignment)
-		: alignment(alignment) {
+    Charset::Charset(nl::node src, Alignment alignment)
+        : alignment(alignment) {
 
-		for (auto sub : src)
-		{
-			std::string name = sub.name();
-			if (sub.data_type() != nl::node::type::bitmap || name.empty())
-				continue;
+        for (auto sub : src)
+        {
+            std::string name = sub.name();
+            if (sub.data_type() != nl::node::type::bitmap || name.empty())
+                continue;
 
-			char c = *name.begin();
-			if (c == '\\')
-			{
-				c = '/';
-			}
-			chars.emplace(c, sub);
-		}
-	}
+            char c = *name.begin();
+            if (c == '\\')
+            {
+                c = '/';
+            }
+            chars.emplace(c, sub);
+        }
+    }
 
-	Charset::Charset()
-		: alignment(LEFT) {}
+    Charset::Charset()
+        : alignment(LEFT) {}
 
-	void Charset::draw(int8_t c, const DrawArgument& args) const
-	{
-		auto iter = chars.find(c);
-		if (iter != chars.end())
-			iter->second.draw(args);
-	}
+    void Charset::draw(int8_t c, const DrawArgument& args) const
+    {
+        auto iter = chars.find(c);
+        if (iter != chars.end())
+            iter->second.draw(args);
+    }
 
-	int16_t Charset::getw(int8_t c) const
-	{
-		auto iter = chars.find(c);
-		return iter != chars.end() ? iter->second.width() : 0;
-	}
+    int16_t Charset::getw(int8_t c) const
+    {
+        auto iter = chars.find(c);
+        return iter != chars.end() ? iter->second.width() : 0;
+    }
 
-	int16_t Charset::draw(const std::string& text, const DrawArgument& args) const
-	{
-		int16_t shift = 0;
-		int16_t total = 0;
+    int16_t Charset::draw(const std::string& text, const DrawArgument& args) const
+    {
+        int16_t shift = 0;
+        int16_t total = 0;
 
-		switch (alignment)
-		{
-		case CENTER:
-			for (char c : text)
-			{
-				total += getw(c);
-			}
-			shift -= total / 2;
-		case LEFT:
-			for (char c : text)
-			{
-				draw(c, args + Point<int16_t>(shift, 0));
-				shift += getw(c);
-			}
-			break;
-		case RIGHT:
-			for (auto iter = text.rbegin(); iter != text.rend(); ++iter)
-			{
-				char c = *iter;
-				shift += getw(c);
-				draw(c, args - Point<int16_t>(shift, 0));
-			}
-			break;
-		}
-		return shift;
-	}
+        switch (alignment)
+        {
+        case CENTER:
+            for (char c : text)
+            {
+                total += getw(c);
+            }
+            shift -= total / 2;
+        case LEFT:
+            for (char c : text)
+            {
+                draw(c, args + Point<int16_t>(shift, 0));
+                shift += getw(c);
+            }
+            break;
+        case RIGHT:
+            for (auto iter = text.rbegin(); iter != text.rend(); ++iter)
+            {
+                char c = *iter;
+                shift += getw(c);
+                draw(c, args - Point<int16_t>(shift, 0));
+            }
+            break;
+        }
+        return shift;
+    }
 
-	int16_t Charset::draw(const std::string& text, int16_t hspace, const DrawArgument& args) const
-	{
-		size_t length = text.size();
-		int16_t shift = 0;
+    int16_t Charset::draw(const std::string& text, int16_t hspace, const DrawArgument& args) const
+    {
+        size_t length = text.size();
+        int16_t shift = 0;
 
-		switch (alignment)
-		{
-		case CENTER:
-			shift -= hspace * static_cast<int16_t>(length) / 2;
-		case LEFT:
-			for (char c : text)
-			{
-				draw(c, args + Point<int16_t>(shift, 0));
-				shift += hspace;
-			}
-			break;
-		case RIGHT:
-			for (auto iter = text.rbegin(); iter != text.rend(); ++iter)
-			{
-				char c = *iter;
-				shift += hspace;
-				draw(c, args - Point<int16_t>(shift, 0));
-			}
-			break;
-		}
-		return shift;
-	}
+        switch (alignment)
+        {
+        case CENTER:
+            shift -= hspace * static_cast<int16_t>(length) / 2;
+        case LEFT:
+            for (char c : text)
+            {
+                draw(c, args + Point<int16_t>(shift, 0));
+                shift += hspace;
+            }
+            break;
+        case RIGHT:
+            for (auto iter = text.rbegin(); iter != text.rend(); ++iter)
+            {
+                char c = *iter;
+                shift += hspace;
+                draw(c, args - Point<int16_t>(shift, 0));
+            }
+            break;
+        }
+        return shift;
+    }
 }

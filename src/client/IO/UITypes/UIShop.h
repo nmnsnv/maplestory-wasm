@@ -27,143 +27,143 @@
 
 namespace jrc
 {
-	class UIShop : public UIElement
-	{
-	public:
-		static constexpr Type TYPE = SHOP;
-		static constexpr bool FOCUSED = true;
-		static constexpr bool TOGGLED = true;
+    class UIShop : public UIElement
+    {
+    public:
+        static constexpr Type TYPE = SHOP;
+        static constexpr bool FOCUSED = true;
+        static constexpr bool TOGGLED = true;
 
-		UIShop(const CharLook& charlook, const Inventory& inventory);
+        UIShop(const CharLook& charlook, const Inventory& inventory);
 
-		void draw(float alpha) const override;
-		void update() override;
+        void draw(float alpha) const override;
+        void update() override;
 
-		bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
-		Cursor::State send_cursor(bool clicked, Point<int16_t> position) override;
+        bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
+        Cursor::State send_cursor(bool clicked, Point<int16_t> position) override;
 
-		void reset(int32_t npcid);
-		void add_item(int32_t id, int32_t price, 
-			int32_t pitch, int32_t time, int16_t buyable);
-		void add_rechargable(int32_t id, int32_t price, int32_t pitch, 
-			int32_t time, int16_t chargeprice, int16_t buyable);
+        void reset(int32_t npcid);
+        void add_item(int32_t id, int32_t price, 
+            int32_t pitch, int32_t time, int16_t buyable);
+        void add_rechargable(int32_t id, int32_t price, int32_t pitch, 
+            int32_t time, int16_t chargeprice, int16_t buyable);
 
-		void modify(InventoryType::Id type);
+        void modify(InventoryType::Id type);
 
-	protected:
-		Button::State button_pressed(uint16_t buttonid) override;
+    protected:
+        Button::State button_pressed(uint16_t buttonid) override;
 
-	private:
-		void clear_tooltip();
-		void show_item(int16_t slot, bool sale);
-		void changeselltab(InventoryType::Id tab);
-		int16_t slot_by_position(int16_t y);
-		uint16_t tabbyinventory(InventoryType::Id type);
+    private:
+        void clear_tooltip();
+        void show_item(int16_t slot, bool sale);
+        void changeselltab(InventoryType::Id tab);
+        int16_t slot_by_position(int16_t y);
+        uint16_t tabbyinventory(InventoryType::Id type);
 
-		enum Buttons : int16_t
-		{
-			BUY_ITEM = 0,
-			SELL_ITEM = 1,
-			EXIT = 2,
-			EQUIP = 3,
-			USE = 4,
-			ETC = 5,
-			SETUP = 6,
-			CASH = 7,
-			BUY0 = 8,
-			BUY4 = 12,
-			SELL0 = 13,
-			SELL4 = 17
-		};
+        enum Buttons : int16_t
+        {
+            BUY_ITEM = 0,
+            SELL_ITEM = 1,
+            EXIT = 2,
+            EQUIP = 3,
+            USE = 4,
+            ETC = 5,
+            SETUP = 6,
+            CASH = 7,
+            BUY0 = 8,
+            BUY4 = 12,
+            SELL0 = 13,
+            SELL4 = 17
+        };
 
-		const CharLook& charlook;
-		const Inventory& inventory;
+        const CharLook& charlook;
+        const Inventory& inventory;
 
-		Texture npc;
-		Texture selection;
-		Texture impossible;
-		Texture meso;
-		Text mesolabel;
+        Texture npc;
+        Texture selection;
+        Texture impossible;
+        Texture meso;
+        Text mesolabel;
 
-		Slider buyslider;
-		Slider sellslider;
+        Slider buyslider;
+        Slider sellslider;
 
-		class BuyItem
-		{
-		public:
-			BuyItem(Texture cur, int32_t i, int32_t p, int32_t pt, int32_t t, int16_t cp, int16_t b);
+        class BuyItem
+        {
+        public:
+            BuyItem(Texture cur, int32_t i, int32_t p, int32_t pt, int32_t t, int16_t cp, int16_t b);
 
-			void draw(Point<int16_t> position) const;
+            void draw(Point<int16_t> position) const;
 
-			int32_t get_id() const;
-			int16_t get_buyable() const;
+            int32_t get_id() const;
+            int16_t get_buyable() const;
 
-		private:
-			Texture icon;
-			Texture currency;
-			int32_t id;
-			int32_t price;
-			int32_t pitch;
-			int32_t time;
-			int16_t chargeprice;
-			int16_t buyable;
-			Text namelabel;
-			Text pricelabel;
-		};
+        private:
+            Texture icon;
+            Texture currency;
+            int32_t id;
+            int32_t price;
+            int32_t pitch;
+            int32_t time;
+            int16_t chargeprice;
+            int16_t buyable;
+            Text namelabel;
+            Text pricelabel;
+        };
 
-		class SellItem
-		{
-		public:
-			SellItem(int32_t item_id, int16_t count, int16_t slot, bool showcount, Texture cur);
+        class SellItem
+        {
+        public:
+            SellItem(int32_t item_id, int16_t count, int16_t slot, bool showcount, Texture cur);
 
-			void draw(Point<int16_t> position) const;
+            void draw(Point<int16_t> position) const;
 
-			int32_t get_id() const;
-			int16_t get_slot() const;
-			int16_t get_sellable() const;
+            int32_t get_id() const;
+            int16_t get_slot() const;
+            int16_t get_sellable() const;
 
-		private:
-			Texture icon;
-			Texture currency;
-			int32_t id;
-			int16_t slot;
-			int16_t sellable;
-			bool showcount;
-			Text namelabel;
-			Text pricelabel;
-		};
+        private:
+            Texture icon;
+            Texture currency;
+            int32_t id;
+            int16_t slot;
+            int16_t sellable;
+            bool showcount;
+            Text namelabel;
+            Text pricelabel;
+        };
 
-		struct BuyState
-		{
-			std::vector<BuyItem> items;
-			int16_t offset;
-			int16_t lastslot;
-			int16_t selection;
+        struct BuyState
+        {
+            std::vector<BuyItem> items;
+            int16_t offset;
+            int16_t lastslot;
+            int16_t selection;
 
-			void reset();
-			void draw(Point<int16_t> position, const Texture& selected) const;
-			void show_item(int16_t slot);
-			void add(BuyItem item);
-			void buy() const;
-			void select(int16_t selected);
-		};
-		BuyState buystate;
+            void reset();
+            void draw(Point<int16_t> position, const Texture& selected) const;
+            void show_item(int16_t slot);
+            void add(BuyItem item);
+            void buy() const;
+            void select(int16_t selected);
+        };
+        BuyState buystate;
 
-		struct SellState
-		{
-			std::vector<SellItem> items;
-			int16_t offset;
-			InventoryType::Id tab;
-			int16_t lastslot;
-			int16_t selection;
+        struct SellState
+        {
+            std::vector<SellItem> items;
+            int16_t offset;
+            InventoryType::Id tab;
+            int16_t lastslot;
+            int16_t selection;
 
-			void reset();
-			void change_tab(const Inventory& inventory, InventoryType::Id type, Texture meso);
-			void draw(Point<int16_t> position, const Texture& selected) const;
-			void show_item(int16_t slot);
-			void sell() const;
-			void select(int16_t selected);
-		};
-		SellState sellstate;
-	};
+            void reset();
+            void change_tab(const Inventory& inventory, InventoryType::Id type, Texture meso);
+            void draw(Point<int16_t> position, const Texture& selected) const;
+            void show_item(int16_t slot);
+            void sell() const;
+            void select(int16_t selected);
+        };
+        SellState sellstate;
+    };
 }

@@ -20,30 +20,30 @@
 
 namespace jrc
 {
-	namespace Weapon
-	{
-		enum Type
-		{
-			NONE = 0,
-			SWORD_1H = 130,
-			AXE_1H = 131,
-			MACE_1H = 132,
-			DAGGER = 133,
-			WAND = 137,
-			STAFF = 138,
-			SWORD_2H = 140,
-			AXE_2H = 141,
-			MACE_2H = 142,
-			SPEAR = 143,
-			POLEARM = 144,
-			BOW = 145,
-			CROSSBOW = 146,
-			CLAW = 147,
-			KNUCKLE = 148,
-			GUN = 149,
-			CASH = 170
-		};
+    namespace Weapon
+    {
+        enum Type
+        {
+            NONE = 0,
+            SWORD_1H = 130,
+            AXE_1H = 131,
+            MACE_1H = 132,
+            DAGGER = 133,
+            WAND = 137,
+            STAFF = 138,
+            SWORD_2H = 140,
+            AXE_2H = 141,
+            MACE_2H = 142,
+            SPEAR = 143,
+            POLEARM = 144,
+            BOW = 145,
+            CROSSBOW = 146,
+            CLAW = 147,
+            KNUCKLE = 148,
+            GUN = 149,
+            CASH = 170
+        };
 
-		Type by_value(int32_t value);
-	};
+        Type by_value(int32_t value);
+    };
 }

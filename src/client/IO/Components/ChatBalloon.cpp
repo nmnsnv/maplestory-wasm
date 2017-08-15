@@ -24,65 +24,65 @@
 
 namespace jrc
 {
-	ChatBalloon::ChatBalloon(int8_t type)
-	{
-		std::string typestr;
-		if (type < 0)
-		{
-			switch (type)
-			{
-			case -1:
-				typestr = "dead";
-				break;
-			}
-		}
-		else
-		{
-			typestr = std::to_string(type);
-		}
+    ChatBalloon::ChatBalloon(int8_t type)
+    {
+        std::string typestr;
+        if (type < 0)
+        {
+            switch (type)
+            {
+            case -1:
+                typestr = "dead";
+                break;
+            }
+        }
+        else
+        {
+            typestr = std::to_string(type);
+        }
 
-		nl::node src = nl::nx::ui["ChatBalloon.img"][typestr];
+        nl::node src = nl::nx::ui["ChatBalloon.img"][typestr];
 
-		arrow = src["arrow"];
-		frame = src;
+        arrow = src["arrow"];
+        frame = src;
 
-		textlabel = { Text::A11M, Text::CENTER, Text::BLACK, "", 80 };
+        textlabel = { Text::A11M, Text::CENTER, Text::BLACK, "", 80 };
 
-		duration = 0;
-	}
+        duration = 0;
+    }
 
-	ChatBalloon::ChatBalloon() 
-		: ChatBalloon(0) {}
+    ChatBalloon::ChatBalloon() 
+        : ChatBalloon(0) {}
 
-	void ChatBalloon::change_text(const std::string& text)
-	{
-		textlabel.change_text(text);
+    void ChatBalloon::change_text(const std::string& text)
+    {
+        textlabel.change_text(text);
 
-		duration = DURATION;
-	}
+        duration = DURATION;
+    }
 
-	void ChatBalloon::draw(Point<int16_t> position) const
-	{
-		if (duration == 0)
-			return;
+    void ChatBalloon::draw(Point<int16_t> position) const
+    {
+        if (duration == 0)
+            return;
 
-		int16_t width = textlabel.width();
-		int16_t height = textlabel.height();
+        int16_t width = textlabel.width();
+        int16_t height = textlabel.height();
 
-		frame.draw(position, width, height);
-		arrow.draw(position);
-		textlabel.draw(position - Point<int16_t>(0, height + 4));
-	}
+        frame.draw(position, width, height);
+        arrow.draw(position);
+        textlabel.draw(position - Point<int16_t>(0, height + 4));
+    }
 
-	void ChatBalloon::update()
-	{
-		duration -= Constants::TIMESTEP;
-		if (duration < 0)
-			duration = 0;
-	}
+    void ChatBalloon::update()
+    {
+        duration -= Constants::TIMESTEP;
+        if (duration < 0)
+            duration = 0;
+    }
 
-	void ChatBalloon::expire()
-	{
-		duration = 0;
-	}
+    void ChatBalloon::expire()
+    {
+        duration = 0;
+    }
 }

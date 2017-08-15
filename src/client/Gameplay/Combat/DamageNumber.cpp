@@ -24,173 +24,173 @@
 
 namespace jrc
 {
-	DamageNumber::DamageNumber(Type t, int32_t damage, int16_t starty, int16_t x)
-	{
-		type = t;
+    DamageNumber::DamageNumber(Type t, int32_t damage, int16_t starty, int16_t x)
+    {
+        type = t;
 
-		if (damage > 0)
-		{
-			miss = false;
+        if (damage > 0)
+        {
+            miss = false;
 
-			std::string number = std::to_string(damage);
-			firstnum = number[0];
-			if (number.size() > 1)
-			{
-				restnum = number.substr(1);
-				multiple = true;
-			}
-			else
-			{
-				restnum = "";
-				multiple = false;
-			}
+            std::string number = std::to_string(damage);
+            firstnum = number[0];
+            if (number.size() > 1)
+            {
+                restnum = number.substr(1);
+                multiple = true;
+            }
+            else
+            {
+                restnum = "";
+                multiple = false;
+            }
 
-			int16_t total = getadvance(firstnum, true);
-			for (size_t i = 0; i < restnum.length(); i++)
-			{
-				char c = restnum[i];
-				int16_t advance;
-				if (i < restnum.length() - 1)
-				{
-					char n = restnum[i + 1];
-					advance = (getadvance(c, false) + getadvance(n, false)) / 2;
-				}
-				else
-				{
-					advance = getadvance(c, false);
-				}
-				total += advance;
-			}
-			shift = total / 2;
-		}
-		else
-		{
-			shift = charsets[type][true].getw('M') / 2;
-			miss = true;
-		}
+            int16_t total = getadvance(firstnum, true);
+            for (size_t i = 0; i < restnum.length(); i++)
+            {
+                char c = restnum[i];
+                int16_t advance;
+                if (i < restnum.length() - 1)
+                {
+                    char n = restnum[i + 1];
+                    advance = (getadvance(c, false) + getadvance(n, false)) / 2;
+                }
+                else
+                {
+                    advance = getadvance(c, false);
+                }
+                total += advance;
+            }
+            shift = total / 2;
+        }
+        else
+        {
+            shift = charsets[type][true].getw('M') / 2;
+            miss = true;
+        }
 
-		moveobj.set_x(x);
-		moveobj.set_y(starty);
-		moveobj.vspeed = -0.25;
-		opacity.set(1.5f);
-	}
+        moveobj.set_x(x);
+        moveobj.set_y(starty);
+        moveobj.vspeed = -0.25;
+        opacity.set(1.5f);
+    }
 
-	DamageNumber::DamageNumber() {}
+    DamageNumber::DamageNumber() {}
 
-	void DamageNumber::draw(double viewx, double viewy, float alpha) const
-	{
-		Point<int16_t> absolute = moveobj.get_absolute(viewx, viewy, alpha);
-		Point<int16_t> position = absolute - Point<int16_t>(0, shift);
-		float interopc = opacity.get(alpha);
+    void DamageNumber::draw(double viewx, double viewy, float alpha) const
+    {
+        Point<int16_t> absolute = moveobj.get_absolute(viewx, viewy, alpha);
+        Point<int16_t> position = absolute - Point<int16_t>(0, shift);
+        float interopc = opacity.get(alpha);
 
-		if (miss)
-		{
-			charsets[type][true]
-				.draw('M', { position, interopc });
-		}
-		else
-		{
-			charsets[type][false]
-				.draw(firstnum, { position, interopc });
+        if (miss)
+        {
+            charsets[type][true]
+                .draw('M', { position, interopc });
+        }
+        else
+        {
+            charsets[type][false]
+                .draw(firstnum, { position, interopc });
 
-			if (multiple)
-			{
-				int16_t first_advance = getadvance(firstnum, true);
-				position.shift_x(first_advance);
+            if (multiple)
+            {
+                int16_t first_advance = getadvance(firstnum, true);
+                position.shift_x(first_advance);
 
-				for (size_t i = 0; i < restnum.length(); i++)
-				{
-					char c = restnum[i];
-					Point<int16_t> yshift = { 0, (i % 2) ? -2 : 2 };
-					charsets[type][true]
-						.draw(c, { position + yshift, interopc });
+                for (size_t i = 0; i < restnum.length(); i++)
+                {
+                    char c = restnum[i];
+                    Point<int16_t> yshift = { 0, (i % 2) ? -2 : 2 };
+                    charsets[type][true]
+                        .draw(c, { position + yshift, interopc });
 
-					int16_t advance;
-					if (i < restnum.length() - 1)
-					{
-						char n = restnum[i + 1];
-						int16_t c_advance = getadvance(c, false);
-						int16_t n_advance = getadvance(n, false);
-						advance = (c_advance + n_advance) / 2;
-					}
-					else
-					{
-						advance = getadvance(c, false);
-					}
+                    int16_t advance;
+                    if (i < restnum.length() - 1)
+                    {
+                        char n = restnum[i + 1];
+                        int16_t c_advance = getadvance(c, false);
+                        int16_t n_advance = getadvance(n, false);
+                        advance = (c_advance + n_advance) / 2;
+                    }
+                    else
+                    {
+                        advance = getadvance(c, false);
+                    }
 
-					position.shift_x(advance);
-				}
-			}
-		}
-	}
+                    position.shift_x(advance);
+                }
+            }
+        }
+    }
 
-	int16_t DamageNumber::getadvance(char c, bool first) const
-	{
-		constexpr size_t LENGTH = 10;
-		constexpr int16_t advances[LENGTH] =
-		{
-			24, 20, 22, 22, 24, 23, 24, 22, 24, 24
-		};
+    int16_t DamageNumber::getadvance(char c, bool first) const
+    {
+        constexpr size_t LENGTH = 10;
+        constexpr int16_t advances[LENGTH] =
+        {
+            24, 20, 22, 22, 24, 23, 24, 22, 24, 24
+        };
 
-		size_t index = c - 48;
-		if (index < LENGTH)
-		{
-			int16_t advance = advances[index];
-			switch (type)
-			{
-			case CRITICAL:
-				if (first)
-				{
-					advance += 8;
-				}
-				else
-				{
-					advance += 4;
-				}
-				break;
-			default:
-				if (first)
-				{
-					advance += 2;
-				}
-			}
-			return advance;
-		}
-		else
-		{
-			return 0;
-		}
-	}
+        size_t index = c - 48;
+        if (index < LENGTH)
+        {
+            int16_t advance = advances[index];
+            switch (type)
+            {
+            case CRITICAL:
+                if (first)
+                {
+                    advance += 8;
+                }
+                else
+                {
+                    advance += 4;
+                }
+                break;
+            default:
+                if (first)
+                {
+                    advance += 2;
+                }
+            }
+            return advance;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
-	void DamageNumber::set_x(int16_t headx)
-	{
-		moveobj.set_x(headx);
-	}
+    void DamageNumber::set_x(int16_t headx)
+    {
+        moveobj.set_x(headx);
+    }
 
-	bool DamageNumber::update()
-	{
-		moveobj.move();
+    bool DamageNumber::update()
+    {
+        moveobj.move();
 
-		constexpr float FADE_STEP = Constants::TIMESTEP * 1.0f / FADE_TIME;
-		opacity -= FADE_STEP;
-		return opacity.last() <= 0.0f;
-	}
+        constexpr float FADE_STEP = Constants::TIMESTEP * 1.0f / FADE_TIME;
+        opacity -= FADE_STEP;
+        return opacity.last() <= 0.0f;
+    }
 
 
-	int16_t DamageNumber::rowheight(bool critical)
-	{
-		return critical ? 36 : 30;
-	}
+    int16_t DamageNumber::rowheight(bool critical)
+    {
+        return critical ? 36 : 30;
+    }
 
-	void DamageNumber::init()
-	{
-		charsets[NORMAL].set(false, nl::nx::effect["BasicEff.img"]["NoRed1"], Charset::LEFT);
-		charsets[NORMAL].set(true, nl::nx::effect["BasicEff.img"]["NoRed0"], Charset::LEFT);
-		charsets[CRITICAL].set(false, nl::nx::effect["BasicEff.img"]["NoCri1"], Charset::LEFT);
-		charsets[CRITICAL].set(true, nl::nx::effect["BasicEff.img"]["NoCri0"], Charset::LEFT);
-		charsets[TOPLAYER].set(false, nl::nx::effect["BasicEff.img"]["NoViolet1"], Charset::LEFT);
-		charsets[TOPLAYER].set(true, nl::nx::effect["BasicEff.img"]["NoViolet0"], Charset::LEFT);
-	}
+    void DamageNumber::init()
+    {
+        charsets[NORMAL].set(false, nl::nx::effect["BasicEff.img"]["NoRed1"], Charset::LEFT);
+        charsets[NORMAL].set(true, nl::nx::effect["BasicEff.img"]["NoRed0"], Charset::LEFT);
+        charsets[CRITICAL].set(false, nl::nx::effect["BasicEff.img"]["NoCri1"], Charset::LEFT);
+        charsets[CRITICAL].set(true, nl::nx::effect["BasicEff.img"]["NoCri0"], Charset::LEFT);
+        charsets[TOPLAYER].set(false, nl::nx::effect["BasicEff.img"]["NoViolet1"], Charset::LEFT);
+        charsets[TOPLAYER].set(true, nl::nx::effect["BasicEff.img"]["NoViolet0"], Charset::LEFT);
+    }
 
-	BoolPair<Charset> DamageNumber::charsets[NUM_TYPES];
+    BoolPair<Charset> DamageNumber::charsets[NUM_TYPES];
 }

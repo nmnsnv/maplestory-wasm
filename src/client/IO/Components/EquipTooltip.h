@@ -29,53 +29,53 @@
 
 namespace jrc
 {
-	class EquipTooltip : public Tooltip
-	{
-	public:
-		EquipTooltip();
+    class EquipTooltip : public Tooltip
+    {
+    public:
+        EquipTooltip();
 
-		void set_equip(Parent parent, int16_t invpos);
-		void draw(Point<int16_t> position) const override;
+        void set_equip(Parent parent, int16_t invpos);
+        void draw(Point<int16_t> position) const override;
 
-	private:
-		int16_t invpos;
-		int16_t height;
-		bool hasdesc;
-		bool hasslots;
-		bool is_weapon;
-		EnumMap<Maplestat::Id, std::string> reqstatstrings;
-		Texture itemicon;
+    private:
+        int16_t invpos;
+        int16_t height;
+        bool hasdesc;
+        bool hasslots;
+        bool is_weapon;
+        EnumMap<Maplestat::Id, std::string> reqstatstrings;
+        Texture itemicon;
 
-		Text name;
-		Text desc;
-		Text potflag;
-		Text flag;
-		Text category;
-		Text wepspeed;
-		Text slots;
-		Text hammers;
-		EnumMap<Equipstat::Id, Text> statlabels;
+        Text name;
+        Text desc;
+        Text potflag;
+        Text flag;
+        Text category;
+        Text wepspeed;
+        Text slots;
+        Text hammers;
+        EnumMap<Equipstat::Id, Text> statlabels;
 
-		Texture top;
-		Texture mid;
-		Texture line;
-		Texture bot;
-		Texture base;
+        Texture top;
+        Texture mid;
+        Texture line;
+        Texture bot;
+        Texture base;
 
-		EnumMap<Equip::Potential, Texture> potential;
-		Equip::Potential prank;
+        EnumMap<Equip::Potential, Texture> potential;
+        Equip::Potential prank;
 
-		Texture cover;
-		Texture shade;
+        Texture cover;
+        Texture shade;
 
-		std::vector<Maplestat::Id> requirements;
-		EnumMap<Maplestat::Id, BoolPair<Texture>> reqstattextures;
-		EnumMap<Maplestat::Id, bool> canequip;
-		EnumMap<Maplestat::Id, Point<int16_t>> reqstatpositions;
-		BoolPair<Charset> reqset;
+        std::vector<Maplestat::Id> requirements;
+        EnumMap<Maplestat::Id, BoolPair<Texture>> reqstattextures;
+        EnumMap<Maplestat::Id, bool> canequip;
+        EnumMap<Maplestat::Id, Point<int16_t>> reqstatpositions;
+        BoolPair<Charset> reqset;
 
-		Texture jobsback;
-		BoolPair<std::map<uint8_t, Texture>> jobs;
-		std::vector<uint8_t> okjobs;
-	};
+        Texture jobsback;
+        BoolPair<std::map<uint8_t, Texture>> jobs;
+        std::vector<uint8_t> okjobs;
+    };
 }

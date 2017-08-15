@@ -26,41 +26,41 @@
 
 namespace jrc
 {
-	class MapDrops
-	{
-	public:
-		MapDrops();
+    class MapDrops
+    {
+    public:
+        MapDrops();
 
-		// Initialize the meso icons.
-		void init();
+        // Initialize the meso icons.
+        void init();
 
-		// Draw all drops on a layer.
-		void draw(Layer::Id layer, double viewx, double viewy, float alpha) const;
-		// Update all drops.
-		void update(const Physics& physics);
+        // Draw all drops on a layer.
+        void draw(Layer::Id layer, double viewx, double viewy, float alpha) const;
+        // Update all drops.
+        void update(const Physics& physics);
 
-		// Spawn a new drop.
-		void spawn(DropSpawn&& spawn);
-		// Remove a drop.
-		void remove(int32_t oid, int8_t mode, const PhysicsObject* looter);
-		// Remove all drops.
-		void clear();
+        // Spawn a new drop.
+        void spawn(DropSpawn&& spawn);
+        // Remove a drop.
+        void remove(int32_t oid, int8_t mode, const PhysicsObject* looter);
+        // Remove all drops.
+        void clear();
 
-		// Find a drop which can be picked up at the specified position.
-		using Loot = std::pair<int32_t, Point<int16_t>>;
-		Loot find_loot_at(Point<int16_t> playerpos);
+        // Find a drop which can be picked up at the specified position.
+        using Loot = std::pair<int32_t, Point<int16_t>>;
+        Loot find_loot_at(Point<int16_t> playerpos);
 
-	private:
-		MapObjects drops;
+    private:
+        MapObjects drops;
 
-		enum MesoIcon
-		{
-			BRONZE, GOLD, BUNDLE, BAG,
-			NUM_ICONS
-		};
-		std::array<Animation, NUM_ICONS> mesoicons;
-		bool lootenabled;
+        enum MesoIcon
+        {
+            BRONZE, GOLD, BUNDLE, BAG,
+            NUM_ICONS
+        };
+        std::array<Animation, NUM_ICONS> mesoicons;
+        bool lootenabled;
 
-		std::queue<DropSpawn> spawns;
-	};
+        std::queue<DropSpawn> spawns;
+    };
 }

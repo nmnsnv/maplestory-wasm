@@ -25,42 +25,42 @@
 
 namespace jrc
 {
-	// Contains information about an equip.
-	class EquipData : public Cache<EquipData>
-	{
-	public:
-		// Returns wether the equip was loaded correctly.
-		bool is_valid() const;
-		// Returns wether the equip was loaded correctly.
-		explicit operator bool() const;
+    // Contains information about an equip.
+    class EquipData : public Cache<EquipData>
+    {
+    public:
+        // Returns wether the equip was loaded correctly.
+        bool is_valid() const;
+        // Returns wether the equip was loaded correctly.
+        explicit operator bool() const;
 
-		// Returns wether this equip has equipslot WEAPON.
-		bool is_weapon() const;
-		// Returns a required base stat.
-		int16_t get_reqstat(Maplestat::Id stat) const;
-		// Returns a default stat.
-		int16_t get_defstat(Equipstat::Id stat) const;
-		// Returns the equip slot.
-		Equipslot::Id get_eqslot() const;
-		// Returns the category name.
-		const std::string& get_type() const;
-		// Returns the general item data (name, price, etc.).
-		const ItemData& get_itemdata() const;
+        // Returns wether this equip has equipslot WEAPON.
+        bool is_weapon() const;
+        // Returns a required base stat.
+        int16_t get_reqstat(Maplestat::Id stat) const;
+        // Returns a default stat.
+        int16_t get_defstat(Equipstat::Id stat) const;
+        // Returns the equip slot.
+        Equipslot::Id get_eqslot() const;
+        // Returns the category name.
+        const std::string& get_type() const;
+        // Returns the general item data (name, price, etc.).
+        const ItemData& get_itemdata() const;
 
-	private:
-		// Allow the cache to use the constructor.
-		friend Cache<EquipData>;
-		// Load an equip from the game files.
-		EquipData(int32_t id);
+    private:
+        // Allow the cache to use the constructor.
+        friend Cache<EquipData>;
+        // Load an equip from the game files.
+        EquipData(int32_t id);
 
-		const ItemData& itemdata;
+        const ItemData& itemdata;
 
-		EnumMap<Maplestat::Id, int16_t> reqstats;
-		EnumMap<Equipstat::Id, int16_t> defstats;
-		std::string type;
-		Equipslot::Id eqslot;
-		uint8_t slots;
-		bool cash;
-		bool tradeblock;
-	};
+        EnumMap<Maplestat::Id, int16_t> reqstats;
+        EnumMap<Equipstat::Id, int16_t> defstats;
+        std::string type;
+        Equipslot::Id eqslot;
+        uint8_t slots;
+        bool cash;
+        bool tradeblock;
+    };
 }

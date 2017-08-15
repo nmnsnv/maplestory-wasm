@@ -24,35 +24,35 @@
 
 namespace jrc
 {
-	class Keyboard
-	{
-	public:
-		struct Mapping
-		{
-			KeyType::Id type;
-			int32_t action;
+    class Keyboard
+    {
+    public:
+        struct Mapping
+        {
+            KeyType::Id type;
+            int32_t action;
 
-			Mapping()
-				: type(KeyType::NONE), action(0) {}
+            Mapping()
+                : type(KeyType::NONE), action(0) {}
 
-			Mapping(KeyType::Id in_type, int32_t in_action)
-				: type(in_type), action(in_action) {}
-		};
+            Mapping(KeyType::Id in_type, int32_t in_action)
+                : type(in_type), action(in_action) {}
+        };
 
-		Keyboard();
+        Keyboard();
 
-		void assign(uint8_t key, uint8_t type, int32_t action);
+        void assign(uint8_t key, uint8_t type, int32_t action);
 
-		int32_t shiftcode() const;
-		int32_t ctrlcode() const;
-		KeyAction::Id get_ctrl_action(int32_t keycode) const;
-		Mapping get_mapping(int32_t keycode) const;
-		Mapping get_text_mapping(int32_t keycode, bool shift) const;
+        int32_t shiftcode() const;
+        int32_t ctrlcode() const;
+        KeyAction::Id get_ctrl_action(int32_t keycode) const;
+        Mapping get_mapping(int32_t keycode) const;
+        Mapping get_text_mapping(int32_t keycode, bool shift) const;
 
-	private:
-		std::map<int32_t, Mapping> keymap;
-		std::map<int32_t, Mapping> maplekeys;
-		std::map<int32_t, KeyAction::Id> textactions;
-		std::map<int32_t, bool> keystate;
-	};
+    private:
+        std::map<int32_t, Mapping> keymap;
+        std::map<int32_t, Mapping> maplekeys;
+        std::map<int32_t, KeyAction::Id> textactions;
+        std::map<int32_t, bool> keystate;
+    };
 }

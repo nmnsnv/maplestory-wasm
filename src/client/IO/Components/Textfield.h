@@ -27,58 +27,58 @@
 
 namespace jrc
 {
-	class Textfield
-	{
-	public:
-		enum State
-		{
-			NORMAL,
-			DISABLED,
-			FOCUSED
-		};
+    class Textfield
+    {
+    public:
+        enum State
+        {
+            NORMAL,
+            DISABLED,
+            FOCUSED
+        };
 
-		Textfield(Text::Font font, Text::Alignment alignment, Text::Color color,
-			Rectangle<int16_t> bounds, size_t limit);
-		Textfield();
-		~Textfield();
+        Textfield(Text::Font font, Text::Alignment alignment, Text::Color color,
+            Rectangle<int16_t> bounds, size_t limit);
+        Textfield();
+        ~Textfield();
 
-		void draw(Point<int16_t> position) const;
-		void update(Point<int16_t> parentpos);
-		void send_key(KeyType::Id type, int32_t code, bool down);
-		void add_string(const std::string& str);
+        void draw(Point<int16_t> position) const;
+        void update(Point<int16_t> parentpos);
+        void send_key(KeyType::Id type, int32_t code, bool down);
+        void add_string(const std::string& str);
 
-		void set_state(State state);
-		void change_text(const std::string& text);
-		void set_cryptchar(int8_t character);
+        void set_state(State state);
+        void change_text(const std::string& text);
+        void set_cryptchar(int8_t character);
 
-		void set_enter_callback(std::function<void(std::string)> onreturn);
-		void set_key_callback(KeyAction::Id key, std::function<void(void)> action);
+        void set_enter_callback(std::function<void(std::string)> onreturn);
+        void set_key_callback(KeyAction::Id key, std::function<void(void)> action);
 
-		Cursor::State send_cursor(Point<int16_t> cursorpos, bool clicked);
+        Cursor::State send_cursor(Point<int16_t> cursorpos, bool clicked);
 
-		bool empty() const;
-		State get_state() const;
-		Rectangle<int16_t> get_bounds() const;
-		const std::string& get_text() const;
+        bool empty() const;
+        State get_state() const;
+        Rectangle<int16_t> get_bounds() const;
+        const std::string& get_text() const;
 
-	private:
-		void modifytext(const std::string&);
-		bool belowlimit() const;
+    private:
+        void modifytext(const std::string&);
+        bool belowlimit() const;
 
-		Text textlabel;
-		std::string text;
-		Text marker;
-		bool showmarker;
-		uint16_t elapsed;
-		size_t markerpos;
-		Rectangle<int16_t> bounds;
-		Point<int16_t> parentpos;
-		size_t limit;
-		int8_t crypt;
-		State state;
+        Text textlabel;
+        std::string text;
+        Text marker;
+        bool showmarker;
+        uint16_t elapsed;
+        size_t markerpos;
+        Rectangle<int16_t> bounds;
+        Point<int16_t> parentpos;
+        size_t limit;
+        int8_t crypt;
+        State state;
 
-		std::map<int32_t, std::function<void(void)>> callbacks;
-		std::function<void(std::string)> onreturn;
-	};
+        std::map<int32_t, std::function<void(void)>> callbacks;
+        std::function<void(std::string)> onreturn;
+    };
 }
 

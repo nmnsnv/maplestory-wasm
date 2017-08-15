@@ -22,53 +22,53 @@
 
 namespace jrc
 {
-	// Show a status message.
-	// Opcode: SHOW_STATUS_INFO(39)
-	class ShowStatusInfoHandler : public PacketHandler
-	{
-	public:
-		void handle(InPacket& recv) const override;
-	private:
-		void show_status(Text::Color color, const std::string& message) const;
-	};
+    // Show a status message.
+    // Opcode: SHOW_STATUS_INFO(39)
+    class ShowStatusInfoHandler : public PacketHandler
+    {
+    public:
+        void handle(InPacket& recv) const override;
+    private:
+        void show_status(Text::Color color, const std::string& message) const;
+    };
 
 
-	// Show a server message.
-	// Opcode: SERVER_MESSAGE(68)
-	class ServerMessageHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Show a server message.
+    // Opcode: SERVER_MESSAGE(68)
+    class ServerMessageHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
 
-	// Show another type of server message.
-	// Opcode: WEEK_EVENT_MESSAGE(77)
-	class WeekEventMessageHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Show another type of server message.
+    // Opcode: WEEK_EVENT_MESSAGE(77)
+    class WeekEventMessageHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
 
-	// Show a chat message.
-	// CHAT_RECEIVED(162)
-	class ChatReceivedHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Show a chat message.
+    // CHAT_RECEIVED(162)
+    class ChatReceivedHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
 
-	// Shows the effect of a scroll.
-	// Opcode: SCROLL_RESULT(167)
-	class ScrollResultHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Shows the effect of a scroll.
+    // Opcode: SCROLL_RESULT(167)
+    class ScrollResultHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 
 
-	// Can contain numerous different effects and messages.
-	// Opcode: SHOW_ITEM_GAIN_INCHAT(206)
-	class ShowItemGainInChatHandler : public PacketHandler
-	{
-		void handle(InPacket& recv) const override;
-	};
+    // Can contain numerous different effects and messages.
+    // Opcode: SHOW_ITEM_GAIN_INCHAT(206)
+    class ShowItemGainInChatHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 }

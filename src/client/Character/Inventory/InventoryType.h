@@ -20,30 +20,30 @@
 
 namespace jrc
 {
-	namespace InventoryType
-	{
-		// Inventory types.
-		enum Id : int8_t
-		{
-			NONE,
-			EQUIP,
-			USE,
-			SETUP,
-			ETC,
-			CASH,
-			EQUIPPED,
-			LENGTH
-		};
+    namespace InventoryType
+    {
+        // Inventory types.
+        enum Id : int8_t
+        {
+            NONE,
+            EQUIP,
+            USE,
+            SETUP,
+            ETC,
+            CASH,
+            EQUIPPED,
+            LENGTH
+        };
 
-		// Return the inventory type by item id.
-		Id by_item_id(int32_t item_id);
-		// Return the inventory type by value.
-		Id by_value(int8_t value);
-	}
+        // Return the inventory type by item id.
+        Id by_item_id(int32_t item_id);
+        // Return the inventory type by value.
+        Id by_value(int8_t value);
+    }
 
-	struct InventoryPosition
-	{
-		InventoryType::Id type;
-		int16_t slot;
-	};
+    struct InventoryPosition
+    {
+        InventoryType::Id type;
+        int16_t slot;
+    };
 }

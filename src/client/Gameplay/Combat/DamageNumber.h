@@ -24,42 +24,42 @@
 
 namespace jrc
 {
-	class DamageNumber
-	{
-	public:
-		static const size_t NUM_TYPES = 3;
-		enum Type
-		{
-			NORMAL,
-			CRITICAL,
-			TOPLAYER
-		};
+    class DamageNumber
+    {
+    public:
+        static const size_t NUM_TYPES = 3;
+        enum Type
+        {
+            NORMAL,
+            CRITICAL,
+            TOPLAYER
+        };
 
-		DamageNumber(Type type, int32_t damage, int16_t starty, int16_t x = 0);
-		DamageNumber();
+        DamageNumber(Type type, int32_t damage, int16_t starty, int16_t x = 0);
+        DamageNumber();
 
-		void draw(double viewx, double viewy, float alpha) const;
-		void set_x(int16_t headx);
-		bool update();
+        void draw(double viewx, double viewy, float alpha) const;
+        void set_x(int16_t headx);
+        bool update();
 
-		static int16_t rowheight(bool critical);
-		static void init();
+        static int16_t rowheight(bool critical);
+        static void init();
 
-	private:
-		int16_t getadvance(char c, bool first) const;
+    private:
+        int16_t getadvance(char c, bool first) const;
 
-		static constexpr uint16_t FADE_TIME = 500;
+        static constexpr uint16_t FADE_TIME = 500;
 
-		Type type;
-		bool miss;
-		bool multiple;
-		int8_t firstnum;
-		std::string restnum;
-		int16_t shift;
-		MovingObject moveobj;
-		Linear<float> opacity;
+        Type type;
+        bool miss;
+        bool multiple;
+        int8_t firstnum;
+        std::string restnum;
+        int16_t shift;
+        MovingObject moveobj;
+        Linear<float> opacity;
 
-		static BoolPair<Charset> charsets[NUM_TYPES];
-	};
+        static BoolPair<Charset> charsets[NUM_TYPES];
+    };
 }
 
