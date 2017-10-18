@@ -34,10 +34,14 @@ namespace jrc
     Error GraphicsGL::init()
     {
         if (glewInit())
+        {
             return Error::GLEW;
+        }
 
         if (FT_Init_FreeType(&ftlibrary))
+        {
             return Error::FREETYPE;
+        }
 
         GLint result = GL_FALSE;
 
@@ -54,7 +58,7 @@ namespace jrc
             "void main(void) {"
             "    float x = -1.0 + coord.x * 2.0 / screensize.x;"
             "    float y = 1.0 - (coord.y + yoffset) * 2.0 / screensize.y;"
-            "   gl_Position = vec4(x, y, 0.0, 1.0);"
+            "    gl_Position = vec4(x, y, 0.0, 1.0);"
             "    texpos = coord.zw;"
             "    colormod = color;"
             "}";
@@ -103,9 +107,16 @@ namespace jrc
         uniform_screensize = glGetUniformLocation(program, "screensize");
         uniform_yoffset = glGetUniformLocation(program, "yoffset");
         uniform_fontregion = glGetUniformLocation(program, "fontregion");
-        if (attribute_coord == -1 || attribute_color == -1 || uniform_texture == -1
-            || uniform_atlassize == -1 || uniform_yoffset == -1 || uniform_screensize == -1)
+        if (
+            attribute_coord    == -1 ||
+            attribute_color    == -1 ||
+            uniform_texture    == -1 ||
+            uniform_atlassize  == -1 ||
+            uniform_yoffset    == -1 ||
+            uniform_screensize == -1
+        ) {
             return Error::SHADER_VARS;
+        }
 
         glGenBuffers(1, &vbo);
 
@@ -123,7 +134,9 @@ namespace jrc
         const std::string FONT_BOLD = Setting<FontPathBold>().get().load();
         if (FONT_NORMAL.empty() || FONT_BOLD.empty())
         {
-            Console::get().print("Warning: A font path is empty, check your settings file.");
+            Console::get().print(
+                "Warning: A font path is empty, check your settings file."
+            );
         }
 
         const char* FONT_NORMAL_STR = FONT_NORMAL.c_str();
@@ -131,16 +144,16 @@ namespace jrc
 
         addfont(FONT_NORMAL_STR, Text::A11L, 0, 11);
         addfont(FONT_NORMAL_STR, Text::A11M, 0, 11);
-        addfont(FONT_BOLD_STR, Text::A11B, 0, 11);
+        addfont(FONT_BOLD_STR,   Text::A11B, 0, 11);
         addfont(FONT_NORMAL_STR, Text::A12M, 0, 12);
-        addfont(FONT_BOLD_STR, Text::A12B, 0, 12);
+        addfont(FONT_BOLD_STR,   Text::A12B, 0, 12);
         addfont(FONT_NORMAL_STR, Text::A13M, 0, 13);
-        addfont(FONT_BOLD_STR, Text::A13B, 0, 13);
+        addfont(FONT_BOLD_STR,   Text::A13B, 0, 13);
         addfont(FONT_NORMAL_STR, Text::A18M, 0, 18);
 
         fontymax += fontborder.y();
 
-        leftovers = QuadTree<size_t, Leftover>([](const Leftover& first, const Leftover& second){
+        leftovers = QuadTree<size_t, Leftover>([](const Leftover& first, const Leftover& second) {
             bool wcomp = first.width() >= second.width();
             bool hcomp = first.height() >= second.height();
             if (wcomp && hcomp)
@@ -287,7 +300,9 @@ namespace jrc
         size_t id = bmp.id();
         auto offiter = offsets.find(id);
         if (offiter != offsets.end())
+        {
             return offiter->second;
+        }
 
         GLshort x = 0;
         GLshort y = 0;
@@ -295,7 +310,9 @@ namespace jrc
         GLshort h = bmp.height();
 
         if (w <= 0 || h <= 0)
+        {
             return nulloffset;
+        }
 
         auto value = Leftover(x, y, w, h);
         size_t lid = leftovers.findnode(value, [](const Leftover& val, const Leftover& leaf){

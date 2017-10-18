@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -39,34 +39,36 @@ namespace jrc
     void InPacket::skip(size_t count)
     {
         if (count > length())
+        {
             throw PacketError("Stack underflow at " + std::to_string(pos));
+        }
 
         pos += count;
     }
 
-    bool InPacket::read_bool() 
-    { 
-        return read_byte() == 1; 
+    bool InPacket::read_bool()
+    {
+        return read_byte() == 1;
     }
 
-    int8_t InPacket::read_byte() 
-    { 
-        return read<int8_t>(); 
+    int8_t InPacket::read_byte()
+    {
+        return read<int8_t>();
     }
 
-    int16_t InPacket::read_short() 
-    { 
-        return read<int16_t>(); 
+    int16_t InPacket::read_short()
+    {
+        return read<int16_t>();
     }
 
-    int32_t InPacket::read_int() 
-    { 
-        return read<int32_t>(); 
+    int32_t InPacket::read_int()
+    {
+        return read<int32_t>();
     }
 
-    int64_t InPacket::read_long() 
-    { 
-        return read<int64_t>(); 
+    int64_t InPacket::read_long()
+    {
+        return read<int64_t>();
     }
 
     Point<int16_t> InPacket::read_point()
@@ -85,7 +87,8 @@ namespace jrc
     std::string InPacket::read_padded_string(uint16_t count)
     {
         std::string ret;
-        for (int16_t i = 0; i < count; i++)
+
+        for (int16_t i = 0; i < count; ++i)
         {
             char letter = read_byte();
             if (letter != '\0')
@@ -93,31 +96,32 @@ namespace jrc
                 ret.push_back(letter);
             }
         }
+
         return ret;
     }
 
     bool InPacket::inspect_bool()
-    { 
-        return inspect_byte() == 1; 
+    {
+        return inspect_byte() == 1;
     }
 
     int8_t InPacket::inspect_byte()
-    { 
-        return inspect<int8_t>(); 
+    {
+        return inspect<int8_t>();
     }
 
     int16_t InPacket::inspect_short()
-    { 
-        return inspect<int16_t>(); 
+    {
+        return inspect<int16_t>();
     }
 
     int32_t InPacket::inspect_int()
-    { 
-        return inspect<int32_t>(); 
+    {
+        return inspect<int32_t>();
     }
 
     int64_t InPacket::inspect_long()
-    { 
-        return inspect<int64_t>(); 
+    {
+        return inspect<int64_t>();
     }
 }

@@ -67,6 +67,7 @@ namespace jrc
         buffer[3] = static_cast<int8_t>(b / 0x100);
 #else
         int32_t slength = static_cast<int32_t>(length);
+
         for (int32_t i = 0; i < HEADER_LENGTH; ++i) // HEADERLEN
         {
             buffer[i] = static_cast<int8_t>(slength);
@@ -79,17 +80,23 @@ namespace jrc
     {
 #ifdef JOURNEY_USE_CRYPTO
         uint32_t headermask = 0;
-        for (std::size_t i = 0; i < 4; i++)
+
+        for (std::size_t i = 0; i < 4; ++i)
         {
             headermask |= static_cast<uint8_t>(bytes[i]) << (8 * i);
         }
-        return static_cast<int16_t>((headermask >> 16) ^ (headermask & 0xFFFF));
+
+        return static_cast<int16_t>(
+            (headermask >> 16) ^ (headermask & 0xFFFF)
+        );
 #else
         std::size_t length = 0;
+
         for (int32_t i = 0; i < HEADER_LENGTH; ++i) // HEADERLEN
         {
             length += static_cast<uint8_t>(bytes[i]) << (8 * i);
         }
+
         return length;
 #endif
     }
@@ -100,6 +107,7 @@ namespace jrc
         {
             int8_t remember = 0;
             int8_t datalen = static_cast<int8_t>(length & 0xFF);
+
             for (std::size_t i = 0; i < length; ++i)
             {
                 int8_t cur = (rollleft(bytes[i], 3) + datalen) ^ remember;
@@ -111,6 +119,7 @@ namespace jrc
 
             remember = 0;
             datalen = static_cast<int8_t>(length & 0xFF);
+
             for (std::size_t i = length; i--;)
             {
                 int8_t cur = (rollleft(bytes[i], 4) + datalen) ^ remember;
@@ -138,6 +147,7 @@ namespace jrc
 
             remember = 0;
             datalen = static_cast<uint8_t>(length & 0xFF);
+
             for (std::size_t j = 0; j < length; ++j)
             {
                 uint8_t cur = (~(bytes[j] - 0x48)) & 0xFF;
@@ -222,15 +232,18 @@ namespace jrc
     {
         std::size_t blocklength = 0x5B0;
         std::size_t offset = 0;
+
         while (offset < length)
         {
             uint8_t miv[16];
+
             for (std::size_t i = 0; i < 16; ++i)
             {
                 miv[i] = iv[i % 4];
             }
 
             std::size_t remaining = length - offset;
+
             if (remaining > blocklength)
             {
                 remaining = blocklength;
@@ -239,10 +252,12 @@ namespace jrc
             for (std::size_t x = 0; x < remaining; ++x)
             {
                 std::size_t relpos = x % 16;
+
                 if (relpos == 0)
                 {
                     aesencrypt(miv);
                 }
+
                 bytes[x + offset] ^= miv[relpos];
             }
 
@@ -333,24 +348,24 @@ namespace jrc
     void Cryptography::shiftrows(uint8_t* bytes) const
     {
         uint8_t remember = bytes[1];
-        bytes[1] = bytes[5];
-        bytes[5] = bytes[9];
-        bytes[9] = bytes[13];
+        bytes[1]  = bytes[5];
+        bytes[5]  = bytes[9];
+        bytes[9]  = bytes[13];
         bytes[13] = remember;
 
-        remember = bytes[10];
+        remember  = bytes[10];
         bytes[10] = bytes[2];
-        bytes[2] = remember;
+        bytes[2]  = remember;
 
-        remember = bytes[3];
-        bytes[3] = bytes[15];
+        remember  = bytes[3];
+        bytes[3]  = bytes[15];
         bytes[15] = bytes[11];
         bytes[11] = bytes[7];
-        bytes[7] = remember;
+        bytes[7]  = remember;
 
-        remember = bytes[14];
+        remember  = bytes[14];
         bytes[14] = bytes[6];
-        bytes[6] = remember;
+        bytes[6]  = remember;
     }
 
     uint8_t Cryptography::gmul(uint8_t x) const
@@ -362,17 +377,17 @@ namespace jrc
     {
         for (uint8_t i = 0; i < 16; i += 4)
         {
-            uint8_t cpy0 = bytes[i];
+            uint8_t cpy0 = bytes[i    ];
             uint8_t cpy1 = bytes[i + 1];
             uint8_t cpy2 = bytes[i + 2];
             uint8_t cpy3 = bytes[i + 3];
 
-            uint8_t mul0 = gmul(bytes[i]);
+            uint8_t mul0 = gmul(bytes[i    ]);
             uint8_t mul1 = gmul(bytes[i + 1]);
             uint8_t mul2 = gmul(bytes[i + 2]);
             uint8_t mul3 = gmul(bytes[i + 3]);
 
-            bytes[i] = mul0 ^ cpy3 ^ cpy2 ^ mul1 ^ cpy1;
+            bytes[i    ] = mul0 ^ cpy3 ^ cpy2 ^ mul1 ^ cpy1;
             bytes[i + 1] = mul1 ^ cpy0 ^ cpy3 ^ mul2 ^ cpy2;
             bytes[i + 2] = mul2 ^ cpy1 ^ cpy0 ^ mul3 ^ cpy3;
             bytes[i + 3] = mul3 ^ cpy2 ^ cpy1 ^ mul0 ^ cpy0;

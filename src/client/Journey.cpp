@@ -31,24 +31,35 @@
 
 #include <iostream>
 
+
 namespace jrc
 {
     Error init()
     {
         if (Error error = Session::get().init())
+        {
             return error;
+        }
 
         if (Error error = NxFiles::init())
+        {
             return error;
+        }
 
         if (Error error = Window::get().init())
+        {
             return error;
+        }
 
         if (Error error = Sound::init())
+        {
             return error;
+        }
 
         if (Error error = Music::init())
+        {
             return error;
+        }
 
         Char::init();
         DamageNumber::init();
@@ -89,7 +100,7 @@ namespace jrc
         int64_t timestep = Constants::TIMESTEP * 1000;
         int64_t accumulator = timestep;
 
-        int64_t period = 0;
+        int64_t period  = 0;
         int32_t samples = 0;
 
         while (running())
@@ -113,10 +124,10 @@ namespace jrc
             }
             else if (period)
             {
-                int64_t fps = (samples * 1000000) / period;
-                std::cout << "FPS: " << fps << std::endl;
+                //int64_t fps = (samples * 1000000) / period;
+                //std::cout << "FPS: " << fps << std::endl;
 
-                period = 0;
+                period  = 0;
                 samples = 0;
             }
         }
@@ -129,14 +140,15 @@ namespace jrc
         // Initialize and check for errors.
         if (Error error = init())
         {
-            const char* message = error.get_message();
-            const char* args = error.get_args();
-            bool can_retry = error.can_retry();
+            const char* message   = error.get_message();
+            const char* args      = error.get_args();
+            const bool  can_retry = error.can_retry();
 
             std::cout << "Error: " << message << args << std::endl;
 
             std::string command;
             std::cin >> command;
+
             if (can_retry && command == "retry")
             {
                 start();

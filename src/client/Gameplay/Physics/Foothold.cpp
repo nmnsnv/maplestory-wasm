@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -144,12 +144,12 @@ namespace jrc
     }
 
     double Foothold::slope() const
-    { 
+    {
         return is_wall() ? 0.0f : static_cast<double>(vdelta()) / hdelta();
     }
 
     double Foothold::ground_below(double x) const
-    { 
-        return is_floor() ? y1() : slope() * (x - x1()) + y1(); 
+    {
+        return is_floor() ? y1() : slope() * (x - x1()) + y1();
     }
 }

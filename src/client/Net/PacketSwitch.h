@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -55,18 +55,23 @@ namespace jrc
         template <size_t O, typename T, typename...Args>
         void emplace(Args&&...args)
         {
-            static_assert(O < NUM_HANDLERS,
-                "PacketSwitch::emplace - Opcode out of array bounds.");
-            static_assert(std::is_base_of<PacketHandler, T>::value,
-                "Error: Packet handlers must derive from PacketHandler");
+            static_assert(
+                O < NUM_HANDLERS,
+                "PacketSwitch::emplace - Opcode out of array bounds."
+            );
+            static_assert(
+                std::is_base_of<PacketHandler, T>::value,
+                "Error: Packet handlers must derive from PacketHandler."
+            );
 
             if (handlers[O])
             {
                 warn(MSG_REREGISTER, O);
             }
+
             handlers[O] = std::make_unique<T>(
                 std::forward<Args>(args)...
-                );
+            );
         }
     };
 }

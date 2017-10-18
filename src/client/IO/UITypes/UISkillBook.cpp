@@ -41,14 +41,14 @@ namespace jrc
 
         const SkillData& data = SkillData::get(id);
 
-        normal = data.get_icon(SkillData::NORMAL);
+        normal    = data.get_icon(SkillData::NORMAL);
         mouseover = data.get_icon(SkillData::MOUSEOVER);
-        disabled = data.get_icon(SkillData::DISABLED);
+        disabled  = data.get_icon(SkillData::DISABLED);
 
-        std::string namestr = data.get_name();
+        std::string namestr  = data.get_name();
         std::string levelstr = std::to_string(lv);
 
-        name = { Text::A11L, Text::LEFT, Text::DARKGREY, namestr };
+        name  = { Text::A11L, Text::LEFT, Text::DARKGREY, namestr  };
         level = { Text::A11L, Text::LEFT, Text::DARKGREY, levelstr };
         state = NORMAL;
 
@@ -67,15 +67,15 @@ namespace jrc
     {
         switch (state)
         {
-        case NORMAL:
-            normal.draw(args);
-            break;
-        case DISABLED:
-            disabled.draw(args);
-            break;
-        case MOUSEOVER:
-            mouseover.draw(args);
-            break;
+            case NORMAL:
+                normal.draw(args);
+                break;
+            case DISABLED:
+                disabled.draw(args);
+                break;
+            case MOUSEOVER:
+                mouseover.draw(args);
+                break;
         }
 
         name.draw(args + Point<int16_t>(38, -34));

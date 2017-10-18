@@ -41,7 +41,7 @@ namespace jrc
         // The packet should contain a 'reason' integer which can signify various things.
         if (int32_t reason = recv.read_int())
         {
-            // Login unsuccessfull. The LoginNotice displayed will contain the specific information.
+            // Login unsuccessful. The LoginNotice displayed will contain the specific information.
             switch (reason)
             {
             case 2:
@@ -67,12 +67,14 @@ namespace jrc
         }
         else
         {
-            // Login successfull. The packet contains information on the account, so we initialise the account with it.
+            printf("Login successful.\n");
+            // Login successful. The packet contains information on the account, so we initialise the account with it.
             Account account = LoginParser::parse_account(recv);
 
             // Save the Login ID if the box for it on the login panel is checked.
             if (Setting<SaveLogin>::get().load())
             {
+                //printf("Setting<SaveLogin>::get().load()\n");
                 Setting<DefaultAccount>::get().save(account.name);
             }
 

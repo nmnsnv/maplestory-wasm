@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -27,11 +27,11 @@ namespace jrc
     Session::Session()
     {
         connected = false;
-        length = 0;
-        pos = 0;
+        length    = 0;
+        pos       = 0;
     }
 
-    Session::~Session() 
+    Session::~Session()
     {
         if (connected)
         {
@@ -43,11 +43,13 @@ namespace jrc
     {
         // Connect to the server.
         connected = socket.open(host, port);
+
         if (connected)
         {
             // Read keys neccessary for communicating with the server.
             cryptography = { socket.get_buffer() };
         }
+
         return connected;
     }
 
@@ -57,7 +59,9 @@ namespace jrc
         std::string PORT = "8484";
 
         if (!init(HOST.c_str(), PORT.c_str()))
+        {
             return Error::CONNECTION;
+        }
 
         return Error::NONE;
     }
@@ -66,6 +70,7 @@ namespace jrc
     {
         // Close the current connection and open a new one.
         bool success = socket.close();
+
         if (success)
         {
             init(address, port);
@@ -78,29 +83,80 @@ namespace jrc
 
     void Session::process(const int8_t* bytes, size_t available)
     {
+        bool pos_was_zero = false;
         if (pos == 0)
         {
-            // Pos is 0, meaning this is the start of a new packet. Start by determining length.
+            pos_was_zero = true;
+            // Pos is 0, meaning this is the start of a new packet.
+            // Start by determining length.
             length = cryptography.check_length(bytes);
-            // Reading the length means we processed the header. Move forward by the header length.
+            // Reading the length means we processed the header.
+            // Move forward by the header length.
             bytes = bytes + HEADER_LENGTH;
             available -= HEADER_LENGTH;
         }
 
         // Determine how much we can write. Write data into the buffer.
         size_t towrite = length - pos;
+
         if (towrite > available)
+        {
             towrite = available;
+        }
 
         memcpy(buffer + pos, bytes, towrite);
         pos += towrite;
 
+        static constexpr const char hexes[] =
+        {
+            '0', '1', '2', '3',
+            '4', '5', '6', '7',
+            '8', '9', 'A', 'B',
+            'C', 'D', 'E', 'F'
+        };
+
         // Check if the current packet has been fully processed.
         if (pos >= length)
         {
+            /*
+            if (pos_was_zero)
+            {
+                std::cout << std::endl;
+
+                for (auto i = 0; i < towrite; ++i)
+                {
+                    const int b0 = (int) static_cast<unsigned char>(buffer[i]);
+                    const char chr1 = hexes[(b0 & 0xF0) >> 4];
+                    const char chr2 = hexes[b0 & 0x0F];
+                    std::cout << chr1 << chr2 << ' ';
+                }
+
+                std::cout << std::endl;
+            }
+            else
+            {
+                printf("pos was not 0\n");
+            }
+            */
+
             cryptography.decrypt(buffer, length);
 
-            try 
+            /*
+            if (pos_was_zero)
+            {
+                for (auto i = 0; i < towrite; ++i)
+                {
+                    const int b0 = (int) static_cast<unsigned char>(buffer[i]);
+                    const char chr1 = hexes[(b0 & 0xF0) >> 4];
+                    const char chr2 = hexes[b0 & 0x0F];
+                    std::cout << chr1 << chr2 << ' ';
+                }
+
+                std::cout << std::endl;
+            }
+            */
+
+            try
             {
                 packetswitch.forward(buffer, length);
             }
@@ -109,11 +165,12 @@ namespace jrc
                 Console::get().print(err.what());
             }
 
-            pos = 0;
+            pos    = 0;
             length = 0;
 
             // Check if there is more available.
             size_t remaining = available - towrite;
+
             if (remaining >= MIN_PACKET_LENGTH)
             {
                 // More packets are available, so we start over.
@@ -125,7 +182,9 @@ namespace jrc
     void Session::write(int8_t* packet_bytes, size_t packet_length)
     {
         if (!connected)
+        {
             return;
+        }
 
         int8_t header[HEADER_LENGTH];
         cryptography.create_header(header, packet_length);
@@ -137,8 +196,10 @@ namespace jrc
 
     void Session::read()
     {
-        // Check if a packet has arrived. Handle if data is sufficient: 4 bytes(header) + 2 bytes(opcode) = 6.
+        // Check if a packet has arrived. Handle if data is sufficient:
+        //     4 bytes(header) + 2 bytes(opcode) = 6.
         size_t result = socket.receive(&connected);
+
         if (result >= MIN_PACKET_LENGTH || length > 0)
         {
             // Retrieve buffer from the socket and process it.

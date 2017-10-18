@@ -294,4 +294,3 @@ namespace jrc
 
     //constexpr Rectangle<int16_t> GraphicsGL::SCREEN;
 }
-

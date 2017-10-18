@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -39,7 +39,7 @@ namespace jrc
 
         // Load all settings. If something is missing, set the default value. Can be used for reloading.
         void load();
-        // Save the current settings. 
+        // Save the current settings.
         void save() const;
 
         // Base class for an entry in the settings file.
@@ -170,13 +170,13 @@ namespace jrc
     // The normal font which will be used.
     struct FontPathNormal : public Configuration::StringEntry
     {
-        FontPathNormal() : StringEntry("FontPathNormal", "") {}
+        FontPathNormal() : StringEntry("FontPathNormal", "Noto Serif Regular") {}
     };
 
     // The bold font which will be used.
     struct FontPathBold : public Configuration::StringEntry
     {
-        FontPathBold() : StringEntry("FontPathBold", "") {}
+        FontPathBold() : StringEntry("FontPathBold", "Noto Serif Bold") {}
     };
 
     // Music Volume, a number from 0 to 100.
@@ -245,18 +245,20 @@ namespace jrc
         PosSKILL() : PointEntry("PosSKILL", "(50,150)") {}
     };
 
-    template <typename T>
     // Can be used to access settings.
+    template <typename T>
     struct Setting
     {
         // Access a setting.
         static T& get()
         {
-            static_assert(std::is_base_of<Configuration::Entry, T>::value,
-                "template parameter T for Setting must inherit from Configuration::Entry.");
+            static_assert(
+                std::is_base_of<Configuration::Entry, T>::value,
+                "template parameter T for Setting must inherit from Configuration::Entry."
+            );
 
-            auto* entry = Configuration::get()
-                .settings.get<T>();
+            auto* entry = Configuration::get().settings.get<T>();
+
             if (entry)
             {
                 return *entry;

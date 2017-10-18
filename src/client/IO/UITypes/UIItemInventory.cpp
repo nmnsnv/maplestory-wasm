@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -29,7 +29,7 @@
 
 namespace jrc
 {
-    UIItemInventory::UIItemInventory(const Inventory& invent) 
+    UIItemInventory::UIItemInventory(const Inventory& invent)
         : UIDragElement<PosINV>(Point<int16_t>(172, 20)), inventory(invent) {
 
         nl::node src = nl::nx::ui["UIWindow2.img"]["Item"];
@@ -73,7 +73,7 @@ namespace jrc
         mesolabel = { Text::A11M, Text::RIGHT, Text::LIGHTGREY };
 
         slider = {
-            11, { 50, 248 }, 152, 6, 1 + inventory.get_slotmax(tab) / 4, 
+            11, { 50, 248 }, 152, 6, 1 + inventory.get_slotmax(tab) / 4,
             [&](bool upwards) {
             int16_t shift = upwards ? -4 : 4;
             bool above = slotrange.first + shift > 0;
@@ -119,7 +119,7 @@ namespace jrc
             newslotpos.shift_y(1);
             newitemslot.draw({ newslotpos }, alpha);
         }
-        
+
         if (newtab != tab && newtab != InventoryType::NONE)
         {
             Point<int16_t> newtabpos = position + get_tabpos(newtab);
@@ -176,7 +176,7 @@ namespace jrc
         icons.clear();
 
         uint8_t numslots = inventory.get_slotmax(tab);
-        for (uint8_t i = 1; i < numslots; i++)
+        for (uint8_t i = 1; i < numslots; ++i)
         {
             update_slot(i);
         }
@@ -235,10 +235,19 @@ namespace jrc
                 switch (tab)
                 {
                 case InventoryType::EQUIP:
-                    EquipItemPacket(slot, inventory.find_equipslot(item_id)).dispatch();
+                    EquipItemPacket(
+                        slot,
+                        inventory.find_equipslot(item_id)
+                    ).dispatch();
                     break;
                 case InventoryType::USE:
-                    UseItemPacket(slot, item_id).dispatch();
+                    if (
+                        item_id / 10000 != 204 &&
+                        item_id / 10000 != 206 &&
+                        item_id / 10000 != 207
+                    ) {
+                        UseItemPacket(slot, item_id).dispatch();
+                    }
                     break;
                 }
             }

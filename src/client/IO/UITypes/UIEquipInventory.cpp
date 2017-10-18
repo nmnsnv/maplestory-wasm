@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright ï¿½ 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -30,26 +30,26 @@ namespace jrc
     UIEquipInventory::UIEquipInventory(const Inventory& invent) :
         UIDragElement<PosEQINV>(Point<int16_t>(184, 20)), inventory(invent) {
 
-        iconpositions[Equipslot::CAP] = Point<int16_t>(43, 25);
-        iconpositions[Equipslot::FACEACC] = Point<int16_t>(43, 91);
-        iconpositions[Equipslot::EYEACC] = Point<int16_t>(43, 68);
-        iconpositions[Equipslot::EARRINGS] = Point<int16_t>(109, 91);
-        iconpositions[Equipslot::TOP] = Point<int16_t>(43, 124);
-        iconpositions[Equipslot::PANTS] = Point<int16_t>(43, 157);
-        iconpositions[Equipslot::SHOES] = Point<int16_t>(76, 190);
-        iconpositions[Equipslot::GLOVES] = Point<int16_t>(10, 157);
-        iconpositions[Equipslot::CAPE] = Point<int16_t>(142, 124);
-        iconpositions[Equipslot::SHIELD] = Point<int16_t>(142, 124);
-        iconpositions[Equipslot::WEAPON] = Point<int16_t>(109, 124);
-        iconpositions[Equipslot::RING] = Point<int16_t>(109, 157);
-        iconpositions[Equipslot::RING2] = Point<int16_t>(142, 157);
-        iconpositions[Equipslot::RING3] = Point<int16_t>(109, 91);
-        iconpositions[Equipslot::RING4] = Point<int16_t>(142, 91);
-        iconpositions[Equipslot::PENDANT] = Point<int16_t>(76, 124);
-        iconpositions[Equipslot::TAMEDMOB] = Point<int16_t>(142, 91);
-        iconpositions[Equipslot::SADDLE] = Point<int16_t>(76, 124);
-        iconpositions[Equipslot::MEDAL] = Point<int16_t>(10, 58);
-        iconpositions[Equipslot::BELT] = Point<int16_t>(76, 157);
+        iconpositions[Equipslot::CAP]      = Point<int16_t>( 43,  25);
+        iconpositions[Equipslot::FACEACC]  = Point<int16_t>( 43,  91);
+        iconpositions[Equipslot::EYEACC]   = Point<int16_t>( 43,  68);
+        iconpositions[Equipslot::EARRINGS] = Point<int16_t>(109,  91);
+        iconpositions[Equipslot::TOP]      = Point<int16_t>( 43, 124);
+        iconpositions[Equipslot::PANTS]    = Point<int16_t>( 43, 157);
+        iconpositions[Equipslot::SHOES]    = Point<int16_t>( 76, 190);
+        iconpositions[Equipslot::GLOVES]   = Point<int16_t>( 10, 157);
+        iconpositions[Equipslot::CAPE]     = Point<int16_t>( 10, 124);
+        iconpositions[Equipslot::SHIELD]   = Point<int16_t>(142, 124);
+        iconpositions[Equipslot::WEAPON]   = Point<int16_t>(109, 124);
+        iconpositions[Equipslot::RING]     = Point<int16_t>(109, 157);
+        iconpositions[Equipslot::RING2]    = Point<int16_t>(142, 157);
+        iconpositions[Equipslot::RING3]    = Point<int16_t>(109,  91);
+        iconpositions[Equipslot::RING4]    = Point<int16_t>(142,  91);
+        iconpositions[Equipslot::PENDANT]  = Point<int16_t>( 76, 124);
+        iconpositions[Equipslot::TAMEDMOB] = Point<int16_t>(142,  91);
+        iconpositions[Equipslot::SADDLE]   = Point<int16_t>( 76, 124);
+        iconpositions[Equipslot::MEDAL]    = Point<int16_t>( 10,  58);
+        iconpositions[Equipslot::BELT]     = Point<int16_t>( 76, 157);
 
         nl::node source = nl::nx::ui["UIWindow2.img"]["Equip"]["character"];
         nl::node petsource = nl::nx::ui["UIWindow2.img"]["Equip"]["pet"];
@@ -112,8 +112,8 @@ namespace jrc
         {
             const Texture& texture = ItemData::get(item_id).get_icon(false);
             icons[slot] = std::make_unique<Icon>(
-                std::make_unique<EquipIcon>(slot), 
-                texture, 
+                std::make_unique<EquipIcon>(slot),
+                texture,
                 -1
                 );
         }
