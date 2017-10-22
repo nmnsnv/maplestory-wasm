@@ -2,10 +2,6 @@
 cmake_minimum_required (VERSION 3.8)
 project (JourneyClient)
 
-# Set this variable to be the absolute path of the "root" directory you're
-# building from
-set(BUILD_DIR "/home/z/code/clone/JourneyClient")
-
 # Set compiler flags
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -DASIO_STANDALONE -lglut -lGL -ldl -lXinerama -lXext -lXrandr -lXi -lXcursor -lX11 -lXxf86vm -pthread -Wall -Wno-narrowing -Wno-unused-command-line-argument")
 
@@ -33,7 +29,7 @@ FILE(GLOB Handlers_CPP   "Net/Handlers/*.cpp")
 FILE(GLOB Helpers_CPP    "Net/Handlers/Helpers/*.cpp")
 
 # Glob dependencies
-FILE(GLOB nlnx_CPP       "include/nlnx/*.cpp")
+FILE(GLOB nlnx_CPP       "../nlnx/*.cpp")
 
 # Adding file globs created above as libraries
 add_library(Audio         ${Audio_CPP})
@@ -103,17 +99,17 @@ target_link_libraries(JourneyClient Configuration)
 target_link_libraries(JourneyClient nlnx)
 
 # Link in shared object files
-target_link_libraries(JourneyClient "${BUILD_DIR}/include/freetype/objs/.libs/libfreetype.so")
-target_link_libraries(JourneyClient "${BUILD_DIR}/include/bass/x64/libbass.so")
-target_link_libraries(JourneyClient "${BUILD_DIR}/include/glew/lib/libGLEW.so")
-target_link_libraries(JourneyClient "${BUILD_DIR}/include/glfw/src/libglfw3.a")
-target_link_libraries(JourneyClient "${BUILD_DIR}/include/glfw/src/libglfw3.a")
+target_link_libraries(JourneyClient "${CMAKE_CURRENT_SOURCE_DIR}/../freetype/objs/.libs/libfreetype.so")
+target_link_libraries(JourneyClient "${CMAKE_CURRENT_SOURCE_DIR}/../bass/x64/libbass.so")
+target_link_libraries(JourneyClient "${CMAKE_CURRENT_SOURCE_DIR}/../glew/lib/libGLEW.so")
+target_link_libraries(JourneyClient "${CMAKE_CURRENT_SOURCE_DIR}/../glfw/build/src/libglfw3.a")
 
-target_link_libraries(nlnx          "${BUILD_DIR}/include/lz4/lib/liblz4.so")
+target_link_libraries(nlnx          "${CMAKE_CURRENT_SOURCE_DIR}/../lz4/lib/liblz4.so")
 
 # Include directories for project dependencies
 include_directories(".")
-include_directories("./include")
-include_directories("./include/freetype/include")
-include_directories("./include/glfw/include")
-include_directories("./include/asio/include")
+include_directories("..")
+include_directories("../freetype/include")
+include_directories("../glfw/include")
+include_directories("../asio/include")
+include_directories("../lz4/lib")
