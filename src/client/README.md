@@ -1,5 +1,7 @@
 # [LibreMaple](https://libremaple.org/) Client: a fork/continuation of JourneyClient
 
+[![License](https://img.shields.io/badge/license-AGPL%20v3.0%2B-brightgreen.svg)](https://www.gnu.org/licenses/agpl-3.0.html) [![C++ standard](https://img.shields.io/badge/C%2B%2B-14%2F17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B17) [![Discord](https://img.shields.io/badge/chat-Discord%20%7C%20%23libremaple__dev-brightgreen.svg)](https://discord.gg/xHUzzHT) [![clang++ version](https://img.shields.io/badge/clang%2B%2B-5.0-dd66aa.svg)](http://clang.llvm.org/) [![Maplestory version](https://img.shields.io/badge/Maplestory-v83-orange.svg)](https://en.wikipedia.org/wiki/MapleStory)
+
 ## JourneyClient
 
 JourneyClient is a custom, made-from-scratch game client for
