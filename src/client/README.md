@@ -41,6 +41,7 @@ The client is currently compatible with version 83 servers. For the UI file
 * [autoconf](https://www.gnu.org/software/autoconf/autoconf.html)
 * [libtool](https://www.gnu.org/software/libtool/)
 * [sh or bash](https://en.wikipedia.org/wiki/Bourne_shell)
+* [glut](https://www.opengl.org/resources/libraries/glut/) / freeglut3, freeglut3-dev (an implementation of GLUT, including development files)
 * libXmu (including the "development" version, if that's separate)
 * libXi (including the "development" version)
 * libgl-dev / libgl1-mesa-dev / libgl / mesa / libGL-devel (implementation of OpenGL with development files)
