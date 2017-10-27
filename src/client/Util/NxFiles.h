@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright � 2015-2016 Daniel Allendorf                                   //
+// Copyright © 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -25,9 +25,9 @@ namespace jrc
 {
     namespace NxFiles
     {
-        // Number of needed files.
+        /// Number of needed files.
         constexpr uint8_t NUM_FILES = 14;
-        // Names of the needed game files.
+        /// Names of the needed game files.
         constexpr std::array<const char*, NUM_FILES> filenames =
         {
             "Character.nx", "Effect.nx", "Etc.nx",   "Item.nx",
@@ -36,8 +36,11 @@ namespace jrc
             "TamingMob.nx", "UI.nx"
         };
 
-        // Initialize nlnx.
-        // When successful, also tests if the UI file contains valid images.
+        /// Initialize nlnx.
+        /// When successful, also tests if the UI file contains valid images.
+        ///
+        /// This also tests that the UI.nx file has a post-chaos image in it
+        /// as a proxy for requiring a v154+ Ui.nx.
         Error init();
     };
 }

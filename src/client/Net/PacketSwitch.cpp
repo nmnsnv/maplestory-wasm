@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright � 2015-2016 Daniel Allendorf                                   //
+// Copyright © 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -229,7 +229,7 @@ namespace jrc
         // Wrap the bytes with a parser.
         InPacket recv = { bytes, length };
         // Read the opcode to determine handler responsible.
-        uint16_t opcode = recv.read_short();
+        auto opcode = static_cast<uint16_t>(recv.read_short());
 
         if (opcode < NUM_HANDLERS)
         {

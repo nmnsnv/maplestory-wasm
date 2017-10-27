@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -31,7 +31,9 @@ namespace jrc
         head = src["head"];
         delay = src["delay"];
         if (delay == 0)
+        {
             delay = 100;
+        }
 
         bool hasa0 = src["a0"].data_type() == nl::node::type::integer;
         bool hasa1 = src["a1"].data_type() == nl::node::type::integer;
@@ -76,9 +78,9 @@ namespace jrc
 
     Frame::Frame()
     {
-        delay = 0;
+        delay     = 0;
         opacities = { 0, 0 };
-        scales = { 0, 0 };
+        scales    = { 0, 0 };
     }
 
     void Frame::draw(const DrawArgument& args) const
@@ -137,7 +139,7 @@ namespace jrc
         bool istexture = src.data_type() == nl::node::type::bitmap;
         if (istexture)
         {
-            frames.push_back(src);
+            frames.emplace_back(src);
         }
         else
         {
@@ -146,7 +148,10 @@ namespace jrc
             {
                 if (sub.data_type() == nl::node::type::bitmap)
                 {
-                    int16_t fid = string_conversion::or_default<int16_t>(sub.name(), -1);
+                    auto fid = string_conversion::or_default<int16_t>(
+                        sub.name(),
+                        -1
+                    );
                     if (fid >= 0)
                     {
                         frameids.insert(fid);
@@ -156,11 +161,13 @@ namespace jrc
 
             for (auto& fid : frameids)
             {
-                auto sub = src[std::to_string(fid)];
-                frames.push_back(sub);
+                frames.emplace_back(src[std::to_string(fid)]);
             }
+
             if (frames.empty())
-                frames.push_back(Frame());
+            {
+                frames.emplace_back();
+            }
         }
 
         animated = frames.size() > 1;
@@ -169,10 +176,10 @@ namespace jrc
         reset();
     }
 
-    Animation::Animation() 
+    Animation::Animation()
     {
         animated = false;
-        zigzag = false;
+        zigzag   = false;
 
         frames.push_back(Frame());
 
@@ -233,7 +240,7 @@ namespace jrc
 
         if (timestep >= delay)
         {
-            int16_t lastframe = static_cast<int16_t>(frames.size() - 1);
+            auto lastframe = static_cast<int16_t>(frames.size() - 1);
             int16_t nextframe;
             bool ended;
             if (zigzag && lastframe > 0)
@@ -275,36 +282,42 @@ namespace jrc
 
             delay = frames[nextframe].get_delay();
             if (delay >= delta)
+            {
                 delay -= delta;
+            }
 
             opacity.set(frames[nextframe].start_opacity());
             xyscale.set(frames[nextframe].start_scale());
+
             return ended;
         }
         else
         {
             frame.normalize();
-
             delay -= timestep;
+
             return false;
         }
     }
 
     uint16_t Animation::get_delay(int16_t frame_id) const
     {
-        return frame_id < frames.size() ? frames[frame_id].get_delay() : 0;
+        return frame_id < frames.size() ? frames[frame_id].get_delay() : static_cast<uint16_t>(0u);
     }
 
     uint16_t Animation::getdelayuntil(int16_t frame_id) const
     {
         uint16_t total = 0;
-        for (int16_t i = 0; i < frame_id; i++)
+        for (int16_t i = 0; i < frame_id; ++i)
         {
             if (i >= frames.size())
+            {
                 break;
+            }
 
             total += frames[frame_id].get_delay();
         }
+
         return total;
     }
 
@@ -319,7 +332,7 @@ namespace jrc
     }
 
     Point<int16_t> Animation::get_head() const
-    { 
+    {
         return get_frame().get_head();
     }
 

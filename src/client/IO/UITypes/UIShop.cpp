@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -76,7 +76,7 @@ namespace jrc
         mesolabel = { Text::A11M, Text::RIGHT, Text::LIGHTGREY };
 
         buyslider = {
-            11, { 115, 308 }, 214, 5, 1, 
+            11, { 115, 308 }, 214, 5, 1,
             [&](bool upwards) {
             int16_t shift = upwards ? -1 : 1;
             bool above = buystate.offset + shift >= 0;
@@ -87,7 +87,7 @@ namespace jrc
             }
         } };
         sellslider = {
-            11, { 115, 308 }, 445, 5, 1, 
+            11, { 115, 308 }, 445, 5, 1,
             [&](bool upwards) {
             int16_t shift = upwards ? -1 : 1;
             bool above = sellstate.offset + shift >= 0;
@@ -205,7 +205,7 @@ namespace jrc
                 return bstate;
             }
         }
-        
+
         if (sellslider.isenabled())
         {
             Cursor::State sstate = sellslider.send_cursor(cursoroffset, clicked);
@@ -295,13 +295,13 @@ namespace jrc
             changeselltab(type);
     }
 
-    void UIShop::add_item(int32_t id, int32_t price, int32_t pitch, 
+    void UIShop::add_item(int32_t id, int32_t price, int32_t pitch,
         int32_t time, int16_t buyable) {
 
         add_rechargable(id, price, pitch, time, 0, buyable);
     }
 
-    void UIShop::add_rechargable(int32_t id, int32_t price, int32_t pitch, 
+    void UIShop::add_rechargable(int32_t id, int32_t price, int32_t pitch,
         int32_t time, int16_t chargeprice, int16_t buyable) {
 
         auto buyitem = BuyItem(meso, id, price, pitch, time, chargeprice, buyable);

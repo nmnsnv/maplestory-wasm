@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -39,32 +39,32 @@ namespace jrc
 
         constexpr Rectangle() {}
 
-        constexpr T width() const 
-        { 
-            return std::abs(lt.x() - rb.x()); 
+        constexpr T width() const
+        {
+            return std::abs(lt.x() - rb.x());
         }
 
-        constexpr T height() const 
+        constexpr T height() const
         {
-            return std::abs(lt.y() - rb.y()); 
+            return std::abs(lt.y() - rb.y());
         }
 
         constexpr T l() const
-        { 
-            return lt.x(); 
+        {
+            return lt.x();
         }
 
-        constexpr T t() const 
+        constexpr T t() const
         {
             return lt.y();
         }
 
-        constexpr T r() const 
+        constexpr T r() const
         {
-            return rb.x(); 
+            return rb.x();
         }
 
-        constexpr T b() const 
+        constexpr T b() const
         {
             return rb.y();
         }
@@ -80,12 +80,12 @@ namespace jrc
                 && Range<T>(lt.y(), rb.y()).overlaps(Range<T>(ar.lt.y(), ar.rb.y()));
         }
 
-        constexpr bool straight() const 
+        constexpr bool straight() const
         {
-            return lt == rb; 
+            return lt == rb;
         }
 
-        constexpr bool empty() const 
+        constexpr bool empty() const
         {
             return lt.straight() && rb.straight() && straight();
         }
@@ -95,25 +95,25 @@ namespace jrc
             return lt;
         }
 
-        constexpr const Point<T>& getrb() const 
+        constexpr const Point<T>& getrb() const
         {
-            return rb; 
+            return rb;
         }
 
-        constexpr Range<T> get_horizontal() const 
+        constexpr Range<T> get_horizontal() const
         {
             return{ lt.x(), rb.x() };
         }
 
-        constexpr Range<T> get_vertical() const 
+        constexpr Range<T> get_vertical() const
         {
             return{ lt.y(), rb.y() };
         }
 
         void shift(const Point<T>& v)
         {
-            lt = lt + v; 
-            rb = rb + v; 
+            lt = lt + v;
+            rb = rb + v;
         }
 
     private:

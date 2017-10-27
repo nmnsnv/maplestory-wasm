@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright � 2015-2016 Daniel Allendorf                                   //
+// Copyright © 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -17,10 +17,8 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "Session.h"
 
-#include "PacketError.h"
-
 #include "../Configuration.h"
-#include "../Console.h"
+
 
 namespace jrc
 {
@@ -83,10 +81,8 @@ namespace jrc
 
     void Session::process(const int8_t* bytes, size_t available)
     {
-        bool pos_was_zero = false;
         if (pos == 0)
         {
-            pos_was_zero = true;
             // Pos is 0, meaning this is the start of a new packet.
             // Start by determining length.
             length = cryptography.check_length(bytes);
@@ -107,54 +103,10 @@ namespace jrc
         memcpy(buffer + pos, bytes, towrite);
         pos += towrite;
 
-        static constexpr const char hexes[] =
-        {
-            '0', '1', '2', '3',
-            '4', '5', '6', '7',
-            '8', '9', 'A', 'B',
-            'C', 'D', 'E', 'F'
-        };
-
         // Check if the current packet has been fully processed.
         if (pos >= length)
         {
-            /*
-            if (pos_was_zero)
-            {
-                std::cout << std::endl;
-
-                for (auto i = 0; i < towrite; ++i)
-                {
-                    const int b0 = (int) static_cast<unsigned char>(buffer[i]);
-                    const char chr1 = hexes[(b0 & 0xF0) >> 4];
-                    const char chr2 = hexes[b0 & 0x0F];
-                    std::cout << chr1 << chr2 << ' ';
-                }
-
-                std::cout << std::endl;
-            }
-            else
-            {
-                printf("pos was not 0\n");
-            }
-            */
-
             cryptography.decrypt(buffer, length);
-
-            /*
-            if (pos_was_zero)
-            {
-                for (auto i = 0; i < towrite; ++i)
-                {
-                    const int b0 = (int) static_cast<unsigned char>(buffer[i]);
-                    const char chr1 = hexes[(b0 & 0xF0) >> 4];
-                    const char chr2 = hexes[b0 & 0x0F];
-                    std::cout << chr1 << chr2 << ' ';
-                }
-
-                std::cout << std::endl;
-            }
-            */
 
             try
             {

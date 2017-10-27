@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -19,7 +19,7 @@
 
 namespace jrc
 {
-    Drop::Drop(int32_t id, int32_t own, Point<int16_t> start, Point<int16_t> dst, 
+    Drop::Drop(int32_t id, int32_t own, Point<int16_t> start, Point<int16_t> dst,
         int8_t type, int8_t mode, bool pldrp) : MapObject(id) {
 
         owner = own;
@@ -74,13 +74,13 @@ namespace jrc
                 angle += SPINSTEP;
             }
         }
-        
+
         if (state == FLOATING)
         {
             phobj.y = basey + 5.0f + (cos(moved) - 1.0f) * 2.5f;
             moved = (moved < 360.0f) ? moved + 0.025f : 0.0f;
         }
-        
+
         if (state == PICKEDUP)
         {
             static const uint16_t PICKUPTIME = 48;
@@ -126,9 +126,9 @@ namespace jrc
     }
 
     Rectangle<int16_t> Drop::bounds() const
-    { 
+    {
         auto lt = get_position();
         auto rb = lt + Point<int16_t>(32, 32);
-        return Rectangle<int16_t>(lt, rb); 
+        return Rectangle<int16_t>(lt, rb);
     }
 }

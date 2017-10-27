@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -68,7 +68,7 @@ namespace jrc
         {
             auto level = string_conversion::or_zero<uint16_t>(sub.name());
             effects.emplace(std::piecewise_construct,
-                std::forward_as_tuple(level), 
+                std::forward_as_tuple(level),
                 std::forward_as_tuple(sub["hit"]["0"], sub["hit"]["1"])
                 );
         }

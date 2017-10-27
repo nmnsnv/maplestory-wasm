@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright � 2015-2016 Daniel Allendorf                                   //
+// Copyright © 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -53,10 +53,11 @@ namespace jrc
     }
 
 
-    Error Sound::init()
-    {
-        if (!BASS_Init(1, 44100, 0, nullptr, 0))
+    Error Sound::init() {
+        if (!BASS_Init(1, 44100, 0, nullptr, nullptr))
+        {
             return Error::AUDIO;
+        }
 
         nl::node uisrc = nl::nx::sound["UI.img"];
 
@@ -90,7 +91,7 @@ namespace jrc
 
     bool Sound::set_sfxvolume(uint8_t vol)
     {
-        return BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, vol * 100) == TRUE;
+        return BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, vol * 100u) == TRUE;
     }
 
     void Sound::play(size_t id)
@@ -108,7 +109,7 @@ namespace jrc
     {
         nl::audio ad = src;
 
-        auto data = reinterpret_cast<const void*>(ad.data());
+        const void* data = ad.data();
 
         if (data)
         {
@@ -145,15 +146,12 @@ namespace jrc
     EnumMap<Sound::Name, size_t> Sound::soundids;
 
 
-    Music::Music(std::string p)
-    {
-        path = p;
-    }
+    Music::Music(const std::string& p) : path(p) {}
 
     void Music::play() const
     {
         static HSTREAM stream = 0;
-        static std::string bgmpath = "";
+        static std::string bgmpath;
 
         if (path == bgmpath)
         {
@@ -161,7 +159,7 @@ namespace jrc
         }
 
         nl::audio ad = nl::nx::sound.resolve(path);
-        auto data = reinterpret_cast<const void*>(ad.data());
+        const void* data = ad.data();
 
         if (data)
         {
@@ -199,6 +197,6 @@ namespace jrc
 
     bool Music::set_bgmvolume(uint8_t vol)
     {
-        return BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, vol * 100) == TRUE;
+        return BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, vol * 100u) == TRUE;
     }
 }

@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -44,7 +44,7 @@ namespace jrc
         sprites.emplace_back(frame, Point<int16_t>(400, 290));
 
         buttons[BT_ENTERWORLD] = std::make_unique<MapleButton>(
-            channelsrc["button:GoWorld"], 
+            channelsrc["button:GoWorld"],
             Point<int16_t>(200, 170)
             );
 

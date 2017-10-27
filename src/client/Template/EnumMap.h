@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -27,7 +27,7 @@ namespace jrc
     class EnumMap
     {
     public:
-        template <typename...Args>
+        template <typename... Args>
         // Initialize with an initializer list.
         EnumMap(Args&&... args)
             : m_values{ { std::forward<Args>(args)... } } {
@@ -57,8 +57,8 @@ namespace jrc
             }
         }
 
-        template <typename...Args>
-        void emplace(K key, Args&&...args)
+        template <typename... Args>
+        void emplace(K key, Args&&... args)
         {
             m_values[key] = { std::forward<Args>(args)... };
         }
@@ -99,7 +99,7 @@ namespace jrc
                 }
             };
 
-            node operator *()
+            node operator*()
             {
                 return node{ first(), second() };
             }
@@ -116,7 +116,7 @@ namespace jrc
 
             T& second()
             {
-                if (!this)
+                if (!this) // Clang says this never happens
                 {
                     throw std::out_of_range("iterator out of range");
                 }
@@ -126,18 +126,18 @@ namespace jrc
                 }
             }
 
-            base_iterator& operator ++()
+            base_iterator& operator++()
             {
                 index++;
                 return *this;
             }
 
-            bool operator != (const base_iterator& other) const
+            bool operator!=(const base_iterator& other) const
             {
                 return index != other.index;
             }
 
-            bool operator == (const base_iterator& other) const
+            bool operator==(const base_iterator& other) const
             {
                 return index == other.index;
             }
@@ -146,39 +146,40 @@ namespace jrc
             T* value;
             index_type index;
         };
-        using iterator = base_iterator<V>;
+
+        using iterator       = base_iterator<V>;
         using const_iterator = base_iterator<const V>;
-        using node = typename iterator::node;
-        using cnode = typename const_iterator::node;
+        using node           = typename iterator::node;
+        using cnode          = typename const_iterator::node;
 
         iterator find(K key)
         {
-            return{ m_values.data(), key };
+            return { m_values.data(), key };
         }
 
         const_iterator find(K key) const
         {
-            return{ m_values.data(), key };
+            return { m_values.data(), key };
         }
 
         iterator begin()
         {
-            return{ m_values.data(), 0 };
+            return { m_values.data(), 0 };
         }
 
         iterator end()
         {
-            return{ m_values.data(), LENGTH };
+            return { m_values.data(), LENGTH };
         }
 
         const_iterator begin() const
         {
-            return{ m_values.data(), 0 };
+            return { m_values.data(), 0 };
         }
 
         const_iterator end() const
         {
-            return{ m_values.data(), LENGTH };
+            return { m_values.data(), LENGTH };
         }
 
         const std::array<K, LENGTH>& keys() const

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -43,9 +43,9 @@ namespace jrc
         Cursor::State send_cursor(bool clicked, Point<int16_t> position) override;
 
         void reset(int32_t npcid);
-        void add_item(int32_t id, int32_t price, 
+        void add_item(int32_t id, int32_t price,
             int32_t pitch, int32_t time, int16_t buyable);
-        void add_rechargable(int32_t id, int32_t price, int32_t pitch, 
+        void add_rechargable(int32_t id, int32_t price, int32_t pitch,
             int32_t time, int16_t chargeprice, int16_t buyable);
 
         void modify(InventoryType::Id type);

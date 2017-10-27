@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -27,7 +27,7 @@
         {
             try
             {
-                //int32_t selection = std::stoi(str.substr(pos + 2, next - pos + 2)); 
+                //int32_t selection = std::stoi(str.substr(pos + 2, next - pos + 2));
                 str.replace(str.begin() + pos, str.begin() + next + 1, "");
                 return pos + 1;
             }
@@ -81,7 +81,7 @@
         size_t next = str.find_first_of('#', pos + 2);
         if (next != std::string::npos)
         {
-            try 
+            try
             {
                 int32_t type = std::stoi(str.substr(pos + 2, next - pos + 2));
                 std::string insert;
@@ -96,7 +96,7 @@
                 str.replace(str.begin() + pos, str.begin() + next + 1, insert);
                 return pos + insert.length() + 1;
             }
-            catch (const std::exception&) 
+            catch (const std::exception&)
             {
                 str.replace(str.begin() + pos, str.begin() + next + 1, "FORMATERROR");
                 return pos + 11 + 1;

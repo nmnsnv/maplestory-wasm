@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <map>
+
 
 namespace jrc
 {
@@ -60,7 +61,7 @@ namespace jrc
             bool valid;
 
             WarpInfo(int32_t m, bool i, std::string tn, std::string n)
-                : mapid(m), intramap(i), toname(tn), name(n) {
+                : mapid(m), toname(tn), intramap(i), name(n) {
 
                 valid = mapid < 999999999;
             }

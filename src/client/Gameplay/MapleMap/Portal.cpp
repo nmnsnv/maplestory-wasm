@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -20,13 +20,13 @@
 namespace jrc
 {
     Portal::Portal(const Animation* a, Type t, std::string nm, bool intramap,
-        Point<int16_t> p, int32_t tid, std::string tnm) 
+        Point<int16_t> p, int32_t tid, std::string tnm)
         : animation(a), type(t), name(nm), position(p), warpinfo(tid, intramap, tnm, nm) {
 
         touched = false;
     }
 
-    Portal::Portal() 
+    Portal::Portal()
         : Portal(nullptr, SPAWN, "", false, Point<int16_t>(), 0, "") {}
 
     void Portal::update(Point<int16_t> playerpos)

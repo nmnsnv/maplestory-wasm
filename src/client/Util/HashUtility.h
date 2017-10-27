@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -24,7 +24,7 @@
 
 namespace jrc
 {
-    // Uses hashing to calculate the hash value of a game file. 
+    // Uses hashing to calculate the hash value of a game file.
     namespace HashUtility
     {
         // Calculate file hash using the fast xxhash algorithm.

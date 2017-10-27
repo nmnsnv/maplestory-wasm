@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -70,7 +70,7 @@ namespace jrc
     class EquipItemPacket : public MoveItemPacket
     {
     public:
-        EquipItemPacket(int16_t src, Equipslot::Id dest) 
+        EquipItemPacket(int16_t src, Equipslot::Id dest)
             : MoveItemPacket(InventoryType::EQUIP, src, -dest, 1) {}
     };
 
@@ -80,7 +80,7 @@ namespace jrc
     class UnequipItemPacket : public MoveItemPacket
     {
     public:
-        UnequipItemPacket(int16_t src, int16_t dest) 
+        UnequipItemPacket(int16_t src, int16_t dest)
             : MoveItemPacket(InventoryType::EQUIPPED, -src, dest, 1) {}
     };
 
@@ -99,7 +99,7 @@ namespace jrc
     };
 
 
-    // Requests using a scroll on an equip. 
+    // Requests using a scroll on an equip.
     // Opcode: SCROLL_EQUIP(86)
     class ScrollEquipPacket : public OutPacket
     {

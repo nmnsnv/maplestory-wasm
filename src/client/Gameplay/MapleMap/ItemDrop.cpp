@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -20,7 +20,7 @@
 namespace jrc
 {
     ItemDrop::ItemDrop(int32_t oid, int32_t owner, Point<int16_t> start,
-        Point<int16_t> dest, int8_t type, int8_t mode, int32_t iid, bool pd, const Texture& icn) 
+        Point<int16_t> dest, int8_t type, int8_t mode, int32_t iid, bool pd, const Texture& icn)
         : Drop(oid, owner, start, dest, type, mode, pd), icon(icn), itemid(iid) {}
 
     void ItemDrop::draw(double viewx, double viewy, float alpha) const

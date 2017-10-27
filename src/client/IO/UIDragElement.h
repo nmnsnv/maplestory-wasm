@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -73,11 +73,11 @@ namespace jrc
         }
 
     protected:
-        UIDragElement(Point<int16_t> d) : dragarea(d) 
+        UIDragElement(Point<int16_t> d) : dragarea(d)
         {
             position = Setting<T>::get().load();
         }
-        
+
         bool dragged;
         Point<int16_t> dragarea;
         Point<int16_t> cursoroffset;

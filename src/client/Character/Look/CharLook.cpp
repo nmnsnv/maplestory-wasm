@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -280,7 +280,7 @@ namespace jrc
                 if (actframe > 0)
                 {
                     action = drawinfo.get_action(actionstr, actframe);
-                    
+
                     float threshold = static_cast<float>(delta) / timestep;
                     stance.next(action->get_stance(), threshold);
                     stframe.next(action->get_frame(), threshold);

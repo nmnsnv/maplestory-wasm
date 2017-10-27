@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -76,11 +76,11 @@ namespace jrc
 
         constexpr DrawArgument(Point<int16_t> p, Point<int16_t> c,
             Point<int16_t> s, float xs, float ys, float opc, float ang)
-            : pos(p), center(c), stretch(s), xscale(xs), yscale(ys), color(1.0f, 1.0f, 1.0f, opc), angle(ang) {}
+            : pos(p), center(c), stretch(s), xscale(xs), yscale(ys), angle(ang), color(1.0f, 1.0f, 1.0f, opc) {}
 
         constexpr DrawArgument(Point<int16_t> p, Point<int16_t> c,
             Point<int16_t> s, float xs, float ys, Color color, float ang)
-            : pos(p), center(c), stretch(s), xscale(xs), yscale(ys), color(color), angle(ang) {}
+            : pos(p), center(c), stretch(s), xscale(xs), yscale(ys), angle(ang), color(color) {}
 
         constexpr Point<int16_t> getpos() const
         {
@@ -114,7 +114,7 @@ namespace jrc
 
         constexpr DrawArgument operator + (Point<int16_t> argpos) const
         {
-            return{
+            return {
                 pos + argpos,
                 center + argpos,
                 stretch, xscale, yscale, color, angle
@@ -123,7 +123,7 @@ namespace jrc
 
         constexpr DrawArgument operator + (float argopc) const
         {
-            return{
+            return {
                 pos, center, stretch, xscale, yscale,
                 color.a() * argopc,
                 angle
@@ -132,7 +132,7 @@ namespace jrc
 
         constexpr DrawArgument operator + (const DrawArgument& o) const
         {
-            return{
+            return {
                 pos + o.pos,
                 center + o.center,
                 stretch + o.stretch,
@@ -145,7 +145,7 @@ namespace jrc
 
         constexpr DrawArgument operator - (const DrawArgument& o) const
         {
-            return{
+            return {
                 pos - o.pos,
                 center - o.center,
                 stretch - o.stretch,
@@ -174,7 +174,7 @@ namespace jrc
             int16_t cx = center.x();
             int16_t cy = center.y();
 
-            return{
+            return {
                 cx + static_cast<int16_t>(xscale * rl),
                 cx + static_cast<int16_t>(xscale * rr),
                 cy + static_cast<int16_t>(yscale * rt),

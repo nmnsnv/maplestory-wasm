@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -23,7 +23,7 @@
 
 namespace jrc
 {
-    Icon::Icon(std::unique_ptr<Type> t, Texture tx, int16_t c) 
+    Icon::Icon(std::unique_ptr<Type> t, Texture tx, int16_t c)
         : type(std::move(t)), texture(tx), count(c) {
 
         texture.shift({ 0, 32 });
@@ -31,7 +31,7 @@ namespace jrc
         dragged = false;
     }
 
-    Icon::Icon() 
+    Icon::Icon()
         : Icon(std::make_unique<NullType>(), {}, -1) {}
 
     void Icon::draw(Point<int16_t> position) const

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright � 2015-2016 Daniel Allendorf                                   //
+// Copyright © 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -25,29 +25,16 @@
 #include <fstream>
 
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 
 
 namespace jrc
 {
     Error NxFiles::init()
     {
-        /*
-        char cwd[1024];
-
-        if (getcwd(cwd, sizeof(cwd)) != NULL)
-        {
-            printf("Current working dir: %s\n", cwd);
-        }
-        else
-        {
-            printf("Couldn't get current working directory.");
-        }
-        */
-
         for (auto filename : NxFiles::filenames)
         {
-            if (std::ifstream{ filename }.good() == false)
+            if (!std::ifstream{ filename }.good())
             {
                 return { Error::MISSING_FILE, filename };
             }

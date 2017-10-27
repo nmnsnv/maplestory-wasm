@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -36,7 +36,7 @@ namespace jrc
     {
     public:
         Session();
-        ~Session();
+        ~Session() override;
 
         // Connect using host and port from the configuration file.
         Error init();
@@ -45,7 +45,7 @@ namespace jrc
         // Check for incoming packets and handle them.
         void read();
         // Closes the current connection and opens a new one.
-        void reconnect(const char* adress, const char* port);
+        void reconnect(const char* address, const char* port);
         // Check if the connection is alive.
         bool is_connected() const;
 
@@ -68,4 +68,3 @@ namespace jrc
 #endif
     };
 }
-

@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -36,7 +36,7 @@ namespace jrc
         struct addrinfo hints;
 
         int result = WSAStartup(MAKEWORD(2, 2), &wsa_info);
-        if (result != 0) 
+        if (result != 0)
         {
             return false;
         }
@@ -47,22 +47,22 @@ namespace jrc
         hints.ai_protocol = IPPROTO_TCP;
 
         result = getaddrinfo(iaddr, port, &hints, &addr_info);
-        if (result != 0) 
+        if (result != 0)
         {
             WSACleanup();
             return false;
         }
 
-        for (ptr = addr_info; ptr != NULL; ptr = ptr->ai_next) 
+        for (ptr = addr_info; ptr != NULL; ptr = ptr->ai_next)
         {
             sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-            if (sock == INVALID_SOCKET) 
+            if (sock == INVALID_SOCKET)
             {
                 WSACleanup();
                 return false;
             }
             result = connect(sock, ptr->ai_addr, (int)ptr->ai_addrlen);
-            if (result == SOCKET_ERROR) 
+            if (result == SOCKET_ERROR)
             {
                 closesocket(sock);
                 sock = INVALID_SOCKET;
@@ -73,7 +73,7 @@ namespace jrc
 
         freeaddrinfo(addr_info);
 
-        if (sock == INVALID_SOCKET) 
+        if (sock == INVALID_SOCKET)
         {
             WSACleanup();
             return false;

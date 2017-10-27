@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -28,7 +28,7 @@ namespace jrc
     const double FLYFRICTION = 0.05;
     const double SWIMFRICTION = 0.08;
 
-    Physics::Physics(nl::node src) 
+    Physics::Physics(nl::node src)
     {
         fht = src;
     }

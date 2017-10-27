@@ -36,8 +36,12 @@
 # VS Code
 .vscode/
 
+# IntelliJ
+.idea/
+
 ## CMake stuff ##
 build/
+cmake-build-debug/
 
 ## Includes ##
 include/

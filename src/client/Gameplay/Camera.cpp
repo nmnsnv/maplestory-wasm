@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -19,6 +19,7 @@
 
 #include "../Constants.h"
 
+
 namespace jrc
 {
     Camera::Camera()
@@ -35,7 +36,7 @@ namespace jrc
         {
             next_x += hdelta * (12.0 / Constants::VIEWWIDTH);
         }
-        
+
         double next_y = y.get();
         double vdelta = Constants::VIEWHEIGHT / 2 - position.y() - next_y;
         if (std::abs(vdelta) >= 5.0)
@@ -81,18 +82,18 @@ namespace jrc
     {
         auto shortx = static_cast<int16_t>(std::round(x.get()));
         auto shorty = static_cast<int16_t>(std::round(y.get()));
-        return{ shortx, shorty };
+        return { shortx, shorty };
     }
 
     Point<int16_t> Camera::position(float alpha) const
     {
         auto interx = static_cast<int16_t>(std::round(x.get(alpha)));
         auto intery = static_cast<int16_t>(std::round(y.get(alpha)));
-        return{ interx, intery };
+        return { interx, intery };
     }
 
     Point<double> Camera::realposition(float alpha) const
     {
-        return{ x.get(alpha), y.get(alpha) };
+        return { x.get(alpha), y.get(alpha) };
     }
 }

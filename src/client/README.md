@@ -156,12 +156,11 @@ improve ease of use/compatibility with it.
 ## C++ details
 
 JourneyClient was originally developed under
-[the C++14 standard](https://en.wikipedia.org/wiki/C%2B%2B14), and as of this
-writing, the client still compiles under that standard (`-std=c++14`). However,
-it is planned to make all the C++ code compatible with
-[C++17](https://en.wikipedia.org/wiki/C%2B%2B17) and make use of C++17 features.
+[the C++14 standard](https://en.wikipedia.org/wiki/C%2B%2B14). However,
+**LibreMaple strictly uses
+[the C++17 standard](https://en.wikipedia.org/wiki/C%2B%2B17) and makes use of C++17 features**.
 
-**This project follows
+In addition, **this project follows
 [the ISO C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines)**,
 so any code that does not comply with said guidelines can be considered a bug,
 unless of course the transgression has been justified and thoroughly commented.

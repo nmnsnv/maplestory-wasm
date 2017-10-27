@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -60,7 +60,7 @@ namespace jrc
     {
     public:
         // Requests that an item should be bought from or sold to a npc shop.
-        NpcShopActionPacket(int16_t slot, int32_t itemid, int16_t qty, bool buy) 
+        NpcShopActionPacket(int16_t slot, int32_t itemid, int16_t qty, bool buy)
             : NpcShopActionPacket(buy ? BUY : SELL) {
 
             write_short(slot);
@@ -69,14 +69,14 @@ namespace jrc
         }
 
         // Requests that an item should be recharged at a npc shop.
-        NpcShopActionPacket(int16_t slot) 
+        NpcShopActionPacket(int16_t slot)
             : NpcShopActionPacket(RECHARGE) {
 
             write_short(slot);
         }
 
         // Requests exiting from a npc shop.
-        NpcShopActionPacket() 
+        NpcShopActionPacket()
             : NpcShopActionPacket(LEAVE) {}
 
     protected:

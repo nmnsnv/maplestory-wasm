@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -51,7 +51,7 @@ namespace jrc
         duration = 0;
     }
 
-    ChatBalloon::ChatBalloon() 
+    ChatBalloon::ChatBalloon()
         : ChatBalloon(0) {}
 
     void ChatBalloon::change_text(const std::string& text)

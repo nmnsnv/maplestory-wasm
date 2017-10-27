@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -63,6 +63,8 @@ namespace jrc
             case GLFW_RELEASE:
                 UI::get().send_cursor(false);
                 break;
+            default:
+                break;
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
@@ -71,15 +73,19 @@ namespace jrc
             case GLFW_PRESS:
                 UI::get().doubleclick();
                 break;
+            default:
+                break;
             }
+            break;
+        default:
             break;
         }
     }
 
     void cursor_callback(GLFWwindow*, double xpos, double ypos)
     {
-        int16_t x = static_cast<int16_t>(xpos);
-        int16_t y = static_cast<int16_t>(ypos);
+        auto x = static_cast<int16_t>(xpos);
+        auto y = static_cast<int16_t>(ypos);
         Point<int16_t> pos = Point<int16_t>(x, y);
         UI::get().send_cursor(pos);
     }
@@ -89,7 +95,9 @@ namespace jrc
         fullscreen = Setting<Fullscreen>::get().load();
 
         if (!glfwInit())
+        {
             return Error::GLFW;
+        }
 
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
         context = glfwCreateWindow(1, 1, "", nullptr, nullptr);
@@ -99,7 +107,9 @@ namespace jrc
         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
         if (Error error = GraphicsGL::get().init())
+        {
             return error;
+        }
 
         return initwindow();
     }
@@ -107,7 +117,9 @@ namespace jrc
     Error Window::initwindow()
     {
         if (glwnd)
+        {
             glfwDestroyWindow(glwnd);
+        }
 
         glwnd = glfwCreateWindow(
             Constants::VIEWWIDTH,
@@ -115,10 +127,12 @@ namespace jrc
             "Journey",
             fullscreen ? glfwGetPrimaryMonitor() : nullptr,
             context
-            );
+        );
 
         if (!glwnd)
+        {
             return Error::WINDOW;
+        }
 
         glfwMakeContextCurrent(glwnd);
 
@@ -196,7 +210,7 @@ namespace jrc
     void Window::fadeout(float step, std::function<void()> fadeproc)
     {
         opcstep = -step;
-        fadeprocedure = fadeproc;
+        fadeprocedure = std::move(fadeproc);
     }
 
     void Window::setclipboard(const std::string& text) const

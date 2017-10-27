@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -21,9 +21,9 @@
 
 namespace jrc
 {
-    void Button::set_position(Point<int16_t> pos) 
-    { 
-        position = pos; 
+    void Button::set_position(Point<int16_t> pos)
+    {
+        position = pos;
     }
 
     void Button::set_state(State s)
@@ -34,18 +34,18 @@ namespace jrc
         state = s;
     }
 
-    void Button::set_active(bool a) 
-    { 
-        active = a; 
+    void Button::set_active(bool a)
+    {
+        active = a;
     }
 
-    bool Button::is_active() const 
-    { 
-        return active && state != DISABLED; 
+    bool Button::is_active() const
+    {
+        return active && state != DISABLED;
     }
 
-    Button::State Button::get_state() const 
-    { 
-        return state; 
+    Button::State Button::get_state() const
+    {
+        return state;
     }
 }

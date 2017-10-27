@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -30,6 +30,7 @@
 #include "../../IO/UI.h"
 #include "../../IO/UITypes/UICharSelect.h"
 #include "../../IO/Window.h"
+
 
 namespace jrc
 {
@@ -69,7 +70,7 @@ namespace jrc
         recv.skip(3);
 
         int32_t mapid = recv.read_int();
-        int8_t portalid = recv.read_byte();
+        auto portalid = static_cast<uint8_t>(recv.read_byte());
 
         transition(mapid, portalid);
     }
@@ -82,11 +83,16 @@ namespace jrc
 
         auto charselect = UI::get().get_element<UICharSelect>();
         if (!charselect)
+        {
             return;
+        }
 
         const CharEntry& playerentry = charselect->get_character(cid);
         if (playerentry.cid != cid)
+        {
             return;
+        }
+
         Stage::get().loadplayer(playerentry);
 
         LoginParser::parse_stats(recv);
@@ -127,21 +133,24 @@ namespace jrc
     void SetfieldHandler::parse_inventory(InPacket& recv, Inventory& invent) const
     {
         invent.set_meso(recv.read_int());
-        invent.set_slotmax(InventoryType::EQUIP, recv.read_byte());
-        invent.set_slotmax(InventoryType::USE, recv.read_byte());
-        invent.set_slotmax(InventoryType::SETUP, recv.read_byte());
-        invent.set_slotmax(InventoryType::ETC, recv.read_byte());
-        invent.set_slotmax(InventoryType::CASH, recv.read_byte());
+        invent.set_slotmax(InventoryType::EQUIP, static_cast<uint8_t>(recv.read_byte()));
+        invent.set_slotmax(InventoryType::USE,   static_cast<uint8_t>(recv.read_byte()));
+        invent.set_slotmax(InventoryType::SETUP, static_cast<uint8_t>(recv.read_byte()));
+        invent.set_slotmax(InventoryType::ETC,   static_cast<uint8_t>(recv.read_byte()));
+        invent.set_slotmax(InventoryType::CASH,  static_cast<uint8_t>(recv.read_byte()));
 
         recv.skip(8);
 
-        for (size_t i = 0; i < 3; i++)
+        for (size_t i = 0; i < 3; ++i)
         {
-            InventoryType::Id inv = (i == 0) ? InventoryType::EQUIPPED : InventoryType::EQUIP;
+            InventoryType::Id inv =
+                i == 0 ?
+                    InventoryType::EQUIPPED :
+                    InventoryType::EQUIP;
             int16_t pos = recv.read_short();
             while (pos != 0)
             {
-                int16_t slot = (i == 1) ? -pos : pos;
+                int16_t slot = i == 1 ? -pos : pos;
                 ItemParser::parse_item(recv, inv, slot, invent);
                 pos = recv.read_short();
             }
@@ -151,12 +160,12 @@ namespace jrc
 
         InventoryType::Id toparse[4] =
         {
-            InventoryType::USE, InventoryType::SETUP, InventoryType::ETC, InventoryType::CASH
+            InventoryType::USE, InventoryType::SETUP,
+            InventoryType::ETC, InventoryType::CASH
         };
 
-        for (size_t i = 0; i < 4; i++)
+        for (auto inv : toparse)
         {
-            InventoryType::Id inv = toparse[i];
             int8_t pos = recv.read_byte();
             while (pos != 0)
             {
@@ -169,7 +178,7 @@ namespace jrc
     void SetfieldHandler::parse_skillbook(InPacket& recv, Skillbook& skills) const
     {
         int16_t size = recv.read_short();
-        for (int16_t i = 0; i < size; i++)
+        for (int16_t i = 0; i < size; ++i)
         {
             int32_t skill_id = recv.read_int();
             int32_t level = recv.read_int();
@@ -178,14 +187,12 @@ namespace jrc
             int32_t masterlevel = fourthtjob ? recv.read_int() : 0;
             skills.set_skill(skill_id, level, masterlevel, expiration);
         }
-
-        
     }
 
     void SetfieldHandler::parse_cooldowns(InPacket& recv, Player& player) const
     {
         int16_t size = recv.read_short();
-        for (int16_t i = 0; i < size; i++)
+        for (int16_t i = 0; i < size; ++i)
         {
             int32_t skill_id = recv.read_int();
             int32_t cooltime = recv.read_short();
@@ -196,7 +203,7 @@ namespace jrc
     void SetfieldHandler::parse_questlog(InPacket& recv, Questlog& quests) const
     {
         int16_t size = recv.read_short();
-        for (int16_t i = 0; i < size; i++)
+        for (int16_t i = 0; i < size; ++i)
         {
             int16_t qid = recv.read_short();
             std::string qdata = recv.read_string();
@@ -214,7 +221,7 @@ namespace jrc
 
         std::map<int16_t, int64_t> completed;
         size = recv.read_short();
-        for (int16_t i = 0; i < size; i++)
+        for (int16_t i = 0; i < size; ++i)
         {
             int16_t qid = recv.read_short();
             int64_t time = recv.read_long();
@@ -225,7 +232,7 @@ namespace jrc
     void SetfieldHandler::parse_ring1(InPacket& recv) const
     {
         int16_t rsize = recv.read_short();
-        for (int16_t i = 0; i < rsize; i++)
+        for (int16_t i = 0; i < rsize; ++i)
         {
             recv.read_int();
             recv.read_padded_string(13);
@@ -239,7 +246,7 @@ namespace jrc
     void SetfieldHandler::parse_ring2(InPacket& recv) const
     {
         int16_t rsize = recv.read_short();
-        for (int16_t i = 0; i < rsize; i++)
+        for (int16_t i = 0; i < rsize; ++i)
         {
             recv.read_int();
             recv.read_padded_string(13);
@@ -254,7 +261,7 @@ namespace jrc
     void SetfieldHandler::parse_ring3(InPacket& recv) const
     {
         int16_t rsize = recv.read_short();
-        for (int16_t i = 0; i < rsize; i++)
+        for (int16_t i = 0; i < rsize; ++i)
         {
             recv.read_int();
             recv.read_int();
@@ -270,8 +277,9 @@ namespace jrc
     void SetfieldHandler::parse_minigame(InPacket& recv) const
     {
         int16_t mgsize = recv.read_short();
-        for (int16_t i = 0; i < mgsize; i++)
+        for (int16_t i = 0; i < mgsize; ++i)
         {
+            // TODO
         }
     }
 
@@ -282,7 +290,7 @@ namespace jrc
         recv.skip(1);
 
         int16_t size = recv.read_short();
-        for (int16_t i = 0; i < size; i++)
+        for (int16_t i = 0; i < size; ++i)
         {
             int16_t cid = recv.read_short();
             int8_t mblv = recv.read_byte();
@@ -293,12 +301,12 @@ namespace jrc
 
     void SetfieldHandler::parse_telerock(InPacket& recv, Telerock& trock) const
     {
-        for (size_t i = 0; i < 5; i++)
+        for (size_t i = 0; i < 5; ++i)
         {
             trock.addlocation(recv.read_int());
         }
 
-        for (size_t i = 0; i < 10; i++)
+        for (size_t i = 0; i < 10; ++i)
         {
             trock.addviplocation(recv.read_int());
         }
@@ -307,7 +315,7 @@ namespace jrc
     void SetfieldHandler::parse_nyinfo(InPacket& recv) const
     {
         int16_t nysize = recv.read_short();
-        for (int16_t i = 0; i < nysize; i++)
+        for (int16_t i = 0; i < nysize; ++i)
         {
         }
     }
@@ -316,7 +324,7 @@ namespace jrc
     {
         std::map<int16_t, std::string> areainfo;
         int16_t arsize = recv.read_short();
-        for (int16_t i = 0; i < arsize; i++)
+        for (int16_t i = 0; i < arsize; ++i)
         {
             int16_t area = recv.read_short();
             areainfo[area] = recv.read_string();

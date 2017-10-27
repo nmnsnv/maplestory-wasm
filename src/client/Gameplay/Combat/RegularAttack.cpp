@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -61,7 +61,7 @@ namespace jrc
         return 0;
     }
 
-    SpecialMove::ForbidReason RegularAttack::can_use(int32_t, Weapon::Type weapon, 
+    SpecialMove::ForbidReason RegularAttack::can_use(int32_t, Weapon::Type weapon,
         const Job&, uint16_t, uint16_t, uint16_t bullets) const {
 
         switch (weapon)

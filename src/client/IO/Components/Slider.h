@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -30,7 +30,7 @@ namespace jrc
     class Slider
     {
     public:
-        Slider(int32_t type, Range<int16_t> vertical, int16_t x, 
+        Slider(int32_t type, Range<int16_t> vertical, int16_t x,
             int16_t unitrows, int16_t rowmax, std::function<void(bool upwards)> onmoved);
         Slider();
 

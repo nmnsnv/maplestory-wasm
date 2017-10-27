@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -37,7 +37,7 @@ namespace jrc
         int8_t update(const Physics& physics) override;
         // Add the movements which this character will go through next.
         void send_movement(const std::vector<Movement>& movements);
-        
+
         // Update a skill level.
         void update_skill(int32_t skillid, uint8_t skilllevel);
         // Update the attack speed.

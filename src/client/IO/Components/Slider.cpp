@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -21,7 +21,7 @@
 
 namespace jrc
 {
-    Slider::Slider(int32_t type, Range<int16_t> ver, int16_t xp, 
+    Slider::Slider(int32_t type, Range<int16_t> ver, int16_t xp,
         int16_t ur, int16_t rm, std::function<void(bool)> om) {
 
         vertical = ver;
@@ -222,7 +222,7 @@ namespace jrc
                 return Cursor::CANCLICK;
             }
         }
-        else 
+        else
         {
             prev.set_state(Button::NORMAL);
         }

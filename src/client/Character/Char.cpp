@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright � 2015-2016 Daniel Allendorf                                   //
+// Copyright © 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -29,7 +29,9 @@
 namespace jrc
 {
     Char::Char(int32_t o, const CharLook& lk, const std::string& name)
-        : MapObject(o), look(lk), namelabel({ Text::A13M, Text::CENTER, Text::WHITE, Text::NAMETAG, name }) {}
+        : MapObject(o),
+          look(lk),
+          namelabel({ Text::A13M, Text::CENTER, Text::WHITE, Text::NAMETAG, name }) {}
 
     void Char::draw(double viewx, double viewy, float alpha) const
     {
@@ -55,7 +57,7 @@ namespace jrc
         if (ironbody)
         {
             float ibalpha = ironbody.alpha();
-            float scale = 1.0f + ibalpha;
+            float scale   = 1.0f + ibalpha;
             float opacity = 1.0f - ibalpha;
             look.draw({ absp, scale, scale, opacity }, alpha);
         }

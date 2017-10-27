@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -27,26 +27,26 @@ namespace jrc
     {
         enum Id : int16_t
         {
-            NONE = 0, 
-            CAP = 1, 
-            FACEACC = 2, 
-            EYEACC = 3, 
-            EARRINGS = 4, 
-            TOP = 5, 
+            NONE = 0,
+            CAP = 1,
+            FACEACC = 2,
+            EYEACC = 3,
+            EARRINGS = 4,
+            TOP = 5,
             PANTS = 6,
-            SHOES = 7, 
+            SHOES = 7,
             GLOVES = 8,
-            CAPE = 9, 
-            SHIELD = 10, 
-            WEAPON = 11, 
-            RING = 12, 
+            CAPE = 9,
+            SHIELD = 10,
+            WEAPON = 11,
+            RING = 12,
             RING2 = 13,
-            RING3 = 15, 
-            RING4 = 16, 
-            PENDANT = 17, 
-            TAMEDMOB = 18, 
-            SADDLE = 19, 
-            MEDAL = 49, 
+            RING3 = 15,
+            RING4 = 16,
+            PENDANT = 17,
+            TAMEDMOB = 18,
+            SADDLE = 19,
+            MEDAL = 49,
             BELT = 50,
             LENGTH
         };

@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -66,7 +66,7 @@ namespace jrc
         };
 
     protected:
-        PartyOperationPacket(Operation op) : OutPacket(PARTY_OPERATION) 
+        PartyOperationPacket(Operation op) : OutPacket(PARTY_OPERATION)
         {
             write_byte(op);
         }
@@ -96,7 +96,7 @@ namespace jrc
     class JoinPartyPacket : public PartyOperationPacket
     {
     public:
-        JoinPartyPacket(int32_t party_id) : PartyOperationPacket(JOIN) 
+        JoinPartyPacket(int32_t party_id) : PartyOperationPacket(JOIN)
         {
             write_int(party_id);
         }

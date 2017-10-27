@@ -1,6 +1,6 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
+// Copyright Â© 2015-2016 Daniel Allendorf                                   //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -93,8 +93,8 @@ namespace jrc
 
     void UI::send_cursor(bool pressed)
     {
-        Cursor::State cursorstate = (pressed && enabled) ? 
-            Cursor::CLICKING : 
+        Cursor::State cursorstate = (pressed && enabled) ?
+            Cursor::CLICKING :
             Cursor::IDLE;
         Point<int16_t> cursorpos = cursor.get_position();
         send_cursor(cursorpos, cursorstate);
@@ -207,7 +207,7 @@ namespace jrc
         state->show_item(parent, item_id);
     }
 
-    void UI::show_skill(Tooltip::Parent parent, int32_t skill_id, 
+    void UI::show_skill(Tooltip::Parent parent, int32_t skill_id,
         int32_t level, int32_t masterlevel, int64_t expiration) {
 
         state->show_skill(parent, skill_id, level, masterlevel, expiration);

@@ -3,10 +3,12 @@ cmake_minimum_required (VERSION 3.8)
 project (JourneyClient)
 
 # Set compiler flags
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -DASIO_STANDALONE -DGLEW_NO_GLU -lglut -lGL -ldl -lXinerama -lXext -lXrandr -lXi -lXcursor -lX11 -lXxf86vm -pthread -Wall -Wno-narrowing -Wno-unused-command-line-argument")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -DASIO_STANDALONE -DGLEW_NO_GLU -lglut -lGL -ldl -lXinerama -lXext -lXrandr -lXi -lXcursor -lX11 -lXxf86vm -pthread -Wall -Wno-narrowing -Wno-unused-command-line-argument")
 
 # Globbing together each src folder's top-level *.cpp files to each form
 # their own libraries
+FILE(GLOB Root_CPP       "./*.cpp")
+
 FILE(GLOB Audio_CPP      "Audio/*.cpp")
 FILE(GLOB Character_CPP  "Character/*.cpp")
 FILE(GLOB Data_CPP       "Data/*.cpp")
@@ -15,6 +17,19 @@ FILE(GLOB Graphics_CPP   "Graphics/*.cpp")
 FILE(GLOB IO_CPP         "IO/*.cpp")
 FILE(GLOB Net_CPP        "Net/*.cpp")
 FILE(GLOB Util_CPP       "Util/*.cpp")
+
+# Headers as well
+FILE(GLOB Root_H         "./*.h")
+
+FILE(GLOB Audio_H        "Audio/*.h")
+FILE(GLOB Character_H    "Character/*.h")
+FILE(GLOB Data_H         "Data/*.h")
+FILE(GLOB Gameplay_H     "Gameplay/*.h")
+FILE(GLOB Graphics_H     "Graphics/*.h")
+FILE(GLOB IO_H           "IO/*.h")
+FILE(GLOB Net_H          "Net/*.h")
+FILE(GLOB Util_H         "Util/*.h")
+FILE(GLOB Template_H     "Template/*.h")
 
 # Glob each subdirectory as well
 FILE(GLOB Inventory_CPP  "Character/Inventory/*.cpp")
@@ -28,8 +43,68 @@ FILE(GLOB Handlers_CPP   "Net/Handlers/*.cpp")
 
 FILE(GLOB Helpers_CPP    "Net/Handlers/Helpers/*.cpp")
 
+# Those headers too
+FILE(GLOB Inventory_H    "Character/Inventory/*.h")
+FILE(GLOB Look_H         "Character/Look/*.h")
+FILE(GLOB Combat_H       "Gameplay/Combat/*.h")
+FILE(GLOB MapleMap_H     "Gameplay/MapleMap/*.h")
+FILE(GLOB Physics_H      "Gameplay/Physics/*.h")
+FILE(GLOB Components_H   "IO/Components/*.h")
+FILE(GLOB UITypes_H      "IO/UITypes/*.h")
+FILE(GLOB Handlers_H     "Net/Handlers/*.h")
+FILE(GLOB Packets_H      "Net/Packets/*.h")
+
+FILE(GLOB Helpers_H      "Net/Handlers/Helpers/*.h")
+
 # Glob dependencies
 FILE(GLOB nlnx_CPP       "../nlnx/*.cpp")
+
+# Glob dependency headers
+FILE(GLOB nlnx_H         "../nlnx/*.hpp")
+
+# Add all source files to $SOURCE_FILES for easy access
+SET(SOURCE_FILES ${Root_CPP}
+                 ${Audio_CPP}
+                 ${Character_CPP}
+                 ${Data_CPP}
+                 ${Gameplay_CPP}
+                 ${Graphics_CPP}
+                 ${IO_CPP}
+                 ${Net_CPP}
+                 ${Util_CPP}
+                 ${Inventory_CPP}
+                 ${Look_CPP}
+                 ${Combat_CPP}
+                 ${MapleMap_CPP}
+                 ${Physics_CPP}
+                 ${Components_CPP}
+                 ${UITypes_CPP}
+                 ${Handlers_CPP}
+                 ${Helpers_CPP}
+                 ${nlnx_CPP}
+                 "Configuration.cpp"
+                 ${Root_H}
+                 ${Audio_H}
+                 ${Character_H}
+                 ${Data_H}
+                 ${Gameplay_H}
+                 ${Graphics_H}
+                 ${IO_H}
+                 ${Net_H}
+                 ${Util_H}
+                 ${Template_H}
+                 ${Inventory_H}
+                 ${Look_H}
+                 ${Combat_H}
+                 ${MapleMap_H}
+                 ${Physics_H}
+                 ${Components_H}
+                 ${UITypes_H}
+                 ${Handlers_H}
+                 ${Packets_H}
+                 ${Helpers_H}
+                 ${nlnx_H}
+                 "gsl/gsl-lite.h")
 
 # Adding file globs created above as libraries
 add_library(Audio         ${Audio_CPP})
@@ -58,7 +133,7 @@ add_library(Configuration "Configuration.cpp")
 add_library(nlnx          ${nlnx_CPP})
 
 # Target executable
-add_executable(JourneyClient Journey.cpp)
+add_executable(JourneyClient ${SOURCE_FILES})
 
 # Linking between libraries
 target_link_libraries(Inventory     Data)
