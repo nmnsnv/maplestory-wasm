@@ -33,6 +33,7 @@
 #include "../../Util/Randomizer.h"
 #include "../../Util/TimedBool.h"
 
+
 namespace jrc
 {
     class Mob : public MapObject
@@ -41,11 +42,11 @@ namespace jrc
         static const size_t NUM_STANCES = 6;
         enum Stance : uint8_t
         {
-            MOVE = 2,
+            MOVE  = 2,
             STAND = 4,
-            JUMP = 6,
-            HIT = 8,
-            DIE = 10
+            JUMP  = 6,
+            HIT   = 8,
+            DIE   = 10
         };
 
         static std::string nameof(Stance stance)
@@ -63,43 +64,43 @@ namespace jrc
             return flip ? stance : stance + 1;
         }
 
-        // Construct a mob by combining data from game files with
-        // data sent by the server.
-        Mob(int32_t oid, int32_t mobid, int8_t mode, int8_t stance, uint16_t fhid,
+        /// Construct a mob by combining data from game files with
+        /// data sent by the server.
+        Mob(int32_t oid, int32_t mobid, int8_t mode, uint8_t stance, uint16_t fhid,
             bool newspawn, int8_t team, Point<int16_t> position);
 
-        // Draw the mob.
+        /// Draw the mob.
         void draw(double viewx, double viewy, float alpha) const override;
-        // Update movement and animations.
+        /// Update movement and animations.
         int8_t update(const Physics& physics) override;
 
-        // Change this mob's control mode:
-        // 0 - no control, 1 - control, 2 - aggro
+        /// Change this mob's control mode:
+        /// 0 - no control, 1 - control, 2 - aggro
         void set_control(int8_t mode);
-        // Send movement to the mob.
+        /// Send movement to the mob.
         void send_movement(Point<int16_t> start, std::vector<Movement>&& movements);
-        // Kill the mob with the appropriate type:
-        // 0 - make inactive 1 - death animation 2 - fade out
+        /// Kill the mob with the appropriate type:
+        /// 0 - make inactive 1 - death animation 2 - fade out
         void kill(int8_t killtype);
-        // Display the hp percentage above the mob.
-        // Use the playerlevel to determine color of nametag.
+        /// Display the hp percentage above the mob.
+        /// Use the playerlevel to determine color of nametag.
         void show_hp(int8_t percentage, uint16_t playerlevel);
-        // Show an effect at the mob's position.
+        /// Show an effect at the mob's position.
         void show_effect(const Animation& animation, int8_t pos, int8_t z, bool flip);
 
-        // Calculate the damage to this mob with the spcecified attack.
+        /// Calculate the damage to this mob with the spcecified attack.
         std::vector<std::pair<int32_t, bool>> calculate_damage(const Attack& attack);
-        // Apply damage to the mob.
+        /// Apply damage to the mob.
         void apply_damage(int32_t damage, bool toleft);
 
-        // Create a touch damage attack to the player.
+        /// Create a touch damage attack to the player.
         MobAttack create_touch_attack() const;
 
-        // Check if this mob collides with the specified rectangle.
+        /// Check if this mob collides with the specified rectangle.
         bool is_in_range(const Rectangle<int16_t>& range) const;
-        // Check if this mob is still alive.
+        /// Check if this mob is still alive.
         bool is_alive() const;
-        // Return the head position.
+        /// Return the head position.
         Point<int16_t> get_head_position() const;
 
     private:
@@ -111,28 +112,32 @@ namespace jrc
             NUM_DIRECTIONS
         };
 
-        // Set the stance by byte value.
+        /// Set the stance by byte value.
         void set_stance(uint8_t stancebyte);
-        // Set the stance by enum value.
+        /// Set the stance by enum value.
         void set_stance(Stance newstance);
-        // Start the death animation.
+        /// Start the death animation.
         void apply_death();
-        // Decide on the next state.
+        /// Decide on the next state.
         void next_move();
-        // Send the current position and state to the server.
+        /// Send the current position and state to the server.
         void update_movement();
 
-        // Calculate the hit chance.
+        /// Calculate the hit chance.
         float calculate_hitchance(int16_t leveldelta, int32_t accuracy) const;
-        // Calculate the minimum damage.
+        /// Calculate the minimum damage.
         double calculate_mindamage(int16_t leveldelta, double mindamage, bool magic) const;
-        // Calculate the maximum damage.
+        /// Calculate the maximum damage.
         double calculate_maxdamage(int16_t leveldelta, double maxdamage, bool magic) const;
-        // Calculate a random damage line based on the specified values.
-        std::pair<int32_t, bool> next_damage(double mindamage,
-            double maxdamage, float hitchance, float critical) const;
+        /// Calculate a random damage line based on the specified values.
+        std::pair<int32_t, bool> next_damage(
+            double mindamage,
+            double maxdamage,
+            float hitchance,
+            float critical
+        ) const;
 
-        // Return the current 'head' position.
+        /// Return the current 'head' position.
         Point<int16_t> get_head_position(Point<int16_t> position) const;
 
         std::map<Stance, Animation> animations;
@@ -185,4 +190,3 @@ namespace jrc
         Linear<float> opacity;
     };
 }
-

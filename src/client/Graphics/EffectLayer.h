@@ -23,14 +23,18 @@
 #include <map>
 #include <list>
 
+
 namespace jrc
 {
-    // A list of animations. Animations will be removed after all frames were displayed.
+    /// A list of animations. Animations will be removed after all frames were displayed.
     class EffectLayer
     {
     public:
+        /// Draws all effects with a z-value strictly less than 0.
         void drawbelow(Point<int16_t> position, float alpha) const;
+        /// Draws all effects with a z-value greater than or equal to 0.
         void drawabove(Point<int16_t> position, float alpha) const;
+        /// Remove effects whose animations are done, i.e. they have expired.
         void update();
         void add(const Animation& effect, const DrawArgument& args, int8_t z, float speed);
         void add(const Animation& effect, const DrawArgument& args, int8_t z);
@@ -53,7 +57,7 @@ namespace jrc
             {
                 return sprite.update(
                     static_cast<uint16_t>(Constants::TIMESTEP * speed)
-                    );
+                );
             }
 
         private:
@@ -61,6 +65,8 @@ namespace jrc
             float speed;
         };
 
-        std::map<int8_t, std::list<Effect>> effects;
+        /// Sorted (red-black) tree that associates z-indices (can be negative
+        /// or non-negative) with the effects at that z-index.
+        std::map<int8_t, std::vector<Effect>> effects;
     };
 }

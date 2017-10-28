@@ -72,17 +72,17 @@ namespace jrc
         nametag = charselect["nameTag"];
 
         buttons[BT_SELECTCHAR] = std::make_unique<MapleButton>(charselect["BtSelect"], charinfopos + Point<int16_t>(-76, 72));
-        buttons[BT_CREATECHAR] = std::make_unique<MapleButton>(charselect["BtNew"], Point<int16_t>(200, 495));
+        buttons[BT_CREATECHAR] = std::make_unique<MapleButton>(charselect["BtNew"],    Point<int16_t>(200, 495));
         buttons[BT_DELETECHAR] = std::make_unique<MapleButton>(charselect["BtDelete"], Point<int16_t>(320, 495));
-        buttons[BT_PAGELEFT] = std::make_unique<MapleButton>(charselect["pageL"], Point<int16_t>(100, 490));
-        buttons[BT_PAGERIGHT] = std::make_unique<MapleButton>(charselect["pageR"], Point<int16_t>(490, 490));
+        buttons[BT_PAGELEFT]   = std::make_unique<MapleButton>(charselect["pageL"],    Point<int16_t>(100, 490));
+        buttons[BT_PAGERIGHT]  = std::make_unique<MapleButton>(charselect["pageR"],    Point<int16_t>(490, 490));
 
         for (uint8_t i = 0; i < PAGESIZE; i++)
         {
             buttons[BT_CHAR0 + i] = std::make_unique<AreaButton>(
                 Point<int16_t>(105 + (120 * (i % 4)), 170 + (200 * (i > 3))),
                 Point<int16_t>(50, 80)
-                );
+            );
         }
 
         levelset = { charselect["lv"], Charset::CENTER };

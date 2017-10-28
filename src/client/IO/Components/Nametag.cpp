@@ -11,9 +11,9 @@ namespace jrc
         textures[false].push_back(src["0"]["0"]);
         textures[false].push_back(src["0"]["1"]);
         textures[false].push_back(src["0"]["2"]);
-        textures[true].push_back(src["1"]["0"]);
-        textures[true].push_back(src["1"]["1"]);
-        textures[true].push_back(src["1"]["2"]);
+        textures[true ].push_back(src["1"]["0"]);
+        textures[true ].push_back(src["1"]["1"]);
+        textures[true ].push_back(src["1"]["2"]);
 
         selected = false;
     }

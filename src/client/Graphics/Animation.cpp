@@ -181,7 +181,7 @@ namespace jrc
         animated = false;
         zigzag   = false;
 
-        frames.push_back(Frame());
+        frames.emplace_back();
 
         reset();
     }
@@ -198,10 +198,10 @@ namespace jrc
     void Animation::draw(const DrawArgument& args, float alpha) const
     {
         int16_t interframe = frame.get(alpha);
-        float interopc = opacity.get(alpha) / 255;
+        float interopc   = opacity.get(alpha) / 255;
         float interscale = xyscale.get(alpha) / 100;
 
-        bool modifyopc = interopc != 1.0f;
+        bool modifyopc   = interopc   != 1.0f;
         bool modifyscale = interscale != 1.0f;
         if (modifyopc || modifyscale)
         {
@@ -302,7 +302,10 @@ namespace jrc
 
     uint16_t Animation::get_delay(int16_t frame_id) const
     {
-        return frame_id < frames.size() ? frames[frame_id].get_delay() : static_cast<uint16_t>(0u);
+        return
+            frame_id < frames.size() ?
+                frames[frame_id].get_delay() :
+                static_cast<uint16_t>(0u);
     }
 
     uint16_t Animation::getdelayuntil(int16_t frame_id) const

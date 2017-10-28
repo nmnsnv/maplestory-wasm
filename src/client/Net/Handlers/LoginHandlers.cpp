@@ -220,9 +220,9 @@ namespace jrc
 
         // Read the ipv4 adress in a string.
         std::string addrstr;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; ++i)
         {
-            uint8_t num = static_cast<uint8_t>(recv.read_byte());
+            auto num = static_cast<uint8_t>(recv.read_byte());
             addrstr.append(std::to_string(num));
             if (i < 3)
             {

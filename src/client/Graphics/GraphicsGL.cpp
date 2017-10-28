@@ -66,7 +66,9 @@ namespace jrc
         glCompileShader(vs);
         glGetShaderiv(vs, GL_COMPILE_STATUS, &result);
         if (!result)
+        {
             return Error::VERTEX_SHADER;
+        }
 
         GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
         const char *fs_source =
@@ -90,7 +92,9 @@ namespace jrc
         glCompileShader(fs);
         glGetShaderiv(fs, GL_COMPILE_STATUS, &result);
         if (!result)
+        {
             return Error::FRAGMENT_SHADER;
+        }
 
         program = glCreateProgram();
         glAttachShader(program, vs);
@@ -98,14 +102,16 @@ namespace jrc
         glLinkProgram(program);
         glGetProgramiv(program, GL_LINK_STATUS, &result);
         if (!result)
+        {
             return Error::SHADER_PROGRAM;
+        }
 
-        attribute_coord = glGetAttribLocation(program, "coord");
-        attribute_color = glGetAttribLocation(program, "color");
-        uniform_texture = glGetUniformLocation(program, "texture");
-        uniform_atlassize = glGetUniformLocation(program, "atlassize");
+        attribute_coord    = glGetAttribLocation(program, "coord");
+        attribute_color    = glGetAttribLocation(program, "color");
+        uniform_texture    = glGetUniformLocation(program, "texture");
+        uniform_atlassize  = glGetUniformLocation(program, "atlassize");
         uniform_screensize = glGetUniformLocation(program, "screensize");
-        uniform_yoffset = glGetUniformLocation(program, "yoffset");
+        uniform_yoffset    = glGetUniformLocation(program, "yoffset");
         uniform_fontregion = glGetUniformLocation(program, "fontregion");
         if (
             attribute_coord    == -1 ||
@@ -125,8 +131,10 @@ namespace jrc
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLASW, ATLASH, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGBA, ATLASW, ATLASH, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, nullptr
+        );
 
         fontborder.set_y(1);
 
@@ -181,16 +189,20 @@ namespace jrc
     {
         FT_Face face;
         if (FT_New_Face(ftlibrary, name, 0, &face))
+        {
             return false;
+        }
 
         if (FT_Set_Pixel_Sizes(face, pixelw, pixelh))
+        {
             return false;
+        }
 
         FT_GlyphSlot g = face->glyph;
 
-        GLshort width = 0;
+        GLshort width  = 0;
         GLshort height = 0;
-        for (uint8_t c = 32; c < 128; c++)
+        for (uint8_t c = 32; c < 128; ++c)
         {
             if (FT_Load_Char(face, c, FT_LOAD_RENDER))
                 continue;
@@ -200,7 +212,9 @@ namespace jrc
 
             width += w;
             if (h > height)
+            {
                 height = h;
+            }
         }
 
         if (fontborder.x() + width > ATLASW)
@@ -215,26 +229,32 @@ namespace jrc
 
         fontborder.shift_x(width);
         if (height > fontymax)
+        {
             fontymax = height;
+        }
 
         fonts[id] = Font(width, height);
 
         GLshort ox = x;
         GLshort oy = y;
-        for (uint8_t c = 32; c < 128; c++)
+        for (uint8_t c = 32; c < 128; ++c)
         {
             if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+            {
                 continue;
+            }
 
             GLshort ax = static_cast<GLshort>(g->advance.x >> 6);
             GLshort ay = static_cast<GLshort>(g->advance.y >> 6);
-            GLshort l = static_cast<GLshort>(g->bitmap_left);
-            GLshort t = static_cast<GLshort>(g->bitmap_top);
-            GLshort w = static_cast<GLshort>(g->bitmap.width);
-            GLshort h = static_cast<GLshort>(g->bitmap.rows);
+            GLshort l  = static_cast<GLshort>(g->bitmap_left);
+            GLshort t  = static_cast<GLshort>(g->bitmap_top);
+            GLshort w  = static_cast<GLshort>(g->bitmap.width);
+            GLshort h  = static_cast<GLshort>(g->bitmap.rows);
 
-            glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, w, h,
-                GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer);
+            glTexSubImage2D(
+                GL_TEXTURE_2D, 0, ox, oy, w, h,
+                GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer
+            );
 
             Offset offset = Offset(ox, oy, w, h);
             fonts[id].chars[c] = { ax, ay, w, h, l, t, offset };
@@ -276,7 +296,7 @@ namespace jrc
 
         offsets.clear();
         leftovers.clear();
-        rlid = 1;
+        rlid   = 1;
         wasted = 0;
     }
 
@@ -405,30 +425,38 @@ namespace jrc
             }
         }
 
-        /*size_t used = ATLASW * border.y() + border.x() * yrange.second();
+        /*
+        size_t used = ATLASW * border.y() + border.x() * yrange.second();
         double usedpercent = static_cast<double>(used) / (ATLASW * ATLASH);
         double wastedpercent = static_cast<double>(wasted) / used;
-        Console::get().print("Used: " + std::to_string(usedpercent) + ", wasted: " + std::to_string(wastedpercent));*/
+        Console::get().print("Used: " + std::to_string(usedpercent) + ", wasted: " + std::to_string(wastedpercent));
+        */
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bmp.data());
         return offsets.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(id),
             std::forward_as_tuple(x, y, w, h)
-            ).first->second;
+        ).first->second;
     }
 
     void GraphicsGL::draw(const nl::bitmap& bmp, const Rectangle<int16_t>& rect,
-        const Color& color, float angle) {
-
+        const Color& color, float angle)
+    {
         if (locked)
+        {
             return;
+        }
 
         if (color.invisible())
+        {
             return;
+        }
 
         if (!rect.overlaps(SCREEN))
+        {
             return;
+        }
 
         quads.emplace_back(rect.l(), rect.r(), rect.t(), rect.b(), getoffset(bmp), color, angle);
     }
@@ -438,7 +466,9 @@ namespace jrc
 
         size_t length = text.length();
         if (length == 0)
-            return{};
+        {
+            return {};
+        }
 
         LayoutBuilder builder(fonts[id], alignment, maxwidth, formatted);
 
@@ -461,14 +491,15 @@ namespace jrc
 
 
     GraphicsGL::LayoutBuilder::LayoutBuilder(const Font& f, Text::Alignment a, int16_t mw, bool fm)
-        : font(f), alignment(a), maxwidth(mw), formatted(fm) {
+        : font(f), alignment(a), maxwidth(mw), formatted(fm)
+    {
 
         fontid = Text::NUM_FONTS;
-        color = Text::NUM_COLORS;
-        ax = 0;
-        ay = font.linespace();
-        width = 0;
-        endy = 0;
+        color  = Text::NUM_COLORS;
+        ax     = 0;
+        ay     = font.linespace();
+        width  = 0;
+        endy   = 0;
         if (maxwidth == 0)
         {
             maxwidth = 800;
@@ -478,9 +509,11 @@ namespace jrc
     size_t GraphicsGL::LayoutBuilder::add(const char* text, size_t prev, size_t first, size_t last)
     {
         if (first == last)
+        {
             return prev;
+        }
 
-        Text::Font last_font = fontid;
+        Text::Font  last_font  = fontid;
         Text::Color last_color = color;
         size_t skip = 0;
         bool linebreak = false;
@@ -601,13 +634,17 @@ namespace jrc
         add_line();
 
         advances.push_back(ax);
-        return{ lines, advances, width, ay, ax, endy };
+        return { lines, advances, width, ay, ax, endy };
     }
 
-    void GraphicsGL::LayoutBuilder::add_word(size_t word_first,
-        size_t word_last, Text::Font word_font, Text::Color word_color) {
+    void GraphicsGL::LayoutBuilder::add_word(
+        size_t      word_first,
+        size_t      word_last,
+        Text::Font  word_font,
+        Text::Color word_color
+    ) {
 
-        words.push_back({ word_first, word_last, word_font, word_color });
+        words.emplace_back(word_first, word_last, word_font, word_color);
     }
 
     void GraphicsGL::LayoutBuilder::add_line()
@@ -622,8 +659,11 @@ namespace jrc
         case Text::RIGHT:
             line_x -= ax;
             break;
+        default:
+            break;
         }
-        lines.push_back({ words, { line_x, line_y } });
+
+        lines.emplace_back(words, { line_x, line_y });
         words.clear();
     }
 
@@ -632,12 +672,16 @@ namespace jrc
         const Text::Layout& layout, Text::Font id, Text::Color colorid, Text::Background background) {
 
         if (locked)
+        {
             return;
+        }
 
         const Color& color = args.get_color();
 
         if (text.empty() || color.invisible())
+        {
             return;
+        }
 
         const Font& font = fonts[id];
 
@@ -666,18 +710,18 @@ namespace jrc
 
         constexpr GLfloat colors[Text::NUM_COLORS][3] =
         {
-            { 0.0f, 0.0f, 0.0f }, // Black
-            { 1.0f, 1.0f, 1.0f }, // White
-            { 1.0f, 1.0f, 0.0f }, // Yellow
-            { 0.0f, 0.0f, 1.0f }, // Blue
-            { 1.0f, 0.0f, 0.0f }, // Red
-            { 0.8f, 0.3f, 0.3f }, // DarkRed
-            { 0.5f, 0.25f, 0.0f }, // Brown
-            { 0.5f, 0.5f, 0.5f }, // Lightgrey
+            { 0.0f,  0.0f,  0.0f  }, // Black
+            { 1.0f,  1.0f,  1.0f  }, // White
+            { 1.0f,  1.0f,  0.0f  }, // Yellow
+            { 0.0f,  0.0f,  1.0f  }, // Blue
+            { 1.0f,  0.0f,  0.0f  }, // Red
+            { 0.8f,  0.3f,  0.3f  }, // DarkRed
+            { 0.5f,  0.25f, 0.0f  }, // Brown
+            { 0.5f,  0.5f,  0.5f  }, // Lightgrey
             { 0.25f, 0.25f, 0.25f }, // Darkgrey
-            { 1.0f, 0.5f, 0.0f }, // Orange
-            { 0.0f, 0.75f, 1.0f }, // Mediumblue
-            { 0.5f, 0.0f, 0.5f } // Violet
+            { 1.0f,  0.5f,  0.0f  }, // Orange
+            { 0.0f,  0.75f, 1.0f  }, // Mediumblue
+            { 0.5f,  0.0f,  0.5f  }  // Violet
         };
 
         for (const Text::Layout::Line& line : layout)
@@ -703,7 +747,7 @@ namespace jrc
                 for (size_t pos = word.first; pos < word.last; ++pos)
                 {
                     const char c = text[pos];
-                    const Font::Char& ch = font.chars[c];
+                    const Font::Char &ch = font.chars[c];
 
                     GLshort chx = x + ax + ch.bl;
                     GLshort chy = y + ay - ch.bt;
@@ -711,12 +755,16 @@ namespace jrc
                     GLshort chh = ch.bh;
 
                     if (ax == 0 && c == ' ')
+                    {
                         continue;
+                    }
 
                     ax += ch.ax;
 
                     if (chw <= 0 || chh <= 0)
+                    {
                         continue;
+                    }
 
                     quads.emplace_back(chx, chx + chw, chy, chy + chh, ch.offset, abscolor, 0.0f);
                 }
@@ -727,7 +775,9 @@ namespace jrc
     void GraphicsGL::drawrectangle(int16_t x, int16_t y, int16_t w, int16_t h, float r, float g, float b, float a)
     {
         if (locked)
+        {
             return;
+        }
 
         quads.emplace_back(x, x + w, y, y + h, nulloffset, Color{ r, g, b, a }, 0.0f);
     }

@@ -29,20 +29,11 @@ namespace jrc
 {
     constexpr const char* Error::messages[];
 
-    Sound::Sound(Name name)
-    {
-        id = soundids[name];
-    }
+    Sound::Sound(Name name) : id(soundids[name]) {}
 
-    Sound::Sound(nl::node src)
-    {
-        id = add_sound(src);
-    }
+    Sound::Sound(nl::node src) : id(add_sound(src)) {}
 
-    Sound::Sound()
-    {
-        id = 0;
-    }
+    Sound::Sound() : id(0) {}
 
     void Sound::play() const
     {
@@ -101,7 +92,10 @@ namespace jrc
             return;
         }
 
-        HCHANNEL channel = BASS_SampleGetChannel((HSAMPLE)samples.at(id), false);
+        HCHANNEL channel = BASS_SampleGetChannel(
+            static_cast<HSAMPLE>(samples.at(id)),
+            false
+        );
         BASS_ChannelPlay(channel, true);
     }
 
@@ -119,7 +113,7 @@ namespace jrc
                 true,
                 data,
                 82,
-                (DWORD)ad.length(),
+                static_cast<DWORD>(ad.length()),
                 4,
                 BASS_SAMPLE_OVER_POS
             );

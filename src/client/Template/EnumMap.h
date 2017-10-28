@@ -35,7 +35,7 @@ namespace jrc
             static_assert(std::is_enum<K>::value,
                 "Template parameter 'K' for EnumMap must be an enum.");
 
-            for (size_t i = 0; i < LENGTH; i++)
+            for (size_t i = 0; i < LENGTH; ++i)
             {
                 m_keys[i] = static_cast<K>(i);
             }
@@ -43,7 +43,7 @@ namespace jrc
 
         void clear()
         {
-            for (size_t i = 0; i < LENGTH; i++)
+            for (size_t i = 0; i < LENGTH; ++i)
             {
                 m_values[i] = V();
             }
@@ -63,7 +63,7 @@ namespace jrc
             m_values[key] = { std::forward<Args>(args)... };
         }
 
-        V& operator [](K key)
+        V& operator[](K key)
         {
             return m_values[key];
         }
@@ -116,14 +116,15 @@ namespace jrc
 
             T& second()
             {
+                /*
                 if (!this) // Clang says this never happens
                 {
                     throw std::out_of_range("iterator out of range");
                 }
                 else
-                {
-                    return *(value + index);
-                }
+                {*/
+                return *(value + index);
+                /*}*/
             }
 
             base_iterator& operator++()

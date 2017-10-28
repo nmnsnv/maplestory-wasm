@@ -30,45 +30,54 @@
 
 namespace jrc
 {
-    Mob::Mob(int32_t oi, int32_t mid, int8_t mode, int8_t st, uint16_t fh,
-        bool newspawn, int8_t tm, Point<int16_t> position) : MapObject(oi) {
+    Mob::Mob(
+        int32_t        oi,
+        int32_t        mid,
+        int8_t         mode,
+        uint8_t        stance,
+        uint16_t       fh,
+        bool           newspawn,
+        int8_t         tm,
+        Point<int16_t> position
+    ) : MapObject(oi)
+    {
 
         std::string strid = string_format::extend_id(mid, 7);
         nl::node src = nl::nx::mob[strid + ".img"];
 
         nl::node info = src["info"];
 
-        level = info["level"];
-        watk = info["PADamage"];
-        matk = info["MADamage"];
-        wdef = info["PDDamage"];
-        mdef = info["MDDamage"];
-        accuracy = info["acc"];
-        avoid = info["eva"];
-        knockback = info["pushed"];
-        speed = info["speed"];
-        flyspeed = info["flySpeed"];
+        level       = info["level"];
+        watk        = info["PADamage"];
+        matk        = info["MADamage"];
+        wdef        = info["PDDamage"];
+        mdef        = info["MDDamage"];
+        accuracy    = info["acc"];
+        avoid       = info["eva"];
+        knockback   = info["pushed"];
+        speed       = info["speed"];
+        flyspeed    = info["flySpeed"];
         touchdamage = info["bodyAttack"].get_bool();
-        undead = info["undead"].get_bool();
-        noflip = info["noFlip"].get_bool();
-        notattack = info["notAttack"].get_bool();
-        canjump = src["jump"].size() > 0;
-        canfly = src["fly"].size() > 0;
-        canmove = src["move"].size() > 0 || canfly;
+        undead      = info["undead"].get_bool();
+        noflip      = info["noFlip"].get_bool();
+        notattack   = info["notAttack"].get_bool();
+        canjump     =  src["jump"].size() > 0;
+        canfly      =  src["fly"].size() > 0;
+        canmove     =  src["move"].size() > 0 || canfly;
 
         if (canfly)
         {
             animations[STAND] = src["fly"];
-            animations[MOVE] = src["fly"];
+            animations[MOVE]  = src["fly"];
         }
         else
         {
             animations[STAND] = src["stand"];
-            animations[MOVE] = src["move"];
+            animations[MOVE]  = src["move"];
         }
         animations[JUMP] = src["jump"];
-        animations[HIT] = src["hit1"];
-        animations[DIE] = src["die1"];
+        animations[HIT]  = src["hit1"];
+        animations[DIE]  = src["die1"];
 
         name = nl::nx::string["Mob.img"][std::to_string(mid)]["name"].get_string();
 
@@ -84,23 +93,25 @@ namespace jrc
         flyspeed *= 0.0005f;
 
         if (canfly)
+        {
             phobj.type = PhysicsObject::FLYING;
+        }
 
-        id = mid;
+        id   = mid;
         team = tm;
         set_position(position);
         set_control(mode);
         phobj.fhid = fh;
         phobj.set_flag(PhysicsObject::TURNATEDGES);
 
-        hppercent = 0;
-        dying = false;
-        dead = false;
-        fading = false;
-        awaitdeath = false;
-        set_stance(st);
+        hppercent    = 0;
+        dying        = false;
+        dead         = false;
+        fading       = false;
+        awaitdeath   = false;
+        set_stance(stance);
         flydirection = STRAIGHT;
-        counter = 0;
+        counter      = 0;
 
         namelabel = { Text::A13M, Text::CENTER, Text::WHITE, Text::NAMETAG, name };
 
@@ -128,8 +139,12 @@ namespace jrc
         {
             stancebyte -= 1;
         }
+
         if (stancebyte < MOVE)
+        {
             stancebyte = MOVE;
+        }
+
         set_stance(static_cast<Stance>(stancebyte));
     }
 
@@ -146,7 +161,9 @@ namespace jrc
     int8_t Mob::update(const Physics& physics)
     {
         if (!active)
+        {
             return phobj.fhlayer;
+        }
 
         bool aniend = animations.at(stance).update();
         if (aniend && stance == DIE)
@@ -193,7 +210,9 @@ namespace jrc
                     phobj.set_flag(PhysicsObject::TURNATEDGES);
 
                     if (stance == HIT)
+                    {
                         set_stance(STAND);
+                    }
                 }
             }
 
@@ -211,6 +230,8 @@ namespace jrc
                     case DOWNWARDS:
                         phobj.vforce = flyspeed;
                         break;
+                    default:
+                        break;
                     }
                 }
                 else
@@ -227,6 +248,8 @@ namespace jrc
                 break;
             case JUMP:
                 phobj.vforce = -5.0;
+                break;
+            default:
                 break;
             }
 
@@ -299,8 +322,12 @@ namespace jrc
                         set_stance(MOVE);
                         flip = true;
                         break;
+                    default:
+                        break;
                     }
                 }
+                break;
+            default:
                 break;
             }
 
@@ -322,11 +349,13 @@ namespace jrc
             1, 0, 0, 0, 0, 0, 0,
             get_position(),
             Movement(phobj, value_of(stance, flip))
-            ).dispatch();
+        ).dispatch();
     }
 
     void Mob::draw(double viewx, double viewy, float alpha) const
     {
+        std::cout << std::endl;
+
         Point<int16_t> absp = phobj.get_absolute(viewx, viewy, alpha);
         Point<int16_t> headpos = get_head_position(absp);
 
@@ -336,7 +365,10 @@ namespace jrc
         {
             float interopc = opacity.get(alpha);
 
-            animations.at(stance).draw(DrawArgument(absp, flip && !noflip, interopc), alpha);
+            animations.at(stance).draw(
+                DrawArgument(absp, flip && !noflip, interopc),
+                alpha
+            );
 
             if (showhp)
             {
@@ -355,20 +387,24 @@ namespace jrc
     void Mob::set_control(int8_t mode)
     {
         control = mode > 0;
-        aggro = mode == 2;
+        aggro   = mode == 2;
     }
 
     void Mob::send_movement(Point<int16_t> start, std::vector<Movement>&& in_movements)
     {
         if (control)
+        {
             return;
+        }
 
         set_position(start);
 
         movements = std::forward<decltype(in_movements)>(in_movements);
 
         if (movements.empty())
+        {
             return;
+        }
 
         const Movement& lastmove = movements.front();
 
@@ -404,6 +440,8 @@ namespace jrc
             fading = true;
             dying = true;
             break;
+        default:
+            break;
         }
     }
 
@@ -413,10 +451,15 @@ namespace jrc
         {
             int16_t delta = playerlevel - level;
             if (delta > 9)
+            {
                 namelabel.change_color(Text::YELLOW);
+            }
             else if (delta < -9)
+            {
                 namelabel.change_color(Text::RED);
+            }
         }
+
         if (percent > 100)
         {
             percent = 100;
@@ -432,7 +475,9 @@ namespace jrc
     void Mob::show_effect(const Animation& animation, int8_t pos, int8_t z, bool f)
     {
         if (!active)
+        {
             return;
+        }
 
         Point<int16_t> shift;
         switch (pos)
@@ -448,18 +493,21 @@ namespace jrc
             break;
         case 4:
             break;
+        default:
+            break;
         }
         effects.add(animation, { shift, f }, z);
     }
 
     float Mob::calculate_hitchance(int16_t leveldelta, int32_t player_accuracy) const
     {
-        float faccuracy = static_cast<float>(player_accuracy);
+        auto faccuracy = static_cast<float>(player_accuracy);
         float hitchance = faccuracy / (((1.84f + 0.07f * leveldelta) * avoid) + 1.0f);
         if (hitchance < 0.01f)
         {
             hitchance = 0.01f;
         }
+
         return hitchance;
     }
 
@@ -468,6 +516,7 @@ namespace jrc
         double mindamage = magic ?
             damage - (1 + 0.01 * leveldelta) * mdef * 0.6 :
             damage * (1 - 0.01 * leveldelta) - wdef * 0.6;
+
         return mindamage < 1.0 ? 1.0 : mindamage;
     }
 
@@ -476,6 +525,7 @@ namespace jrc
         double maxdamage = magic ?
             damage - (1 + 0.01 * leveldelta) * mdef * 0.5 :
             damage * (1 - 0.01 * leveldelta) - wdef * 0.5;
+
         return maxdamage < 1.0 ? 1.0 : maxdamage;
     }
 
@@ -487,7 +537,9 @@ namespace jrc
         float critical;
         int16_t leveldelta = level - attack.playerlevel;
         if (leveldelta < 0)
+        {
             leveldelta = 0;
+        }
 
         Attack::DamageType damagetype = attack.damagetype;
         switch (damagetype)
@@ -522,7 +574,9 @@ namespace jrc
     {
         bool hit = randomizer.below(hitchance);
         if (!hit)
-            return{ 0, false };
+        {
+            return { 0, false };
+        }
 
         constexpr double DAMAGECAP = 999999.0;
 
@@ -532,6 +586,7 @@ namespace jrc
         {
             damage *= 1.5;
         }
+
         if (damage < 1)
         {
             damage = 1;
@@ -542,7 +597,7 @@ namespace jrc
         }
 
         auto intdamage = static_cast<int32_t>(damage);
-        return{ intdamage, iscritical };
+        return { intdamage, iscritical };
     }
 
     void Mob::apply_damage(int32_t damage, bool toleft)
@@ -567,12 +622,14 @@ namespace jrc
     MobAttack Mob::create_touch_attack() const
     {
         if (!touchdamage)
-            return{};
+        {
+            return {};
+        }
 
-        int32_t minattack = static_cast<int32_t>(watk * 0.8f);
+        auto minattack = static_cast<int32_t>(watk * 0.8f);
         int32_t maxattack = watk;
         int32_t attack = randomizer.next_int(minattack, maxattack);
-        return{ attack, get_position(), id, oid };
+        return { attack, get_position(), id, oid };
     }
 
     void Mob::apply_death()
@@ -590,7 +647,9 @@ namespace jrc
     bool Mob::is_in_range(const Rectangle<int16_t>& range) const
     {
         if (!active)
+        {
             return false;
+        }
 
         Rectangle<int16_t> bounds = animations.at(stance).get_bounds();
         bounds.shift(get_position());

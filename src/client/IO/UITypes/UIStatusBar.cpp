@@ -59,26 +59,26 @@ namespace jrc
             137, 0.0f
         };
 
-        statset = { mainbar["gauge"]["number"], Charset::RIGHT };
-        levelset = { mainbar["lvNumber"], Charset::LEFT };
+        statset   = { mainbar["gauge"]["number"], Charset::RIGHT };
+        levelset  = { mainbar["lvNumber"],        Charset::LEFT  };
 
-        joblabel = { Text::A11M, Text::LEFT, Text::YELLOW };
-        namelabel = { Text::A13M, Text::LEFT, Text::WHITE };
+        joblabel  = { Text::A11M, Text::LEFT, Text::YELLOW };
+        namelabel = { Text::A13M, Text::LEFT, Text::WHITE  };
 
-        buttons[BT_WHISPER] = std::make_unique<MapleButton>(mainbar["BtChat"]);
-        buttons[BT_CALLGM] = std::make_unique<MapleButton>(mainbar["BtClaim"]);
+        buttons[BT_WHISPER]   = std::make_unique<MapleButton>(mainbar["BtChat"]);
+        buttons[BT_CALLGM]    = std::make_unique<MapleButton>(mainbar["BtClaim"]);
 
-        buttons[BT_CASHSHOP] = std::make_unique<MapleButton>(mainbar["BtCashShop"]);
-        buttons[BT_TRADE] = std::make_unique<MapleButton>(mainbar["BtMTS"]);
-        buttons[BT_MENU] = std::make_unique<MapleButton>(mainbar["BtMenu"]);
-        buttons[BT_OPTIONS] = std::make_unique<MapleButton>(mainbar["BtSystem"]);
+        buttons[BT_CASHSHOP]  = std::make_unique<MapleButton>(mainbar["BtCashShop"]);
+        buttons[BT_TRADE]     = std::make_unique<MapleButton>(mainbar["BtMTS"]);
+        buttons[BT_MENU]      = std::make_unique<MapleButton>(mainbar["BtMenu"]);
+        buttons[BT_OPTIONS]   = std::make_unique<MapleButton>(mainbar["BtSystem"]);
 
         buttons[BT_CHARACTER] = std::make_unique<MapleButton>(mainbar["BtCharacter"]);
-        buttons[BT_STATS] = std::make_unique<MapleButton>(mainbar["BtStat"]);
-        buttons[BT_QUEST] = std::make_unique<MapleButton>(mainbar["BtQuest"]);
+        buttons[BT_STATS]     = std::make_unique<MapleButton>(mainbar["BtStat"]);
+        buttons[BT_QUEST]     = std::make_unique<MapleButton>(mainbar["BtQuest"]);
         buttons[BT_INVENTORY] = std::make_unique<MapleButton>(mainbar["BtInven"]);
-        buttons[BT_EQUIPS] = std::make_unique<MapleButton>(mainbar["BtEquip"]);
-        buttons[BT_SKILL] = std::make_unique<MapleButton>(mainbar["BtSkill"]);
+        buttons[BT_EQUIPS]    = std::make_unique<MapleButton>(mainbar["BtEquip"]);
+        buttons[BT_SKILL]     = std::make_unique<MapleButton>(mainbar["BtSkill"]);
     }
 
     void UIStatusbar::draw(float alpha) const
@@ -90,29 +90,29 @@ namespace jrc
         mpbar.draw(position + Point<int16_t>(-90, -31));
 
         int16_t level = stats.get_stat(Maplestat::LEVEL);
-        int16_t hp = stats.get_stat(Maplestat::HP);
-        int16_t mp = stats.get_stat(Maplestat::MP);
+        int16_t hp    = stats.get_stat(Maplestat::HP);
+        int16_t mp    = stats.get_stat(Maplestat::MP);
         int32_t maxhp = stats.get_total(Equipstat::HP);
         int32_t maxmp = stats.get_total(Equipstat::MP);
-        int64_t exp = stats.get_exp();
+        int64_t exp   = stats.get_exp();
 
         std::string expstring = std::to_string(100 * getexppercent());
         statset.draw(
             std::to_string(exp) + "[" + expstring.substr(0, expstring.find('.') + 3) + "%]",
             position + Point<int16_t>(47, -13)
-            );
+        );
         statset.draw(
             "[" + std::to_string(hp) + "/" + std::to_string(maxhp) + "]",
             position + Point<int16_t>(-124, -29)
-            );
+        );
         statset.draw(
             "[" + std::to_string(mp) + "/" + std::to_string(maxmp) + "]",
             position + Point<int16_t>(47, -29)
-            );
+        );
         levelset.draw(
             std::to_string(level),
             position + Point<int16_t>(-480, -24)
-            );
+        );
 
         joblabel.draw(position + Point<int16_t>(-435, -21));
         namelabel.draw(position + Point<int16_t>(-435, -36));
@@ -215,7 +215,7 @@ namespace jrc
         int64_t exp = stats.get_exp();
         return static_cast<float>(
             static_cast<double>(exp) / ExpTable::values[level]
-            );
+        );
     }
 
     float UIStatusbar::gethppercent() const
