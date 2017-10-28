@@ -644,7 +644,7 @@ namespace jrc
         Text::Color word_color
     ) {
 
-        words.emplace_back(word_first, word_last, word_font, word_color);
+        words.push_back({ word_first, word_last, word_font, word_color });
     }
 
     void GraphicsGL::LayoutBuilder::add_line()
@@ -663,7 +663,7 @@ namespace jrc
             break;
         }
 
-        lines.emplace_back(words, { line_x, line_y });
+        lines.push_back({ words, { line_x, line_y } });
         words.clear();
     }
 

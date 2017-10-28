@@ -67,6 +67,6 @@ namespace jrc
 
         /// Sorted (red-black) tree that associates z-indices (can be negative
         /// or non-negative) with the effects at that z-index.
-        std::map<int8_t, std::vector<Effect>> effects;
+        std::map<int8_t, std::list<Effect>> effects;
     };
 }
