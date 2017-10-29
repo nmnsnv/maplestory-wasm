@@ -19,16 +19,17 @@
 
 #include "../../Console.h"
 
+
 namespace jrc
 {
     Footholdtree::Footholdtree(nl::node src)
     {
-        int16_t leftw = 30000;
+        int16_t leftw  =  30000;
         int16_t rightw = -30000;
-        int16_t botb = -30000;
-        int16_t topb = 30000;
+        int16_t botb   = -30000;
+        int16_t topb   =  30000;
 
-        for (auto basef : src)
+        for (const auto& basef : src)
         {
             uint8_t layer;
             try
@@ -41,9 +42,9 @@ namespace jrc
                 continue;
             }
 
-            for (auto midf : basef)
+            for (const auto& midf : basef)
             {
-                for (auto lastf : midf)
+                for (const auto& lastf : midf)
                 {
                     uint16_t id;
                     try
@@ -66,25 +67,30 @@ namespace jrc
                     {
                         leftw = foothold.l();
                     }
+
                     if (foothold.r() > rightw)
                     {
                         rightw = foothold.r();
                     }
+
                     if (foothold.b() > botb)
                     {
                         botb = foothold.b();
                     }
+
                     if (foothold.t() < topb)
                     {
                         topb = foothold.t();
                     }
 
                     if (foothold.is_wall())
+                    {
                         continue;
+                    }
 
                     int16_t start = foothold.l();
-                    int16_t end = foothold.r();
-                    for (int16_t i = start; i <= end; i++)
+                    int16_t end   = foothold.r();
+                    for (int16_t i = start; i <= end; ++i)
                     {
                         footholdsbyx.emplace(i, id);
                     }
@@ -92,11 +98,11 @@ namespace jrc
             }
         }
 
-        walls = { leftw + 25, rightw - 25 };
-        borders = { topb - 300, botb + 100 };
+        walls   = { leftw + 25,  rightw - 25  };
+        borders = { topb  - 300, botb   + 100 };
     }
 
-    Footholdtree::Footholdtree() {}
+    Footholdtree::Footholdtree() = default;
 
     void Footholdtree::limit_movement(PhysicsObject& phobj) const
     {
@@ -134,7 +140,7 @@ namespace jrc
             auto ground = Range<double>(
                 get_fh(phobj.fhid).ground_below(phobj.crnt_x()),
                 get_fh(phobj.fhid).ground_below(phobj.next_x())
-                );
+            );
             bool collision = crnt_y <= ground.first() && next_y >= ground.second();
             if (collision)
             {
@@ -159,7 +165,9 @@ namespace jrc
     void Footholdtree::update_fh(PhysicsObject& phobj) const
     {
         if (phobj.type == PhysicsObject::FIXATED && phobj.fhid > 0)
+        {
             return;
+        }
 
         const Foothold& curfh = get_fh(phobj.fhid);
         bool checkslope = false;
@@ -197,7 +205,7 @@ namespace jrc
         double ground = nextfh.ground_below(x);
         if (phobj.vspeed == 0.0 && checkslope)
         {
-            double vdelta = abs(phobj.fhslope);
+            double vdelta = std::abs(phobj.fhslope);
             if (phobj.fhslope < 0.0)
             {
                 vdelta *= (ground - y);
@@ -255,7 +263,9 @@ namespace jrc
     {
         auto iter = footholds.find(fhid);
         if (iter == footholds.end())
+        {
             return nullfh;
+        }
 
         return iter->second;
     }
@@ -304,12 +314,16 @@ namespace jrc
         {
             uint16_t previd = fh.prev();
             if (!previd)
+            {
                 return fh.l();
+            }
 
             const Foothold& prev = get_fh(previd);
             uint16_t prev_previd = prev.prev();
             if (!prev_previd)
+            {
                 return prev.l();
+            }
 
             return walls.first();
         }
@@ -317,12 +331,16 @@ namespace jrc
         {
             uint16_t nextid = fh.next();
             if (!nextid)
+            {
                 return fh.r();
+            }
 
             const Foothold& next = get_fh(nextid);
             uint16_t next_nextid = next.next();
             if (!next_nextid)
+            {
                 return next.r();
+            }
 
             return walls.second();
         }
@@ -333,7 +351,7 @@ namespace jrc
         uint16_t ret = 0;
         double comp = borders.second();
 
-        int16_t x = static_cast<int16_t>(fx);
+        auto x = static_cast<int16_t>(fx);
         auto range = footholdsbyx.equal_range(x);
         for (auto iter = range.first; iter != range.second; ++iter)
         {
@@ -345,6 +363,7 @@ namespace jrc
                 ret = fh.id();
             }
         }
+
         return ret;
     }
 

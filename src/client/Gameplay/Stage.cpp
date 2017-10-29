@@ -28,11 +28,12 @@
 
 #include <iostream>
 
+
 namespace jrc
 {
     Stage::Stage()
-        : combat(player, chars, mobs) {
-
+        : combat(player, chars, mobs)
+    {
         state = INACTIVE;
     }
 
@@ -51,6 +52,8 @@ namespace jrc
             break;
         case TRANSITION:
             respawn(portalid);
+            break;
+        case ACTIVE:
             break;
         }
 
@@ -91,8 +94,8 @@ namespace jrc
     {
         Music(mapinfo.get_bgm()).play();
 
-        Point<int16_t> spawnpoint = portals.get_portal_by_id(portalid);
-        Point<int16_t> startpos = physics.get_y_below(spawnpoint);
+        Point<int16_t> spawnpoint = portals.get_portal_by_id(static_cast<uint8_t>(portalid));
+        Point<int16_t> startpos   = physics.get_y_below(spawnpoint);
         player.respawn(startpos, mapinfo.is_underwater());
         camera.set_position(startpos);
         camera.set_view(mapinfo.get_walls(), mapinfo.get_borders());
@@ -101,7 +104,9 @@ namespace jrc
     void Stage::draw(float alpha) const
     {
         if (state != ACTIVE)
+        {
             return;
+        }
 
         Point<int16_t> viewpos = camera.position(alpha);
         Point<double> viewrpos = camera.realposition(alpha);
@@ -127,7 +132,9 @@ namespace jrc
     void Stage::update()
     {
         if (state != ACTIVE)
+        {
             return;
+        }
 
         combat.update();
         backgrounds.update();
@@ -144,7 +151,9 @@ namespace jrc
         camera.update(player.get_position());
 
         if (player.is_invincible())
+        {
             return;
+        }
 
         if (int32_t oid_id = mobs.find_colliding(player.get_phobj()))
         {
@@ -159,20 +168,24 @@ namespace jrc
     void Stage::show_character_effect(int32_t cid, CharEffect::Id effect)
     {
         if (auto character = get_character(cid))
+        {
             character->show_effect_id(effect);
+        }
     }
 
     void Stage::check_portals()
     {
         if (player.is_attacking())
+        {
             return;
+        }
 
-        Point<int16_t> playerpos = player.get_position();
+        Point<int16_t> playerpos  = player.get_position();
         Portal::WarpInfo warpinfo = portals.find_warp_at(playerpos);
         if (warpinfo.intramap)
         {
             Point<int16_t> spawnpoint = portals.get_portal_by_name(warpinfo.toname);
-            Point<int16_t> startpos = physics.get_y_below(spawnpoint);
+            Point<int16_t> startpos   = physics.get_y_below(spawnpoint);
             player.respawn(startpos, mapinfo.is_underwater());
         }
         else if (warpinfo.valid)
@@ -184,7 +197,9 @@ namespace jrc
     void Stage::check_seats()
     {
         if (player.is_sitting() || player.is_attacking())
+        {
             return;
+        }
 
         Optional<const Seat> seat = mapinfo.findseat(player.get_position());
         player.set_seat(seat);
@@ -193,7 +208,9 @@ namespace jrc
     void Stage::check_ladders(bool up)
     {
         if (player.is_climbing() || player.is_attacking())
+        {
             return;
+        }
 
         Optional<const Ladder> ladder = mapinfo.findladder(player.get_position(), up);
         player.set_ladder(ladder);
@@ -212,7 +229,9 @@ namespace jrc
     void Stage::send_key(KeyType::Id type, int32_t action, bool down)
     {
         if (state != ACTIVE || !playable)
+        {
             return;
+        }
 
         switch (type)
         {
@@ -237,6 +256,8 @@ namespace jrc
                 case KeyAction::PICKUP:
                     check_drops();
                     break;
+                default:
+                    break;
                 }
             }
 
@@ -250,6 +271,8 @@ namespace jrc
             break;
         case KeyType::FACE:
             player.set_expression(action);
+            break;
+        default:
             break;
         }
     }

@@ -27,9 +27,10 @@
 #include <memory>
 #include <vector>
 
+
 namespace jrc
 {
-    // Base class for all types of user interfaces on screen.
+    /// Base class for all types of user interfaces on screen.
     class UIElement
     {
     public:
@@ -58,7 +59,7 @@ namespace jrc
             NUM_TYPES
         };
 
-        virtual ~UIElement() {}
+        virtual ~UIElement() = default;
 
         virtual void draw(float inter) const;
         virtual void update();

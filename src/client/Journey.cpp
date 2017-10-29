@@ -97,7 +97,7 @@ namespace jrc
     void loop()
     {
         Timer::get().start();
-        int64_t timestep = Constants::TIMESTEP * 1000;
+        int64_t timestep    = Constants::TIMESTEP * 1000;
         int64_t accumulator = timestep;
 
         int64_t period  = 0;

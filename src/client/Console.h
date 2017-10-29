@@ -24,6 +24,7 @@
 #include <string>
 #include <iostream>
 
+
 namespace jrc
 {
 #ifndef JOURNEY_PRINT_WARNINGS

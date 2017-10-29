@@ -27,9 +27,8 @@
 
 namespace jrc
 {
-    Clothing::Clothing(int32_t id, const BodyDrawinfo& drawinfo)
-        : itemid(id) {
-
+    Clothing::Clothing(int32_t id, const BodyDrawinfo& drawinfo) : itemid(id)
+    {
         const EquipData& equipdata = EquipData::get(itemid);
 
         eqslot = equipdata.get_eqslot();
@@ -54,7 +53,7 @@ namespace jrc
         };
 
         Layer chlayer;
-        size_t index = (itemid / 10000) - 100;
+        auto index = (itemid / 10000) - 100;
         if (index < NON_WEAPON_TYPES)
         {
             chlayer = layers[index];
@@ -85,6 +84,7 @@ namespace jrc
             break;
         default:
             stand = twohanded ? Stance::STAND2 : Stance::STAND1;
+            break;
         }
 
         switch (int32_t walkno = info["walk"])
@@ -97,6 +97,7 @@ namespace jrc
             break;
         default:
             walk = twohanded ? Stance::WALK2 : Stance::WALK1;
+            break;
         }
 
         for (auto iter : Stance::names)
@@ -106,7 +107,9 @@ namespace jrc
 
             nl::node stancenode = src[stancename];
             if (!stancenode)
+            {
                 continue;
+            }
 
             for (uint8_t frame = 0; nl::node framenode = stancenode[frame]; ++frame)
             {
@@ -114,7 +117,9 @@ namespace jrc
                 {
                     std::string part = partnode.name();
                     if (!partnode || partnode.data_type() != nl::node::type::bitmap)
+                    {
                         continue;
+                    }
 
                     Layer z = chlayer;
                     std::string zs = partnode["z"];
@@ -131,7 +136,7 @@ namespace jrc
 
                     std::string parent;
                     Point<int16_t> parentpos;
-                    for (auto mapnode : partnode["map"])
+                    for (const auto& mapnode : partnode["map"])
                     {
                         if (mapnode.data_type() == nl::node::type::vector)
                         {
@@ -175,11 +180,12 @@ namespace jrc
                         }
                         shift -= parentpos;
                         break;
+                    default:
+                        break;
                     }
 
                     stances[stance][z]
-                        .emplace(frame, partnode)
-                        ->second.shift(shift);
+                        .emplace(frame, partnode)->second.shift(shift);
                 }
             }
         }
@@ -245,24 +251,24 @@ namespace jrc
     const std::unordered_map<std::string, Clothing::Layer> Clothing::sublayernames =
     {
         // WEAPON
-        { "weaponOverHand", Layer::WEAPON_OVER_HAND },
-        { "weaponOverGlove", Layer::WEAPON_OVER_GLOVE },
-        { "weaponOverBody", Layer::WEAPON_OVER_BODY },
-        { "weaponBelowArm", Layer::WEAPON_BELOW_ARM },
-        { "weaponBelowBody", Layer::WEAPON_BELOW_BODY },
-        { "backWeaponOverShield", Layer::BACKWEAPON },
+        { "weaponOverHand",       Layer::WEAPON_OVER_HAND  },
+        { "weaponOverGlove",      Layer::WEAPON_OVER_GLOVE },
+        { "weaponOverBody",       Layer::WEAPON_OVER_BODY  },
+        { "weaponBelowArm",       Layer::WEAPON_BELOW_ARM  },
+        { "weaponBelowBody",      Layer::WEAPON_BELOW_BODY },
+        { "backWeaponOverShield", Layer::BACKWEAPON        },
         // SHIELD
-        { "shieldOverHair", Layer::SHIELD_OVER_HAIR },
-        { "shieldBelowBody", Layer::SHIELD_BELOW_BODY },
-        { "backShield", Layer::BACKSHIELD },
+        { "shieldOverHair",       Layer::SHIELD_OVER_HAIR  },
+        { "shieldBelowBody",      Layer::SHIELD_BELOW_BODY },
+        { "backShield",           Layer::BACKSHIELD        },
         // GLOVE
-        { "gloveWrist", Layer::WRIST },
-        { "gloveOverHair", Layer::GLOVE_OVER_HAIR },
-        { "gloveOverBody", Layer::GLOVE_OVER_BODY },
-        { "gloveWristOverHair", Layer::WRIST_OVER_HAIR },
-        { "gloveWristOverBody", Layer::WRIST_OVER_BODY },
+        { "gloveWrist",           Layer::WRIST             },
+        { "gloveOverHair",        Layer::GLOVE_OVER_HAIR   },
+        { "gloveOverBody",        Layer::GLOVE_OVER_BODY   },
+        { "gloveWristOverHair",   Layer::WRIST_OVER_HAIR   },
+        { "gloveWristOverBody",   Layer::WRIST_OVER_BODY   },
         // CAP
-        { "capOverHair", Layer::CAP_OVER_HAIR },
-        { "capBelowBody", Layer::CAP_BELOW_BODY },
+        { "capOverHair",          Layer::CAP_OVER_HAIR     },
+        { "capBelowBody",         Layer::CAP_BELOW_BODY    },
     };
 }

@@ -30,15 +30,16 @@
 
 #include "../Gameplay/Stage.h"
 
+
 namespace jrc
 {
     UIStateGame::UIStateGame()
     {
-        focused = UIElement::NONE;
+        focused       = UIElement::NONE;
         tooltipparent = Tooltip::NONE;
 
-        const CharLook& look = Stage::get().get_player().get_look();
-        const CharStats& stats = Stage::get().get_player().get_stats();
+        const CharLook&  look      = Stage::get().get_player().get_look();
+        const CharStats& stats     = Stage::get().get_player().get_stats();
         const Inventory& inventory = Stage::get().get_player().get_inventory();
 
         emplace<UIStatusMessenger>();
@@ -50,27 +51,35 @@ namespace jrc
 
     void UIStateGame::draw(float inter, Point<int16_t> cursor) const
     {
-        for (auto& type : elementorder)
+        for (const auto& type : elementorder)
         {
             auto& element = elements[type];
             if (element && element->is_active())
+            {
                 element->draw(inter);
+            }
         }
 
         if (tooltip)
+        {
             tooltip->draw(cursor);
+        }
 
         if (draggedicon)
+        {
             draggedicon->dragdraw(cursor);
+        }
     }
 
     void UIStateGame::update()
     {
-        for (auto& type : elementorder)
+        for (const auto& type : elementorder)
         {
             auto& element = elements[type];
             if (element && element->is_active())
+            {
                 element->update();
+            }
         }
     }
 
@@ -106,23 +115,25 @@ namespace jrc
                 case KeyAction::CHARSTATS:
                     emplace<UIStatsinfo>(
                         Stage::get().get_player().get_stats()
-                        );
+                    );
                     break;
                 case KeyAction::INVENTORY:
                     emplace<UIItemInventory>(
                         Stage::get().get_player().get_inventory()
-                        );
+                    );
                     break;
                 case KeyAction::EQUIPS:
                     emplace<UIEquipInventory>(
                         Stage::get().get_player().get_inventory()
-                        );
+                    );
                     break;
                 case KeyAction::SKILLBOOK:
                     emplace<UISkillbook>(
                         Stage::get().get_player().get_stats(),
                         Stage::get().get_player().get_skills()
-                        );
+                    );
+                    break;
+                default:
                     break;
                 }
             }
@@ -132,6 +143,8 @@ namespace jrc
         case KeyType::ITEM:
         case KeyType::SKILL:
             Stage::get().send_key(type, action, pressed);
+            break;
+        default:
             break;
         }
     }
@@ -168,24 +181,18 @@ namespace jrc
             }
             else
             {
-                UIElement* front = nullptr;
+                UIElement*      front     = nullptr;
                 UIElement::Type fronttype = UIElement::NONE;
 
-                for (auto& type : elementorder)
+                for (const auto& type : elementorder)
                 {
                     auto& element = elements[type];
-                    bool found = false;
                     if (element && element->is_active())
                     {
-                        if (element->is_in_range(pos))
-                        {
-                            found = true;
-                        }
-                        else
-                        {
-                            found = element->remove_cursor(clicked, pos);
-                        }
-
+                        bool found =
+                            element->is_in_range(pos) ?
+                                true :
+                                element->remove_cursor(clicked, pos);
                         if (found)
                         {
                             if (front)
@@ -193,14 +200,16 @@ namespace jrc
                                 element->remove_cursor(false, pos);
                             }
 
-                            front = element.get();
+                            front     = element.get();
                             fronttype = type;
                         }
                     }
                 }
 
                 if (fronttype != tooltipparent)
+                {
                     clear_tooltip(tooltipparent);
+                }
 
                 if (front)
                 {
@@ -230,7 +239,7 @@ namespace jrc
         {
             eqtooltip.set_equip(Tooltip::NONE, 0);
             ittooltip.set_item(0);
-            tooltip = {};
+            tooltip       = {};
             tooltipparent = Tooltip::NONE;
         }
     }
@@ -241,7 +250,7 @@ namespace jrc
 
         if (slot)
         {
-            tooltip = eqtooltip;
+            tooltip       = eqtooltip;
             tooltipparent = parent;
         }
     }
@@ -252,7 +261,7 @@ namespace jrc
 
         if (itemid)
         {
-            tooltip = ittooltip;
+            tooltip       = ittooltip;
             tooltipparent = parent;
         }
     }
@@ -276,11 +285,13 @@ namespace jrc
         {
             (*iter).second = std::make_unique<T>(
                 std::forward<Args>(args)...
-                );
+            );
         }
     }
 
-    UIState::Iterator UIStateGame::pre_add(UIElement::Type type, bool is_toggled, bool is_focused)
+    UIState::Iterator UIStateGame::pre_add(UIElement::Type type,
+                                           bool is_toggled,
+                                           bool is_focused)
     {
         auto& element = elements[type];
         if (element && is_toggled)
@@ -307,9 +318,14 @@ namespace jrc
     void UIStateGame::remove(UIElement::Type type)
     {
         if (type == focused)
+        {
             focused = UIElement::NONE;
+        }
+
         if (type == tooltipparent)
+        {
             clear_tooltip(tooltipparent);
+        }
 
         elementorder.remove(type);
 
@@ -328,12 +344,14 @@ namespace jrc
     UIElement* UIStateGame::get_front(Point<int16_t> pos)
     {
         auto begin = elementorder.rbegin();
-        auto end = elementorder.rend();
+        auto end   = elementorder.rend();
         for (auto iter = begin; iter != end; ++iter)
         {
             auto& element = elements[*iter];
             if (element && element->is_active() && element->is_in_range(pos))
+            {
                 return element.get();
+            }
         }
         return nullptr;
     }

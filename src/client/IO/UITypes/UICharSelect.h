@@ -36,7 +36,10 @@ namespace jrc
         static constexpr bool TOGGLED = false;
 
         UICharSelect(std::vector<CharEntry> characters,
-            uint8_t count, uint8_t slots, uint8_t channel_id, int8_t pic);
+                     uint8_t count,
+                     uint8_t slots,
+                     uint8_t channel_id,
+                     int8_t pic);
 
         void draw(float alpha) const override;
         void update() override;
@@ -101,20 +104,20 @@ namespace jrc
             OutlinedText(Text::Font font, Text::Alignment alignment)
             {
                 inner = Text(font, alignment, Text::WHITE);
-                l = Text(font, alignment, Text::DARKGREY);
-                r = Text(font, alignment, Text::DARKGREY);
-                t = Text(font, alignment, Text::DARKGREY);
-                b = Text(font, alignment, Text::DARKGREY);
+                l     = Text(font, alignment, Text::DARKGREY);
+                r     = Text(font, alignment, Text::DARKGREY);
+                t     = Text(font, alignment, Text::DARKGREY);
+                b     = Text(font, alignment, Text::DARKGREY);
             }
 
-            OutlinedText() {}
+            OutlinedText() = default;
 
             void draw(Point<int16_t> parentpos) const
             {
-                l.draw(parentpos + Point<int16_t>(-1, 0));
-                r.draw(parentpos + Point<int16_t>(1, 0));
-                t.draw(parentpos + Point<int16_t>(0, -1));
-                b.draw(parentpos + Point<int16_t>(0, 1));
+                l.draw(parentpos + Point<int16_t>(-1,  0));
+                r.draw(parentpos + Point<int16_t>( 1,  0));
+                t.draw(parentpos + Point<int16_t>( 0, -1));
+                b.draw(parentpos + Point<int16_t>( 0,  1));
                 inner.draw(parentpos);
             }
 
@@ -133,7 +136,8 @@ namespace jrc
         enum InfoLabel
         {
             JOB, WORLDRANK, JOBRANK,
-            STR, DEX, INT, LUK
+            STR, DEX,       INT,
+            LUK
         };
         OutlinedText infolabels[NUM_LABELS];
     };

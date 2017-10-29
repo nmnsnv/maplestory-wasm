@@ -22,6 +22,7 @@
 #include <vector>
 #include <unordered_map>
 
+
 namespace jrc
 {
     struct Attack
@@ -40,45 +41,50 @@ namespace jrc
             DMG_FIXED
         };
 
-        Type type = CLOSE;
+        Type type             = CLOSE;
         DamageType damagetype = DMG_WEAPON;
 
-        double mindamage = 1.0;
-        double maxdamage = 1.0;
-        float critical = 0.0f;
-        float ignoredef = 0.0f;
-        int32_t matk = 0;
-        int32_t accuracy = 0;
-        int32_t fixdamage = 0;
+        double mindamage    = 1.0;
+        double maxdamage    = 1.0;
+        float critical      = 0.0f;
+        float ignoredef     = 0.0f;
+        int32_t matk        = 0;
+        int32_t accuracy    = 0;
+        int32_t fixdamage   = 0;
         int16_t playerlevel = 1;
 
         uint8_t hitcount = 0;
         uint8_t mobcount = 0;
-        uint8_t speed = 0;
-        uint8_t stance = 0;
-        int32_t skill = 0;
-        int32_t bullet = 0;
+        uint8_t speed    = 0;
+        uint8_t stance   = 0;
+        int32_t skill    = 0;
+        int32_t bullet   = 0;
 
         Point<int16_t> origin;
         Rectangle<int16_t> range;
         float hrange = 1.0f;
-        bool toleft = false;
+        bool toleft  = false;
     };
 
 
     struct MobAttack
     {
         Attack::Type type = Attack::CLOSE;
-        int32_t watk = 0;
-        int32_t matk = 0;
-        int32_t mobid = 0;
-        int32_t oid = 0;
+        int32_t watk      = 0;
+        int32_t matk      = 0;
+        int32_t mobid     = 0;
+        int32_t oid       = 0;
         Point<int16_t> origin;
         bool valid = false;
 
         // Create a mob attack for touch damage.
-        MobAttack(int32_t watk, Point<int16_t> origin, int32_t mobid, int32_t oid)
-            : type(Attack::CLOSE), watk(watk), origin(origin), mobid(mobid), oid(oid), valid(true) {}
+        MobAttack(int32_t watk,
+                  Point<int16_t> origin,
+                  int32_t mobid,
+                  int32_t oid)
+            : type(Attack::CLOSE), watk(watk), mobid(mobid), oid(oid),
+              origin(origin),      valid(true)
+            {}
 
         MobAttack()
             : valid(false) {}
@@ -97,38 +103,38 @@ namespace jrc
         int32_t oid;
         uint8_t direction;
 
-        MobAttackResult(const MobAttack& attack, int32_t damage, uint8_t direction)
-            : damage(damage), direction(direction), mobid(attack.mobid), oid(attack.oid) {}
+        MobAttackResult(const MobAttack& attack,
+                        int32_t damage,
+                        uint8_t direction)
+            : damage(damage), mobid(attack.mobid), oid(attack.oid),
+              direction(direction)
+            {}
     };
 
 
     struct AttackResult
     {
         AttackResult(const Attack& attack)
-        {
-            type = attack.type;
-            hitcount = attack.hitcount;
-            skill = attack.skill;
-            speed = attack.speed;
-            stance = attack.stance;
-            bullet = attack.bullet;
-            toleft = attack.toleft;
-        }
+            : type(attack.type),     hitcount(attack.hitcount),
+              skill(attack.skill),   bullet(attack.bullet),
+              stance(attack.stance), speed(attack.speed),
+              toleft(attack.toleft)
+            {}
 
-        AttackResult() {}
+        AttackResult() = default;
 
         Attack::Type type;
         int32_t attacker = 0;
         uint8_t mobcount = 0;
         uint8_t hitcount = 1;
-        int32_t skill = 0;
-        int32_t charge = 0;
-        int32_t bullet = 0;
-        uint8_t level = 0;
-        uint8_t display = 0;
-        uint8_t stance = 0;
-        uint8_t speed = 0;
-        bool toleft = false;
+        int32_t skill    = 0;
+        int32_t charge   = 0;
+        int32_t bullet   = 0;
+        uint8_t level    = 0;
+        uint8_t display  = 0;
+        uint8_t stance   = 0;
+        uint8_t speed    = 0;
+        bool toleft      = false;
         std::unordered_map<int32_t, std::vector<std::pair<int32_t, bool>>> damagelines;
         int32_t first_oid;
         int32_t last_oid;

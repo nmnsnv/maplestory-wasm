@@ -27,14 +27,16 @@ namespace jrc
     Background::Background(nl::node src)
     {
         nl::node backsrc = nl::nx::map["Back"];
-        animated = src["ani"].get_bool();
-        animation = backsrc[src["bS"] + ".img"][animated ? "ani" : "back"][src["no"]];
-        opacity = src["a"];
-        flipped = src["f"].get_bool();
-        cx = src["cx"];
-        cy = src["cy"];
-        rx = src["rx"];
-        ry = src["ry"];
+        animated         = src["ani"].get_bool();
+        animation        = backsrc[src["bS"] + ".img"]
+                                  [animated ? "ani" : "back"]
+                                  [src["no"]];
+        opacity          = src["a"];
+        flipped          = src["f"].get_bool();
+        cx               = src["cx"];
+        cy               = src["cy"];
+        rx               = src["rx"];
+        ry               = src["ry"];
         moveobj.set_x(src["x"]);
         moveobj.set_y(src["y"]);
 
@@ -45,9 +47,14 @@ namespace jrc
     void Background::settype(Type type)
     {
         if (cx == 0)
+        {
             cx = animation.get_dimensions().x();
+        }
+
         if (cy == 0)
+        {
             cy = animation.get_dimensions().y();
+        }
 
         htile = 1;
         vtile = 1;
@@ -55,7 +62,7 @@ namespace jrc
         {
         case HTILED:
         case HMOVEA:
-            htile = Constants::VIEWWIDTH / cx + 3;
+            htile = Constants::VIEWWIDTH  / cx + 3;
             break;
         case VTILED:
         case VMOVEA:
@@ -64,8 +71,10 @@ namespace jrc
         case TILED:
         case HMOVEB:
         case VMOVEB:
-            htile = Constants::VIEWWIDTH / cx + 3;
+            htile = Constants::VIEWWIDTH  / cx + 3;
             vtile = Constants::VIEWHEIGHT / cy + 3;
+            break;
+        default:
             break;
         }
 
@@ -78,6 +87,8 @@ namespace jrc
         case VMOVEA:
         case VMOVEB:
             moveobj.vspeed = ry / 16;
+            break;
+        default:
             break;
         }
     }
@@ -129,8 +140,8 @@ namespace jrc
                 y += cy;
             }
         }
-        int16_t ix = static_cast<int16_t>(std::round(x));
-        int16_t iy = static_cast<int16_t>(std::round(y));
+        auto ix = static_cast<int16_t>(std::round(x));
+        auto iy = static_cast<int16_t>(std::round(y));
 
         int16_t tw = cx * htile;
         int16_t th = cy * vtile;
@@ -138,7 +149,14 @@ namespace jrc
         {
             for (int16_t ty = 0; ty < th; ty += cy)
             {
-                animation.draw(DrawArgument(Point<int16_t>(ix + tx, iy + ty), flipped, opacity / 255), alpha);
+                animation.draw(
+                    DrawArgument(
+                        Point<int16_t>(ix + tx, iy + ty),
+                        flipped,
+                        opacity / 255
+                    ),
+                    alpha
+                );
             }
         }
     }
@@ -170,11 +188,11 @@ namespace jrc
             back = src[std::to_string(no)];
         }
 
-        black = src["0"]["bS"].get_string() == "";
+        black = src["0"]["bS"].get_string().empty();
     }
 
 
-    MapBackgrounds::MapBackgrounds() {}
+    MapBackgrounds::MapBackgrounds() = default;
 
     void MapBackgrounds::drawbackgrounds(double viewx, double viewy, float alpha) const
     {

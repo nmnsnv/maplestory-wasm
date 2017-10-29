@@ -62,9 +62,9 @@ namespace jrc
     }
 
     Player::Player(const CharEntry& entry)
-        : Char(entry.cid, entry.look, entry.stats.name), stats(entry.stats) {
-
-        attacking = false;
+        : Char(entry.cid, entry.look, entry.stats.name), stats(entry.stats)
+    {
+        attacking  = false;
         underwater = false;
 
         set_state(STAND);
@@ -129,7 +129,9 @@ namespace jrc
         stats.close_totalstats();
 
         if (auto statsinfo = UI::get().get_element<UIStatsinfo>())
+        {
             statsinfo->update_all_stats();
+        }
     }
 
     void Player::change_equip(int16_t slot)
@@ -154,6 +156,8 @@ namespace jrc
             case InventoryType::USE:
                 UseItemPacket(slot, itemid).dispatch();
                 break;
+            default:
+                return;
             }
         }
     }
@@ -164,6 +168,11 @@ namespace jrc
         {
             Char::draw(viewx, viewy, alpha);
         }
+    }
+
+    void Player::draw(double viewx, double viewy, float alpha) const
+    {
+        Char::draw(viewx, viewy, alpha);
     }
 
     int8_t Player::update(const Physics& physics)
@@ -202,7 +211,9 @@ namespace jrc
     {
         int32_t weapon_id = look.get_equips().get_weapon();
         if (weapon_id <= 0)
+        {
             return 0;
+        }
 
         const WeaponData& weapon = WeaponData::get(weapon_id);
 
@@ -214,7 +225,9 @@ namespace jrc
     void Player::set_direction(bool flipped)
     {
         if (!attacking)
+        {
             Char::set_direction(flipped);
+        }
     }
 
     void Player::set_state(State st)
@@ -244,20 +257,27 @@ namespace jrc
     SpecialMove::ForbidReason Player::can_use(const SpecialMove& move) const
     {
         if (move.is_skill() && state == PRONE)
+        {
             return SpecialMove::FBR_OTHER;
+        }
 
         if (move.is_attack() && (state == LADDER || state == ROPE))
+        {
             return SpecialMove::FBR_OTHER;
+        }
 
         if (has_cooldown(move.get_id()))
+        {
             return SpecialMove::FBR_COOLDOWN;
+        }
 
-        int32_t level = skillbook.get_level(move.get_id());
+        int32_t level       = skillbook.get_level(move.get_id());
         Weapon::Type weapon = get_weapontype();
-        const Job& job = stats.get_job();
-        uint16_t hp = stats.get_stat(Maplestat::HP);
-        uint16_t mp = stats.get_stat(Maplestat::MP);
-        uint16_t bullets = inventory.get_bulletcount();
+        const Job& job      = stats.get_job();
+        uint16_t hp         = stats.get_stat(Maplestat::HP);
+        uint16_t mp         = stats.get_stat(Maplestat::MP);
+        uint16_t bullets    = inventory.get_bulletcount();
+
         return move.can_use(level, weapon, job, hp, mp, bullets);
     }
 
@@ -294,7 +314,7 @@ namespace jrc
         }
 
         Attack attack;
-        attack.type = attacktype;
+        attack.type      = attacktype;
         attack.mindamage = stats.get_mindamage();
         attack.maxdamage = stats.get_maxdamage();
         if (degenerate)
@@ -302,15 +322,15 @@ namespace jrc
             attack.mindamage /= 10;
             attack.maxdamage /= 10;
         }
-        attack.critical = stats.get_critical();
-        attack.ignoredef = stats.get_ignoredef();
-        attack.accuracy = stats.get_total(Equipstat::ACC);
+        attack.critical    = stats.get_critical();
+        attack.ignoredef   = stats.get_ignoredef();
+        attack.accuracy    = stats.get_total(Equipstat::ACC);
         attack.playerlevel = stats.get_stat(Maplestat::LEVEL);
-        attack.range = stats.get_range();
-        attack.bullet = inventory.get_bulletid();
-        attack.origin = get_position();
-        attack.toleft = !flip;
-        attack.speed = get_integer_attackspeed();
+        attack.range       = stats.get_range();
+        attack.bullet      = inventory.get_bulletid();
+        attack.origin      = get_position();
+        attack.toleft      = !flip;
+        attack.speed       = static_cast<uint8_t>(get_integer_attackspeed());
 
         return attack;
     }
@@ -328,10 +348,14 @@ namespace jrc
     bool Player::is_invincible() const
     {
         if (state == DIED)
+        {
             return true;
+        }
 
         if (has_buff(Buffstat::DARKSIGHT))
+        {
             return true;
+        }
 
         return Char::is_invincible();
     }
@@ -353,7 +377,7 @@ namespace jrc
         }
 
         uint8_t direction = fromleft ? 0 : 1;
-        return{ attack, damage, direction };
+        return { attack, damage, direction };
     }
 
     void Player::give_buff(Buff buff)
@@ -392,7 +416,9 @@ namespace jrc
     {
         auto iter = cooldowns.find(skill_id);
         if (iter == cooldowns.end())
+        {
             return false;
+        }
 
         return iter->second > 0;
     }
@@ -439,8 +465,8 @@ namespace jrc
         if (ladder)
         {
             phobj.set_x(ldr->get_x());
-            phobj.hspeed = 0.0;
-            phobj.vspeed = 0.0;
+            phobj.hspeed  = 0.0;
+            phobj.vspeed  = 0.0;
             phobj.fhlayer = 7;
             set_state(ldr->is_ladder() ? Char::LADDER : Char::ROPE);
             set_direction(false);

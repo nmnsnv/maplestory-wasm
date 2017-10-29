@@ -28,22 +28,22 @@
 #include <algorithm>
 #include <functional>
 
+
 namespace jrc
 {
-    Mob::Mob(
-        int32_t        oi,
-        int32_t        mid,
-        int8_t         mode,
-        uint8_t        stance,
-        uint16_t       fh,
-        bool           newspawn,
-        int8_t         tm,
-        Point<int16_t> position
-    ) : MapObject(oi)
+    Mob::Mob(int32_t oi,
+             int32_t mid,
+             int8_t mode,
+             uint8_t stance,
+             uint16_t fh,
+             bool newspawn,
+             int8_t tm,
+             Point<int16_t> position)
+        : MapObject(oi)
     {
 
         std::string strid = string_format::extend_id(mid, 7);
-        nl::node src = nl::nx::mob[strid + ".img"];
+        nl::node src      = nl::nx::mob[strid + ".img"];
 
         nl::node info = src["info"];
 
@@ -354,9 +354,7 @@ namespace jrc
 
     void Mob::draw(double viewx, double viewy, float alpha) const
     {
-        std::cout << std::endl;
-
-        Point<int16_t> absp = phobj.get_absolute(viewx, viewy, alpha);
+        Point<int16_t> absp    = phobj.get_absolute(viewx, viewy, alpha);
         Point<int16_t> headpos = get_head_position(absp);
 
         effects.drawbelow(absp, alpha);
@@ -549,13 +547,13 @@ namespace jrc
             mindamage = calculate_mindamage(leveldelta, attack.mindamage, damagetype == Attack::DMG_MAGIC);
             maxdamage = calculate_maxdamage(leveldelta, attack.maxdamage, damagetype == Attack::DMG_MAGIC);
             hitchance = calculate_hitchance(leveldelta, attack.accuracy);
-            critical = attack.critical;
+            critical  = attack.critical;
             break;
         case Attack::DMG_FIXED:
             mindamage = attack.fixdamage;
             maxdamage = attack.fixdamage;
             hitchance = 1.0f;
-            critical = 0.0f;
+            critical  = 0.0f;
             break;
         }
 

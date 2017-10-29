@@ -565,7 +565,7 @@ namespace jrc
         int16_t wordwidth = 0;
         if (!linebreak)
         {
-            for (size_t i = first; i < last; i++)
+            for (size_t i = first; i < last; ++i)
             {
                 char c = text[i];
                 wordwidth += font.chars[c].ax;
@@ -600,7 +600,7 @@ namespace jrc
             ay += font.linespace();
         }
 
-        for (size_t pos = first; pos < last; pos++)
+        for (size_t pos = first; pos < last; ++pos)
         {
             char c = text[pos];
             const Font::Char& ch = font.chars[c];

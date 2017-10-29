@@ -33,7 +33,7 @@ namespace jrc
             FIRST,
             SECOND,
             THIRD,
-            FOURTHT
+            FOURTH
         };
 
         static Level get_next_level(Level level)
@@ -47,7 +47,7 @@ namespace jrc
             case SECOND:
                 return THIRD;
             default:
-                return FOURTHT;
+                return FOURTH;
             }
         }
 

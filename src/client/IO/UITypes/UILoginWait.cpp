@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-#pragma once
+//#pragma once
 #include "UILoginWait.h"
 
 #include "../../Graphics/Sprite.h"
 
 #include "nlnx/nx.hpp"
+
 
 namespace jrc
 {
@@ -29,11 +30,11 @@ namespace jrc
         nl::node src = nl::nx::ui["Login.img"]["Notice"]["Loading"];
 
         background = src["backgrnd"];
-        circle = { src["circle"], { 125, 72 } };
+        circle     = { src["circle"], { 125, 72 } };
 
-        position = { 292, 200 };
+        position  = { 292, 200 };
         dimension = { 282, 144 };
-        active = true;
+        active    = true;
     }
 
     void UILoginwait::draw(float alpha) const

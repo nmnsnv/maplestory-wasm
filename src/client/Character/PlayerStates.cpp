@@ -19,6 +19,7 @@
 
 #include "../Audio/Audio.h"
 
+
 namespace jrc
 {
     // Base class
@@ -26,7 +27,6 @@ namespace jrc
     {
         Sound(Sound::JUMP).play();
     }
-
 
     // Null state
     void PlayerNullState::update_state(Player& player) const
@@ -81,7 +81,9 @@ namespace jrc
     void PlayerStandState::send_action(Player& player, KeyAction::Id ka, bool down) const
     {
         if (player.is_attacking())
+        {
             return;
+        }
 
         if (down)
         {
@@ -102,14 +104,18 @@ namespace jrc
             case KeyAction::DOWN:
                 player.set_state(Char::PRONE);
                 break;
+            default:
+                break;
             }
         }
     }
 
     void PlayerStandState::update(Player& player) const
     {
-        if (player.get_phobj().enablejd == false)
+        if (!player.get_phobj().enablejd)
+        {
             player.get_phobj().set_flag(PhysicsObject::CHECKBELOW);
+        }
     }
 
     void PlayerStandState::update_state(Player& player) const
@@ -130,7 +136,9 @@ namespace jrc
     void PlayerWalkState::send_action(Player& player, KeyAction::Id ka, bool down) const
     {
         if (player.is_attacking())
+        {
             return;
+        }
 
         if (down)
         {
@@ -149,6 +157,8 @@ namespace jrc
             case KeyAction::DOWN:
                 player.set_state(Char::PRONE);
                 break;
+            default:
+                break;
             }
         }
     }
@@ -161,10 +171,16 @@ namespace jrc
     void PlayerWalkState::update(Player& player) const
     {
         if (!player.is_attacking() && haswalkinput(player))
-            player.get_phobj().hforce += player.getflip() ? player.get_walkforce() : -player.get_walkforce();
+        {
+            player.get_phobj().hforce +=
+                player.getflip() ?  player.get_walkforce()
+                                 : -player.get_walkforce();
+        }
 
-        if (player.get_phobj().enablejd == false)
+        if (!player.get_phobj().enablejd)
+        {
             player.get_phobj().set_flag(PhysicsObject::CHECKBELOW);
+        }
     }
 
     void PlayerWalkState::update_state(Player& player) const
@@ -172,7 +188,9 @@ namespace jrc
         if (player.get_phobj().onground)
         {
             if (!haswalkinput(player) || player.get_phobj().hspeed == 0.0f)
+            {
                 player.set_state(Char::STAND);
+            }
         }
         else
         {
@@ -198,6 +216,8 @@ namespace jrc
             case KeyAction::RIGHT:
                 player.set_direction(true);
                 break;
+            default:
+                break;
             }
         }
     }
@@ -209,13 +229,17 @@ namespace jrc
         {
             hspeed -= 0.025;
             if (hspeed < 0.0)
+            {
                 hspeed = 0.0;
+            }
         }
         else if (player.is_key_down(KeyAction::RIGHT) && hspeed < 0.0)
         {
             hspeed += 0.025;
             if (hspeed > 0.0)
+            {
                 hspeed = 0.0;
+            }
         }
     }
 
@@ -265,6 +289,8 @@ namespace jrc
                     player.send_action(ka, down);
                 }
                 break;
+            default:
+                break;
             }
         }
         else
@@ -274,14 +300,18 @@ namespace jrc
             case KeyAction::DOWN:
                 player.set_state(Char::STAND);
                 break;
+            default:
+                break;
             }
         }
     }
 
     void PlayerProneState::update(Player& player) const
     {
-        if (player.get_phobj().enablejd == false)
+        if (!player.get_phobj().enablejd)
+        {
             player.get_phobj().set_flag(PhysicsObject::CHECKBELOW);
+        }
     }
 
 
@@ -307,6 +337,8 @@ namespace jrc
             case KeyAction::UP:
                 player.set_state(Char::SWIM);
                 break;
+            default:
+                break;
             }
         }
     }
@@ -315,7 +347,9 @@ namespace jrc
     // Flying
     void PlayerFlyState::initialize(Player& player) const
     {
-        player.get_phobj().type = player.is_underwater() ? PhysicsObject::SWIMMING : PhysicsObject::FLYING;
+        player.get_phobj().type =
+            player.is_underwater() ? PhysicsObject::SWIMMING
+                                   : PhysicsObject::FLYING;
     }
 
     void PlayerFlyState::send_action(Player& player, KeyAction::Id ka, bool down) const
@@ -330,6 +364,8 @@ namespace jrc
             case KeyAction::RIGHT:
                 player.set_direction(true);
                 break;
+            default:
+                break;
             }
         }
     }
@@ -337,17 +373,27 @@ namespace jrc
     void PlayerFlyState::update(Player& player) const
     {
         if (player.is_attacking())
+        {
             return;
+        }
 
         if (player.is_key_down(KeyAction::LEFT))
+        {
             player.get_phobj().hforce = -player.get_flyforce();
+        }
         else if (player.is_key_down(KeyAction::RIGHT))
+        {
             player.get_phobj().hforce = player.get_flyforce();
+        }
 
         if (player.is_key_down(KeyAction::UP))
+        {
             player.get_phobj().vforce = -player.get_flyforce();
+        }
         else if (player.is_key_down(KeyAction::DOWN))
+        {
             player.get_phobj().vforce = player.get_flyforce();
+        }
     }
 
     void PlayerFlyState::update_state(Player& player) const
@@ -407,6 +453,8 @@ namespace jrc
                     player.get_phobj().vspeed = -player.get_jumpforce() / 1.5;
                     cancel_ladder(player);
                 }
+                break;
+            default:
                 break;
             }
         }

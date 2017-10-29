@@ -30,15 +30,15 @@
 
 #include "nlnx/nx.hpp"
 
+
 namespace jrc
 {
     constexpr Point<int16_t> UISkillbook::SKILL_OFFSET;
     constexpr Point<int16_t> UISkillbook::ICON_OFFSET;
     constexpr Point<int16_t> UISkillbook::LINE_OFFSET;
 
-    SkillIcon::SkillIcon(int32_t i, int32_t lv) :
-        id(i) {
-
+    SkillIcon::SkillIcon(int32_t i, int32_t lv) : id(i)
+    {
         const SkillData& data = SkillData::get(id);
 
         normal    = data.get_icon(SkillData::NORMAL);
@@ -57,7 +57,7 @@ namespace jrc
         while (name.width() > MAX_NAME_WIDTH)
         {
             namestr.replace(namestr.end() - overhang, namestr.end(), "...");
-            overhang += 1;
+            overhang++;
 
             name.change_text(namestr);
         }
@@ -78,7 +78,7 @@ namespace jrc
                 break;
         }
 
-        name.draw(args + Point<int16_t>(38, -34));
+        name.draw(args  + Point<int16_t>(38, -34));
         level.draw(args + Point<int16_t>(38, -16));
     }
 
@@ -136,9 +136,10 @@ namespace jrc
         return id;
     }
 
-    UISkillbook::UISkillbook(const CharStats& in_stats, const Skillbook& in_skillbook)
-        : UIDragElement({ 174, 20 }), stats(in_stats), skillbook(in_skillbook) {
-
+    UISkillbook::UISkillbook(const CharStats& in_stats,
+                             const Skillbook& in_skillbook)
+        : UIDragElement({ 174, 20 }), stats(in_stats), skillbook(in_skillbook)
+    {
         nl::node main = nl::nx::ui["UIWindow2.img"]["Skill"]["main"];
 
         sprites.emplace_back(main["backgrnd"]);
@@ -147,7 +148,7 @@ namespace jrc
 
         skilld = main["skill0"];
         skille = main["skill1"];
-        line = main["line"];
+        line   = main["line"];
 
         nl::node tabe = main["Tab"]["enabled"];
         nl::node tabd = main["Tab"]["disabled"];
@@ -164,20 +165,21 @@ namespace jrc
             buttons[i] = std::make_unique<MapleButton>(main["BtSpUp"], spup_position);
         }
 
-        booktext = { Text::A12M, Text::CENTER, Text::WHITE, "", 100 };
-        splabel = { Text::A11M, Text::RIGHT, Text::LIGHTGREY };
+        booktext = { Text::A12M, Text::CENTER, Text::WHITE,     "", 100 };
+        splabel  = { Text::A11M, Text::RIGHT,  Text::LIGHTGREY          };
 
         slider = {
             11, { 92, 236 }, 154, ROWS, 1,
             [&](bool upwards) {
-            int16_t shift = upwards ? -1 : 1;
-            bool above = offset + shift >= 0;
-            bool below = offset + 4 + shift <= skillcount;
-            if (above && below)
-            {
-                change_offset(offset + shift);
+                int16_t shift = upwards ? -1 : 1;
+                bool above = offset + shift >= 0;
+                bool below = offset + 4 + shift <= skillcount;
+                if (above && below)
+                {
+                    change_offset(offset + shift);
+                }
             }
-        } };
+        };
 
         change_job(stats.get_stat(Maplestat::JOB));
         change_sp(stats.get_stat(Maplestat::SP));
@@ -198,11 +200,13 @@ namespace jrc
         {
             begin = begin + offset;
         }
+
         auto end = icons.end();
         if (icons.size() > ROWS + offset)
         {
             end = begin + ROWS;
         }
+
         Point<int16_t> skill_position = position + SKILL_OFFSET;
         for (auto iter = begin; iter != end; ++iter)
         {
@@ -248,7 +252,7 @@ namespace jrc
         const SkillIcon* icon = icon_by_position(cursorpos - position);
         if (icon)
         {
-            int32_t skill_id = icon->get_id();
+            int32_t skill_id    = icon->get_id();
             int32_t skill_level = skillbook.get_level(skill_id);
             if (skill_level > 0)
             {
@@ -260,7 +264,9 @@ namespace jrc
     bool UISkillbook::remove_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (UIDragElement::remove_cursor(clicked, cursorpos))
+        {
             return true;
+        }
 
         return slider.remove_cursor(clicked);
     }
@@ -288,11 +294,13 @@ namespace jrc
         {
             begin = begin + offset;
         }
+
         auto end = icons.end();
         if (icons.size() > ROWS + offset)
         {
             end = begin + ROWS;
         }
+
         Point<int16_t> skill_position = position + SKILL_OFFSET;
         for (auto iter = begin; iter != end; ++iter)
         {
@@ -305,6 +313,8 @@ namespace jrc
                     break;
                 case Cursor::CANGRAB:
                     show_skill(iter->get_id());
+                    break;
+                default:
                     break;
                 }
                 return state;
@@ -327,6 +337,8 @@ namespace jrc
         case Maplestat::SP:
             change_sp(value);
             break;
+        default:
+            return;
         }
     }
 
@@ -343,7 +355,7 @@ namespace jrc
         job.change_job(id);
 
         Job::Level level = job.get_level();
-        for (uint16_t i = 0; i <= Job::FOURTHT; i++)
+        for (uint16_t i = 0; i <= Job::FOURTH; ++i)
         {
             buttons[BT_TAB0 + i]->set_active(i <= level);
         }
@@ -361,7 +373,7 @@ namespace jrc
 
     void UISkillbook::change_tab(uint16_t new_tab)
     {
-        buttons[BT_TAB0 + tab]->set_state(Button::NORMAL);
+        buttons[BT_TAB0 + tab    ]->set_state(Button::NORMAL);
         buttons[BT_TAB0 + new_tab]->set_state(Button::PRESSED);
         tab = new_tab;
 
@@ -383,7 +395,9 @@ namespace jrc
 
             bool invisible = SkillData::get(skill_id).is_invisible();
             if (invisible && masterlevel == 0)
+            {
                 continue;
+            }
 
             icons.emplace_back(skill_id, level);
             skillcount++;
@@ -397,7 +411,7 @@ namespace jrc
     {
         offset = new_offset;
 
-        for (int16_t i = 0; i < ROWS; i++)
+        for (int16_t i = 0; i < ROWS; ++i)
         {
             uint16_t index = BT_SPUP0 + i;
             uint16_t row = offset + i;
@@ -418,20 +432,26 @@ namespace jrc
         int32_t masterlevel = skillbook.get_masterlevel(id);
         int64_t expiration = skillbook.get_expiration(id);
 
-        UI::get()
-            .show_skill(Tooltip::SKILLBOOK, skill_id, level, masterlevel, expiration);
+        UI::get().show_skill(
+            Tooltip::SKILLBOOK,
+            skill_id,
+            level,
+            masterlevel,
+            expiration
+        );
     }
 
     void UISkillbook::clear_tooltip()
     {
-        UI::get()
-            .clear_tooltip(Tooltip::SKILLBOOK);
+        UI::get().clear_tooltip(Tooltip::SKILLBOOK);
     }
 
     bool UISkillbook::can_raise(int32_t skill_id) const
     {
         if (sp <= 0)
+        {
             return false;
+        }
 
         int32_t level = skillbook.get_level(skill_id);
         int32_t masterlevel = skillbook.get_masterlevel(skill_id);
@@ -439,8 +459,11 @@ namespace jrc
         {
             masterlevel = SkillData::get(skill_id).get_masterlevel();
         }
+
         if (level >= masterlevel)
+        {
             return false;
+        }
 
         switch (skill_id)
         {
@@ -454,7 +477,9 @@ namespace jrc
     void UISkillbook::send_spup(uint16_t row)
     {
         if (row >= icons.size())
+        {
             return;
+        }
 
         int32_t skill_id = icons[row].get_id();
 
@@ -473,7 +498,7 @@ namespace jrc
         case 3:
             return Job::THIRD;
         case 4:
-            return Job::FOURTHT;
+            return Job::FOURTH;
         default:
             return Job::BEGINNER;
         }

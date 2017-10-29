@@ -35,41 +35,44 @@
 namespace jrc
 {
     UICharSelect::UICharSelect(std::vector<CharEntry> cs,
-        uint8_t c, uint8_t s, uint8_t channel_id, int8_t p) :
-        characters(cs),
-        charcount_absolute(c),
-        slots_absolute(s),
-        require_pic(p) {
-
+                               uint8_t c,
+                               uint8_t s,
+                               uint8_t channel_id,
+                               int8_t p)
+        : characters(cs),        require_pic(p),
+          charcount_absolute(c), slots_absolute(s)
+    {
         selected_absolute = Setting<DefaultCharacter>::get().load();
         selected_relative = selected_absolute % PAGESIZE;
-        page = selected_absolute / PAGESIZE;
+        page              = selected_absolute / PAGESIZE;
 
-        nl::node title = nl::nx::ui["Login.img"]["Title"];
-        nl::node common = nl::nx::ui["Login.img"]["Common"];
+        nl::node title      = nl::nx::ui["Login.img"]["Title"];
+        nl::node common     = nl::nx::ui["Login.img"]["Common"];
         nl::node charselect = nl::nx::ui["Login.img"]["CharSelect"];
 
         sprites.emplace_back(title["worldsel"]);
         sprites.emplace_back(common["frame"], Point<int16_t>(400, 290));
 
         // Post BB
-        /*selworldpos = Point<int16_t>(578, 42);
+        /*
+        selworldpos = Point<int16_t>(578, 42);
         charinfopos = Point<int16_t>(662, 355);
         buttons[BT_ARBEIT] = std::make_unique<MapleButton>(charsel["arbeit"], Point<int16_t>(580, 115)));
-        buttons[BT_CARDS] = std::make_unique<MapleButton>(charsel["characterCard"], Point<int16_t>(665, 115)));*/
+        buttons[BT_CARDS] = std::make_unique<MapleButton>(charsel["characterCard"], Point<int16_t>(665, 115)));
+        */
 
         // Pre BB
         charinfopos = Point<int16_t>(662, 305);
         selworldpos = Point<int16_t>(578, 112);
 
-        sprites.emplace_back(charselect["charInfo"], charinfopos);
-        sprites.emplace_back(common["selectWorld"], selworldpos);
-        sprites.emplace_back(charselect["selectedWorld"]["icon"]["15"], selworldpos);
-        sprites.emplace_back(charselect["selectedWorld"]["name"]["15"], selworldpos);
+        sprites.emplace_back(charselect["charInfo"],                        charinfopos);
+        sprites.emplace_back(common["selectWorld"],                         selworldpos);
+        sprites.emplace_back(charselect["selectedWorld"]["icon"]["15"],     selworldpos);
+        sprites.emplace_back(charselect["selectedWorld"]["name"]["15"],     selworldpos);
         sprites.emplace_back(charselect["selectedWorld"]["ch"][channel_id], selworldpos);
 
         emptyslot = charselect["buyCharacter"];
-        nametag = charselect["nameTag"];
+        nametag   = charselect["nameTag"];
 
         buttons[BT_SELECTCHAR] = std::make_unique<MapleButton>(charselect["BtSelect"], charinfopos + Point<int16_t>(-76, 72));
         buttons[BT_CREATECHAR] = std::make_unique<MapleButton>(charselect["BtNew"],    Point<int16_t>(200, 495));
@@ -77,7 +80,7 @@ namespace jrc
         buttons[BT_PAGELEFT]   = std::make_unique<MapleButton>(charselect["pageL"],    Point<int16_t>(100, 490));
         buttons[BT_PAGERIGHT]  = std::make_unique<MapleButton>(charselect["pageR"],    Point<int16_t>(490, 490));
 
-        for (uint8_t i = 0; i < PAGESIZE; i++)
+        for (uint8_t i = 0; i < PAGESIZE; ++i)
         {
             buttons[BT_CHAR0 + i] = std::make_unique<AreaButton>(
                 Point<int16_t>(105 + (120 * (i % 4)), 170 + (200 * (i > 3))),
@@ -88,12 +91,12 @@ namespace jrc
         levelset = { charselect["lv"], Charset::CENTER };
 
         namelabel = { Text::A18M, Text::CENTER };
-        for (size_t i = 0; i < NUM_LABELS; i++)
+        for (size_t i = 0; i < NUM_LABELS; ++i)
         {
             infolabels[i] = { Text::A11M, Text::RIGHT };
         }
 
-        for (auto& entry : characters)
+        for (const auto& entry : characters)
         {
             charlooks.emplace_back(entry.look);
             nametags.emplace_back(nametag, Text::A13M, Text::WHITE, entry.stats.name);
@@ -102,16 +105,16 @@ namespace jrc
         update_counts();
         update_selection();
 
-        position = { 0, 0 };
+        position  = { 0, 0 };
         dimension = { 800, 600 };
-        active = true;
+        active    = true;
     }
 
     void UICharSelect::draw(float alpha) const
     {
         UIElement::draw(alpha);
 
-        for (uint8_t i = 0; i < charcount_relative; i++)
+        for (uint8_t i = 0; i < charcount_relative; ++i)
         {
             Point<int16_t> charpos = get_char_pos(i);
             uint8_t index = i + page * PAGESIZE;
@@ -129,14 +132,14 @@ namespace jrc
 
             namelabel.draw(charinfopos + Point<int16_t>(0, -85));
 
-            for (size_t i = 0; i < NUM_LABELS; i++)
+            for (size_t i = 0; i < NUM_LABELS; ++i)
             {
                 Point<int16_t> labelpos = charinfopos + get_label_pos(i);
                 infolabels[i].draw(labelpos);
             }
         }
 
-        for (uint8_t i = charcount_relative; i < slots_relative; i++)
+        for (uint8_t i = charcount_relative; i < slots_relative; ++i)
         {
             Point<int16_t> position_slot(130 + (120 * (i % 4)), 250 + (200 * (i > 3)));
             emptyslot.draw(position_slot, alpha);
@@ -166,6 +169,7 @@ namespace jrc
             selected_relative = static_cast<uint8_t>(bid - BT_CHAR0);
             selected_absolute = selected_relative + page * PAGESIZE;
             update_selection();
+
             return Button::IDENTITY;
         }
         else
@@ -201,7 +205,9 @@ namespace jrc
     void UICharSelect::update_selection()
     {
         if (selected_relative >= charcount_relative)
+        {
             return;
+        }
 
         charlooks[selected_absolute].set_stance(Stance::WALK1);
         nametags[selected_absolute].set_selected(true);
@@ -209,11 +215,9 @@ namespace jrc
         buttons[BT_CHAR0 + selected_relative]->set_state(Button::PRESSED);
         namelabel.change_text(characters[selected_relative].stats.name);
 
-        for (size_t i = 0; i < NUM_LABELS; i++)
+        for (size_t i = 0; i < NUM_LABELS; ++i)
         {
-            infolabels[i].change_text(
-                get_label_string(i)
-            );
+            infolabels[i].change_text(get_label_string(i));
         }
     }
 
@@ -286,7 +290,7 @@ namespace jrc
             buttons[BT_DELETECHAR]->set_state(Button::DISABLED);
         }
 
-        for (uint8_t i = 0; i < PAGESIZE; i++)
+        for (uint8_t i = 0; i < PAGESIZE; ++i)
         {
             if (i < charcount_relative)
             {
@@ -328,6 +332,9 @@ namespace jrc
             Sound(Sound::SELECTCHAR).play();
             SelectCharPacket(cid).dispatch();
             break;
+        default:
+            Console::get().print("require_pic = " + std::to_string(require_pic));
+            break;
         }
     }
 
@@ -361,16 +368,20 @@ namespace jrc
     void UICharSelect::remove_char(int32_t cid)
     {
         size_t index = 0;
-        for (auto& character : characters)
+        for (const auto& character : characters)
         {
             if (character.cid == cid)
+            {
                 break;
+            }
 
             index++;
         }
 
         if (index == characters.size())
+        {
             return;
+        }
 
         characters.erase(characters.begin() + index);
         charlooks.erase(charlooks.begin() + index);
@@ -384,14 +395,18 @@ namespace jrc
 
     const CharEntry& UICharSelect::get_character(int32_t cid)
     {
-        for (auto& character : characters)
+        for (const auto& character : characters)
         {
             if (character.cid == cid)
+            {
                 return character;
+            }
         }
 
-        Console::get()
-            .print(__func__, "Warning: Invalid cid (" + std::to_string(cid) + ")");
+        Console::get().print(
+            __func__,
+            "Warning: Invalid cid (" + std::to_string(cid) + ")"
+        );
 
         static const CharEntry null_entry{ {}, {}, 0 };
         return null_entry;
@@ -426,21 +441,21 @@ namespace jrc
         switch (label)
         {
         case JOB:
-            return{ 72, -48 };
+            return { 72, -48 };
         case WORLDRANK:
-            return{ 72, -24 };
+            return { 72, -24 };
         case JOBRANK:
-            return{ 72, -4 };
+            return { 72, -4 };
         case STR:
-            return{ -5, 26 };
+            return { -5, 26 };
         case DEX:
-            return{ -5, 48 };
+            return { -5, 48 };
         case INT:
-            return{ 72, 26 };
+            return { 72, 26 };
         case LUK:
-            return{ 72, 48 };
+            return { 72, 48 };
         default:
-            return{};
+            return {};
         }
     }
 
@@ -448,6 +463,6 @@ namespace jrc
     {
         int16_t x = 130 + (120 * (i % 4));
         int16_t y = 250 + (200 * (i > 3));
-        return{ x, y };
+        return { x, y };
     }
 }

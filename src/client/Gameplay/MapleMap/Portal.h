@@ -61,8 +61,8 @@ namespace jrc
             bool valid;
 
             WarpInfo(int32_t m, bool i, std::string tn, std::string n)
-                : mapid(m), toname(tn), intramap(i), name(n) {
-
+                : mapid(m), toname(tn), name(n), intramap(i)
+            {
                 valid = mapid < 999999999;
             }
 
@@ -70,8 +70,13 @@ namespace jrc
                 : WarpInfo(999999999, false, {}, {}) {}
         };
 
-        Portal(const Animation* animation, Type type, std::string name, bool intramap,
-            Point<int16_t> position, int32_t tomap, std::string toname);
+        Portal(const Animation* animation,
+               Type type,
+               std::string name,
+               bool intramap,
+               Point<int16_t> position,
+               int32_t tomap,
+               std::string toname);
         Portal();
 
         void update(Point<int16_t> playerpos);

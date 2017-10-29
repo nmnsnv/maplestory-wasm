@@ -26,11 +26,13 @@ namespace jrc
 {
     MapPortals::MapPortals(nl::node src, int32_t mapid)
     {
-        for (auto sub : src)
+        for (const auto& sub : src)
         {
-            int8_t portal_id = string_conversion::or_default<int8_t>(sub.name(), -1);
+            auto portal_id = string_conversion::or_default<int8_t>(sub.name(), -1);
             if (portal_id < 0)
+            {
                 continue;
+            }
 
             Portal::Type type = Portal::typebyid(sub["pt"]);
             std::string name = sub["pn"];
@@ -71,6 +73,8 @@ namespace jrc
             case Portal::TOUCH:
                 portal.update(playerpos);
                 break;
+            default:
+                break;
             }
         }
 
@@ -99,7 +103,7 @@ namespace jrc
         }
         else
         {
-            return{};
+            return {};
         }
     }
 
@@ -112,7 +116,7 @@ namespace jrc
         }
         else
         {
-            return{};
+            return {};
         }
     }
 
@@ -122,7 +126,7 @@ namespace jrc
         {
             cooldown = WARPCD;
 
-            for (auto& iter : portals_by_id)
+            for (const auto& iter : portals_by_id)
             {
                 const Portal& portal = iter.second;
                 if (portal.bounds().contains(playerpos))
@@ -131,7 +135,8 @@ namespace jrc
                 }
             }
         }
-        return{};
+
+        return {};
     }
 
 
@@ -139,7 +144,7 @@ namespace jrc
     {
         nl::node src = nl::nx::map["MapHelper.img"]["portal"]["game"];
 
-        animations[Portal::HIDDEN] = src["ph"]["default"]["portalContinue"];
+        animations[Portal::HIDDEN]  = src["ph"]["default"]["portalContinue"];
         animations[Portal::REGULAR] = src["pv"];
     }
 

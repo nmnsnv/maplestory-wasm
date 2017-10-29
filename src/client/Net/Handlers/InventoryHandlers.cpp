@@ -27,19 +27,24 @@
 #include "../../IO/UITypes/UIEquipInventory.h"
 #include "../../IO/UITypes/UIItemInventory.h"
 
+
 namespace jrc
 {
     void GatherResultHandler::handle(InPacket&) const
     {
         if (auto iteminventory = UI::get().get_element<UIItemInventory>())
+        {
             iteminventory->enable_sort();
+        }
     }
 
 
     void SortResultHandler::handle(InPacket&) const
     {
         if (auto iteminventory = UI::get().get_element<UIItemInventory>())
+        {
             iteminventory->enable_gather();
+        }
     }
 
 
@@ -47,9 +52,8 @@ namespace jrc
     {
         recv.read_bool(); // 'updatetick'
 
-        Inventory& inventory = Stage::get()
-            .get_player()
-            .get_inventory();
+        Inventory& inventory = Stage::get().get_player()
+                                           .get_inventory();
 
         struct Mod
         {
@@ -61,14 +65,14 @@ namespace jrc
         std::vector<Mod> mods;
 
         int8_t size = recv.read_byte();
-        for (int8_t i = 0; i < size; i++)
+        for (int8_t i = 0; i < size; ++i)
         {
             Mod mod;
             mod.mode = recv.read_byte();
             mod.type = InventoryType::by_value(recv.read_byte());
-            mod.pos = recv.read_short();
+            mod.pos  = recv.read_short();
+            mod.arg  = 0;
 
-            mod.arg = 0;
             switch (mod.mode)
             {
             case Inventory::ADD:
@@ -84,7 +88,9 @@ namespace jrc
                     inventory.modify(mod.type, mod.pos, mod.mode, mod.arg, Inventory::MOVE_NONE);
 
                     if (count_before < count_now)
+                    {
                         mod.mode = Inventory::ADDCOUNT;
+                    }
                 }
                 break;
             case Inventory::SWAP:
@@ -110,7 +116,9 @@ namespace jrc
             }
 
             if (auto shop = UI::get().get_element<UIShop>())
+            {
                 shop->modify(mod.type);
+            }
 
             auto eqinvent = UI::get().get_element<UIEquipInventory>();
             auto itinvent = UI::get().get_element<UIItemInventory>();
@@ -121,7 +129,9 @@ namespace jrc
                 {
                 case InventoryType::EQUIPPED:
                     if (eqinvent)
+                    {
                         eqinvent->modify(mod.pos, mod.mode, mod.arg);
+                    }
 
                     Stage::get().get_player().change_equip(-mod.pos);
                     Stage::get().get_player().change_equip(-mod.arg);
@@ -132,7 +142,13 @@ namespace jrc
                 case InventoryType::ETC:
                 case InventoryType::CASH:
                     if (itinvent)
+                    {
                         itinvent->modify(mod.type, mod.pos, mod.mode, mod.arg);
+                    }
+                    break;
+                case InventoryType::LENGTH:
+                case InventoryType::NONE:
+                default:
                     break;
                 }
                 break;
@@ -141,23 +157,34 @@ namespace jrc
                 if (mod.pos < 0)
                 {
                     if (eqinvent)
+                    {
                         eqinvent->modify(-mod.pos, 3, 0);
+                    }
 
                     if (itinvent)
+                    {
                         itinvent->modify(InventoryType::EQUIP, mod.arg, 0, 0);
+                    }
 
                     Stage::get().get_player().change_equip(-mod.pos);
                 }
                 else if (mod.arg < 0)
                 {
                     if (eqinvent)
+                    {
                         eqinvent->modify(-mod.arg, 0, 0);
+                    }
 
                     if (itinvent)
+                    {
                         itinvent->modify(InventoryType::EQUIP, mod.pos, 3, 0);
+                    }
 
                     Stage::get().get_player().change_equip(-mod.arg);
                 }
+                break;
+            case Inventory::MOVE_NONE:
+            default:
                 break;
             }
         }

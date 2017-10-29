@@ -206,10 +206,15 @@ namespace jrc
             case MOVE_EQUIP:
                 swap(InventoryType::EQUIP, slot, InventoryType::EQUIPPED, arg);
                 break;
+            case MOVE_NONE:
+            default:
+                break;
             }
             break;
         case REMOVE:
             remove(type, slot);
+            break;
+        default:
             break;
         }
     }

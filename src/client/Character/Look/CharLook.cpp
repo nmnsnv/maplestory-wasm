@@ -22,6 +22,7 @@
 
 #include <array>
 
+
 namespace jrc
 {
     CharLook::CharLook(const LookEntry& entry)
@@ -51,9 +52,9 @@ namespace jrc
     {
         flip = true;
 
-        action = nullptr;
+        action    = nullptr;
         actionstr = "";
-        actframe = 0;
+        actframe  = 0;
 
         set_stance(Stance::STAND1);
         stframe.set(0);
@@ -68,7 +69,7 @@ namespace jrc
         Expression::Id interexpression, uint8_t interframe, uint8_t interexpframe) const {
 
         Point<int16_t> faceshift = drawinfo.getfacepos(interstance, interframe);
-        DrawArgument faceargs = args + DrawArgument{ faceshift, false, Point<int16_t>{}};
+        DrawArgument faceargs = args + DrawArgument{ faceshift, false, Point<int16_t>{} };
 
         if (Stance::is_climbing(interstance))
         {
@@ -97,6 +98,9 @@ namespace jrc
                 break;
             case CharEquips::FULLCOVER:
                 equips.draw(Equipslot::CAP, interstance, Clothing::CAP, interframe, args);
+                break;
+            case CharEquips::HAIRPIN:
+                // TODO
                 break;
             }
 
@@ -193,7 +197,9 @@ namespace jrc
     void CharLook::draw(const DrawArgument& args, float alpha) const
     {
         if (!body || !hair || !face)
+        {
             return;
+        }
 
         Point<int16_t> acmove;
         if (action)
@@ -217,6 +223,8 @@ namespace jrc
                 interstance = Stance::ALERT;
             }
             break;
+        default:
+            break;
         }
 
         draw(relargs + args, interstance, interexpression, interframe, interexpframe);
@@ -237,6 +245,7 @@ namespace jrc
             stframe.normalize();
             expression.normalize();
             expframe.normalize();
+
             return false;
         }
 
@@ -389,14 +398,18 @@ namespace jrc
     {
         equips.remove_equip(slot);
         if (slot == Equipslot::WEAPON)
+        {
             updatetwohanded();
+        }
     }
 
     void CharLook::attack(bool degenerate)
     {
         int32_t weapon_id = equips.get_weapon();
         if (weapon_id <= 0)
+        {
             return;
+        }
 
         const WeaponData& weapon = WeaponData::get(weapon_id);
 
@@ -414,13 +427,15 @@ namespace jrc
         }
 
         weapon.get_usesound(degenerate)
-            .play();
+              .play();
     }
 
     void CharLook::attack(Stance::Id newstance)
     {
         if (action || newstance == Stance::NONE)
+        {
             return;
+        }
 
         switch (newstance)
         {
@@ -435,7 +450,9 @@ namespace jrc
     void CharLook::set_stance(Stance::Id newstance)
     {
         if (action || newstance == Stance::NONE)
+        {
             return;
+        }
 
         Stance::Id adjstance = equips.adjust_stance(newstance);
         if (stance != adjstance)
@@ -449,7 +466,9 @@ namespace jrc
     Stance::Id CharLook::getattackstance(uint8_t attack, bool degenerate) const
     {
         if (stance == Stance::PRONE)
+        {
             return Stance::PRONESTAB;
+        }
 
         enum Attack
         {
@@ -482,11 +501,11 @@ namespace jrc
         static const std::array<std::vector<Stance::Id>, NUM_ATTACKS> attack_stances =
         { {
             { Stance::NONE },
-            { Stance::STABO1, Stance::STABO2, Stance::SWINGO1, Stance::SWINGO2, Stance::SWINGO3 },
-            { Stance::STABT1, Stance::SWINGP1 },
+            { Stance::STABO1,  Stance::STABO2, Stance::SWINGO1, Stance::SWINGO2, Stance::SWINGO3 },
+            { Stance::STABT1,  Stance::SWINGP1 },
             { Stance::SHOOT1 },
             { Stance::SHOOT2 },
-            { Stance::STABO1, Stance::STABO2, Stance::SWINGT1, Stance::SWINGT2, Stance::SWINGT3 },
+            { Stance::STABO1,  Stance::STABO2, Stance::SWINGT1, Stance::SWINGT2, Stance::SWINGT3 },
             { Stance::SWINGO1, Stance::SWINGO2 },
             { Stance::SWINGO1, Stance::SWINGO2 },
             { Stance::NONE },
@@ -494,11 +513,15 @@ namespace jrc
         } };
 
         if (attack <= NONE || attack >= NUM_ATTACKS)
+        {
             return Stance::STAND1;
+        }
 
         const auto& stances = degenerate ? degen_stances[attack] : attack_stances[attack];
         if (stances.empty())
+        {
             return Stance::STAND1;
+        }
 
         size_t index = randomizer.next_int(stances.size());
         return stances[index];
@@ -527,8 +550,10 @@ namespace jrc
 
     void CharLook::set_action(const std::string& acstr)
     {
-        if (acstr == actionstr || acstr == "")
+        if (acstr == actionstr || acstr.empty())
+        {
             return;
+        }
 
         if (Stance::Id ac_stance = Stance::by_string(acstr))
         {

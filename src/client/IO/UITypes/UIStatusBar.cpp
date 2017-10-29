@@ -24,14 +24,15 @@
 
 #include "nlnx/nx.hpp"
 
+
 namespace jrc
 {
     constexpr Point<int16_t> UIStatusbar::POSITION;
     constexpr Point<int16_t> UIStatusbar::DIMENSION;
 
     UIStatusbar::UIStatusbar(const CharStats& st)
-        : UIElement(POSITION, DIMENSION), chatbar(POSITION), stats(st) {
-
+        : UIElement(POSITION, DIMENSION), stats(st), chatbar(POSITION)
+    {
         nl::node mainbar = nl::nx::ui["StatusBar2.img"]["mainBar"];
 
         sprites.emplace_back(mainbar["backgrnd"]);
@@ -155,8 +156,9 @@ namespace jrc
         case BT_SKILL:
             UI::get().send_menu(KeyAction::SKILLBOOK);
             return Button::NORMAL;
+        default:
+            return Button::PRESSED;
         }
-        return Button::PRESSED;
     }
 
     bool UIStatusbar::is_in_range(Point<int16_t> cursorpos) const
@@ -164,14 +166,17 @@ namespace jrc
         Rectangle<int16_t> bounds(
             position - Point<int16_t>(512, 84),
             position - Point<int16_t>(512, 84) + dimension
-            );
+        );
+
         return bounds.contains(cursorpos) || chatbar.is_in_range(cursorpos);
     }
 
     bool UIStatusbar::remove_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (chatbar.remove_cursor(clicked, cursorpos))
+        {
             return true;
+        }
 
         return UIElement::remove_cursor(clicked, cursorpos);
     }
@@ -198,7 +203,9 @@ namespace jrc
     void UIStatusbar::display_message(Messages::Type line, UIChatbar::LineType type)
     {
         if (message_cooldowns[line] > 0)
+        {
             return;
+        }
 
         std::string message{ Messages::messages[line] };
         chatbar.send_line(message, type);
@@ -210,7 +217,9 @@ namespace jrc
     {
         int16_t level = stats.get_stat(Maplestat::LEVEL);
         if (level >= ExpTable::LEVELCAP)
+        {
             return 0.0f;
+        }
 
         int64_t exp = stats.get_exp();
         return static_cast<float>(

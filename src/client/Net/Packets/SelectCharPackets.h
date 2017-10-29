@@ -20,8 +20,8 @@
 
 namespace jrc
 {
-    constexpr char* MACS = "68-5D-43-F8-B8-6C, 7A-79-19-8B-31-3F";
-    constexpr char* HWID = "685D43F8_B86C7A79";
+    constexpr auto MACS = "68-5D-43-F8-B8-6C, 7A-79-19-8B-31-3F";
+    constexpr auto HWID = "685D43F8_B86C7A79";
 
     // Tell the server which character was picked.
     // Opcode: SELECT_CHAR(19)

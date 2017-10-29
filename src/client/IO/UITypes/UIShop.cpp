@@ -30,78 +30,80 @@
 
 #include "nlnx/nx.hpp"
 
+
 namespace jrc
 {
     UIShop::UIShop(const CharLook& in_charlook, const Inventory& in_inventory)
-        : charlook(in_charlook), inventory(in_inventory) {
-
-        nl::node src = nl::nx::ui["UIWindow2.img"]["Shop"];
+        : charlook(in_charlook), inventory(in_inventory)
+    {
+        nl::node src  = nl::nx::ui["UIWindow2.img"]["Shop"];
         nl::node src2 = nl::nx::ui["UIWindow2.img"]["Shop2"];
 
         sprites.emplace_back(src["backgrnd"]);
         sprites.emplace_back(src["backgrnd2"]);
         sprites.emplace_back(src["backgrnd3"]);
 
-        buttons[BUY_ITEM] = std::make_unique<MapleButton>(src["BtBuy"]);
+        buttons[BUY_ITEM]  = std::make_unique<MapleButton>(src["BtBuy"]);
         buttons[SELL_ITEM] = std::make_unique<MapleButton>(src["BtSell"]);
-        buttons[EXIT] = std::make_unique<MapleButton>(src["BtExit"]);
+        buttons[EXIT]      = std::make_unique<MapleButton>(src["BtExit"]);
 
-        nl::node sellen = src2["TabSell"]["enabled"];
+        nl::node sellen  = src2["TabSell"]["enabled"];
         nl::node selldis = src2["TabSell"]["disabled"];
 
         constexpr Point<int16_t> stshift(-43, -9);
-        for (uint16_t i = EQUIP; i <= CASH; i++)
+        for (uint16_t i = EQUIP; i <= CASH; ++i)
         {
             std::string tabnum = std::to_string(i - EQUIP);
             buttons[i] = std::make_unique<TwoSpriteButton>(selldis[tabnum], sellen[tabnum], stshift);
         }
 
-        for (uint16_t i = BUY0; i <= BUY4; i++)
+        for (uint16_t i = BUY0; i <= BUY4; ++i)
         {
             Point<int16_t> pos(8, 116 + 42 * (i - BUY0));
             Point<int16_t> dim(200, 36);
             buttons[i] = std::make_unique<AreaButton>(pos, dim);
         }
-        for (uint16_t i = SELL0; i <= SELL4; i++)
+        for (uint16_t i = SELL0; i <= SELL4; ++i)
         {
             Point<int16_t> pos(242, 116 + 42 * (i - SELL0));
             Point<int16_t> dim(200, 36);
             buttons[i] = std::make_unique<AreaButton>(pos, dim);
         }
 
-        selection = src["select"];
+        selection  = src["select"];
         impossible = src["ShopSpecial"]["impossible"];
-        meso = src["meso"];
+        meso       = src["meso"];
 
         mesolabel = { Text::A11M, Text::RIGHT, Text::LIGHTGREY };
 
-        buyslider = {
+        buyslider  = {
             11, { 115, 308 }, 214, 5, 1,
             [&](bool upwards) {
-            int16_t shift = upwards ? -1 : 1;
-            bool above = buystate.offset + shift >= 0;
-            bool below = buystate.offset + shift <= buystate.lastslot - 5;
-            if (above && below)
-            {
-                buystate.offset += shift;
+                int16_t shift = upwards ? -1 : 1;
+                bool above = buystate.offset + shift >= 0;
+                bool below = buystate.offset + shift <= buystate.lastslot - 5;
+                if (above && below)
+                {
+                    buystate.offset += shift;
+                }
             }
-        } };
+        };
         sellslider = {
             11, { 115, 308 }, 445, 5, 1,
             [&](bool upwards) {
-            int16_t shift = upwards ? -1 : 1;
-            bool above = sellstate.offset + shift >= 0;
-            bool below = sellstate.offset + shift <= sellstate.lastslot - 5;
-            if (above && below)
-            {
-                sellstate.offset += shift;
+                int16_t shift = upwards ? -1 : 1;
+                bool above = sellstate.offset + shift >= 0;
+                bool below = sellstate.offset + shift <= sellstate.lastslot - 5;
+                if (above && below)
+                {
+                    sellstate.offset += shift;
+                }
             }
-        } };
+        };
 
-        active = false;
-        dimension = Texture(src["backgrnd"])
-            .get_dimensions();
-        position = { 400 - dimension.x() / 2, 240 - dimension.y() / 2 };
+        active    = false;
+        dimension = Texture(src["backgrnd"]).get_dimensions();
+        position  = { 400 - dimension.x() / 2, 240 - dimension.y() / 2 };
     }
 
     void UIShop::draw(float alpha) const
@@ -109,7 +111,12 @@ namespace jrc
         UIElement::draw(alpha);
 
         npc.draw({ position + Point<int16_t>(64, 76), true });
-        charlook.draw(position + Point<int16_t>(294, 76), false, Stance::STAND1, Expression::DEFAULT);
+        charlook.draw(
+            position + Point<int16_t>(294, 76),
+            false,
+            Stance::STAND1,
+            Expression::DEFAULT
+        );
 
         mesolabel.draw(position + Point<int16_t>(450, 62));
 
@@ -122,7 +129,7 @@ namespace jrc
 
     void UIShop::update()
     {
-        int64_t num_mesos = inventory.get_meso();
+        int64_t num_mesos   = inventory.get_meso();
         std::string mesostr = std::to_string(num_mesos);
         string_format::split_number(mesostr);
         mesolabel.change_text(mesostr);
@@ -177,6 +184,8 @@ namespace jrc
             case CASH:
                 changeselltab(InventoryType::CASH);
                 return Button::IDENTITY;
+            default:
+                break;
             }
         }
         return Button::PRESSED;
@@ -185,10 +194,14 @@ namespace jrc
     bool UIShop::remove_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (buyslider.remove_cursor(clicked))
+        {
             return true;
+        }
 
         if (sellslider.remove_cursor(clicked))
+        {
             return true;
+        }
 
         return UIElement::remove_cursor(clicked, cursorpos);
     }
@@ -222,11 +235,17 @@ namespace jrc
         if (slot >= 0 && slot <= 4)
         {
             if (xoff > 7 && xoff < 209)
+            {
                 show_item(slot, true);
+            }
             else if (xoff > 241 && xoff < 443)
+            {
                 show_item(slot, false);
+            }
             else
+            {
                 clear_tooltip();
+            }
         }
         else
         {
@@ -259,6 +278,7 @@ namespace jrc
         {
             buttons[oldtab]->set_state(Button::NORMAL);
         }
+
         uint16_t newtab = tabbyinventory(type);
         if (newtab > 0)
         {
@@ -292,18 +312,27 @@ namespace jrc
     void UIShop::modify(InventoryType::Id type)
     {
         if (type == sellstate.tab)
+        {
             changeselltab(type);
+        }
     }
 
-    void UIShop::add_item(int32_t id, int32_t price, int32_t pitch,
-        int32_t time, int16_t buyable) {
-
+    void UIShop::add_item(int32_t id,
+                          int32_t price,
+                          int32_t pitch,
+                          int32_t time,
+                          int16_t buyable)
+    {
         add_rechargable(id, price, pitch, time, 0, buyable);
     }
 
-    void UIShop::add_rechargable(int32_t id, int32_t price, int32_t pitch,
-        int32_t time, int16_t chargeprice, int16_t buyable) {
-
+    void UIShop::add_rechargable(int32_t id,
+                                 int32_t price,
+                                 int32_t pitch,
+                                 int32_t time,
+                                 int16_t chargeprice,
+                                 int16_t buyable)
+    {
         auto buyitem = BuyItem(meso, id, price, pitch, time, chargeprice, buyable);
         buystate.add(buyitem);
 
@@ -314,17 +343,29 @@ namespace jrc
     {
         int16_t yoff = y - 115;
         if (yoff > 0 && yoff < 38)
+        {
             return 0;
+        }
         else if (yoff > 42 && yoff < 80)
+        {
             return 1;
+        }
         else if (yoff > 84 && yoff < 122)
+        {
             return 2;
+        }
         else if (yoff > 126 && yoff < 164)
+        {
             return 3;
+        }
         else if (yoff > 168 && yoff < 206)
+        {
             return 4;
+        }
         else
+        {
             return -1;
+        }
     }
 
     uint16_t UIShop::tabbyinventory(InventoryType::Id type)
@@ -347,10 +388,17 @@ namespace jrc
     }
 
 
-    UIShop::BuyItem::BuyItem(Texture cur, int32_t i, int32_t p, int32_t pt, int32_t t, int16_t cp, int16_t b)
-        : currency(cur), id(i), price(p), pitch(pt), time(t), chargeprice(cp), buyable(b) {
-
-        namelabel = { Text::A11M, Text::LEFT, Text::DARKGREY };
+    UIShop::BuyItem::BuyItem(Texture cur,
+                             int32_t i,
+                             int32_t p,
+                             int32_t pt,
+                             int32_t t,
+                             int16_t cp,
+                             int16_t b)
+        : currency(cur), id(i), price(p), pitch(pt), time(t), chargeprice(cp),
+          buyable(b)
+    {
+        namelabel  = { Text::A11M, Text::LEFT, Text::DARKGREY };
         pricelabel = { Text::A11M, Text::LEFT, Text::DARKGREY };
 
         const ItemData& item = ItemData::get(id);
@@ -383,19 +431,22 @@ namespace jrc
         return buyable;
     }
 
-
-    UIShop::SellItem::SellItem(int32_t item_id, int16_t count, int16_t s, bool sc, Texture cur)
+    UIShop::SellItem::SellItem(int32_t item_id,
+                               int16_t count,
+                               int16_t s,
+                               bool sc,
+                               Texture cur)
     {
         const ItemData& idata = ItemData::get(item_id);
 
-        icon = idata.get_icon(false);
-        id = item_id;
-        sellable = count;
-        slot = s;
+        icon      = idata.get_icon(false);
+        id        = item_id;
+        sellable  = count;
+        slot      = s;
         showcount = sc;
-        currency = cur;
+        currency  = cur;
 
-        namelabel = { Text::A11M, Text::LEFT, Text::DARKGREY };
+        namelabel  = { Text::A11M, Text::LEFT, Text::DARKGREY };
         pricelabel = { Text::A11M, Text::LEFT, Text::DARKGREY };
 
         std::string name = idata.get_name();
@@ -435,23 +486,24 @@ namespace jrc
         return sellable;
     }
 
-
     void UIShop::BuyState::reset()
     {
         items.clear();
 
-        offset = 0;
-        lastslot = 0;
+        offset    = 0;
+        lastslot  = 0;
         selection = -1;
     }
 
     void UIShop::BuyState::draw(Point<int16_t> parentpos, const Texture& selected) const
     {
-        for (int16_t i = 0; i < 5; i++)
+        for (int16_t i = 0; i < 5; ++i)
         {
             int16_t slot = i + offset;
             if (slot >= lastslot)
+            {
                 break;
+            }
 
             auto itempos = Point<int16_t>(12, 116 + 42 * i);
             if (slot == selection)
@@ -466,7 +518,9 @@ namespace jrc
     {
         int16_t absslot = slot + offset;
         if (absslot < 0 || absslot >= lastslot)
+        {
             return;
+        }
 
         int32_t itemid = items[absslot].get_id();
         UI::get().show_item(Tooltip::SHOP, itemid);
@@ -482,7 +536,9 @@ namespace jrc
     void UIShop::BuyState::buy() const
     {
         if (selection < 0 || selection >= lastslot)
+        {
             return;
+        }
 
         const BuyItem& item = items[selection];
         int16_t buyable = item.get_buyable();
@@ -490,7 +546,7 @@ namespace jrc
         int32_t itemid = item.get_id();
         if (buyable > 1)
         {
-            constexpr char* question = "How many would you like to buy?";
+            constexpr auto question = "How many would you like to buy?";
             auto onenter = [slot, itemid](int32_t qty){
                 auto shortqty = static_cast<int16_t>(qty);
 
@@ -500,7 +556,7 @@ namespace jrc
         }
         else if (buyable > 0)
         {
-            constexpr char* question = "Would you like to buy the item?";
+            constexpr auto question = "Would you like to buy the item?";
             auto ondecide = [slot, itemid](bool yes){
                 if (yes)
                 {
@@ -529,23 +585,23 @@ namespace jrc
     {
         items.clear();
 
-        offset = 0;
-        lastslot = 0;
+        offset    = 0;
+        lastslot  = 0;
         selection = -1;
-        tab = InventoryType::NONE;
+        tab       = InventoryType::NONE;
     }
 
     void UIShop::SellState::change_tab(const Inventory& inventory, InventoryType::Id newtab, Texture meso)
     {
         tab = newtab;
 
-        offset = 0;
+        offset    = 0;
         selection = -1;
 
         items.clear();
 
         int16_t slots = inventory.get_slotmax(tab);
-        for (int16_t i = 1; i <= slots; i++)
+        for (int16_t i = 1; i <= slots; ++i)
         {
             if (int32_t item_id = inventory.get_item_id(tab, i))
             {
@@ -559,11 +615,13 @@ namespace jrc
 
     void UIShop::SellState::draw(Point<int16_t> parentpos, const Texture& selected) const
     {
-        for (int16_t i = 0; i < 5; i++)
+        for (int16_t i = 0; i < 5; ++i)
         {
             int16_t slot = i + offset;
             if (slot >= lastslot)
+            {
                 break;
+            }
 
             Point<int16_t> itempos(243, 116 + 42 * i);
             if (slot == selection)
@@ -578,7 +636,9 @@ namespace jrc
     {
         int16_t absslot = slot + offset;
         if (absslot < 0 || absslot >= lastslot)
+        {
             return;
+        }
 
         if (tab == InventoryType::EQUIP)
         {
@@ -595,7 +655,9 @@ namespace jrc
     void UIShop::SellState::sell() const
     {
         if (selection < 0 || selection >= lastslot)
+        {
             return;
+        }
 
         const SellItem& item = items[selection];
         int32_t itemid = item.get_id();
@@ -603,7 +665,7 @@ namespace jrc
         int16_t slot = item.get_slot();
         if (sellable > 1)
         {
-            constexpr char* question = "How many would you like to sell?";
+            constexpr auto question = "How many would you like to sell?";
             auto onenter = [itemid, slot](int32_t qty){
                 auto shortqty = static_cast<int16_t>(qty);
 
@@ -613,7 +675,7 @@ namespace jrc
         }
         else if (sellable > 0)
         {
-            constexpr char* question = "Would you like to sell the item?";
+            constexpr auto question = "Would you like to sell the item?";
             auto ondecide = [itemid, slot](bool yes){
                 if (yes)
                 {

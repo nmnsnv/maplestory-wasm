@@ -29,7 +29,7 @@ namespace jrc
         if (src.data_type() == nl::node::type::bitmap)
         {
             std::string link = src["source"];
-            if (link != "")
+            if (!link.empty())
             {
                 nl::node srcfile = src;
                 while (srcfile != srcfile.root())

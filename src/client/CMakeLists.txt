@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.8)
 project (JourneyClient)
 
 # Set compiler flags
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -DASIO_STANDALONE -DGLEW_NO_GLU -lglut -lGL -ldl -lXinerama -lXext -lXrandr -lXi -lXcursor -lX11 -lXxf86vm -pthread -Wall -Wno-narrowing -Wno-unused-command-line-argument")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O -g -DASIO_STANDALONE -DGLEW_NO_GLU -lglut -lGL -ldl -lXinerama -lXext -lXrandr -lXi -lXcursor -lX11 -lXxf86vm -pthread -ftrapv -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wstrict-prototypes -Werror-implicit-function-declaration -Wformat=2 -Wnull-dereference -Wstrict-overflow=5 -Wno-unused-private-field -Wno-unused-command-line-argument -Wno-narrowing -Wno-sign-compare")
 
 # Globbing together each src folder's top-level *.cpp files to each form
 # their own libraries

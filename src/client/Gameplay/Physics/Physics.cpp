@@ -20,20 +20,20 @@
 
 namespace jrc
 {
-    const double GRAVFORCE = 0.14;
+    const double GRAVFORCE     = 0.14;
     const double SWIMGRAVFORCE = 0.03;
-    const double FRICTION = 0.3;
-    const double SLOPEFACTOR = 0.1;
-    const double GROUNDSLIP = 3.0;
-    const double FLYFRICTION = 0.05;
-    const double SWIMFRICTION = 0.08;
+    const double FRICTION      = 0.3;
+    const double SLOPEFACTOR   = 0.1;
+    const double GROUNDSLIP    = 3.0;
+    const double FLYFRICTION   = 0.05;
+    const double SWIMFRICTION  = 0.08;
 
     Physics::Physics(nl::node src)
     {
         fht = src;
     }
 
-    Physics::Physics() {}
+    Physics::Physics() = default;
 
     void Physics::move_object(PhysicsObject& phobj) const
     {
@@ -56,6 +56,9 @@ namespace jrc
             fht.limit_movement(phobj);
             break;
         case PhysicsObject::FIXATED:
+            break;
+        case PhysicsObject::ICE:
+            // TODO
             break;
         }
 
@@ -104,8 +107,8 @@ namespace jrc
 
     void Physics::move_flying(PhysicsObject& phobj) const
     {
-        phobj.hacc = phobj.hforce;
-        phobj.vacc = phobj.vforce;
+        phobj.hacc   = phobj.hforce;
+        phobj.vacc   = phobj.vforce;
         phobj.hforce = 0.0;
         phobj.vforce = 0.0;
 
@@ -119,6 +122,7 @@ namespace jrc
         {
             phobj.hspeed = 0.0;
         }
+
         if (phobj.vacc == 0.0 && phobj.vspeed < 0.1 && phobj.vspeed > -0.1)
         {
             phobj.vspeed = 0.0;
@@ -127,8 +131,8 @@ namespace jrc
 
     void Physics::move_swimming(PhysicsObject& phobj) const
     {
-        phobj.hacc = phobj.hforce;
-        phobj.vacc = phobj.vforce;
+        phobj.hacc   = phobj.hforce;
+        phobj.vacc   = phobj.vforce;
         phobj.hforce = 0.0;
         phobj.vforce = 0.0;
 

@@ -27,8 +27,8 @@ namespace jrc
     PetLook::PetLook(int32_t iid, std::string nm, int32_t uqid,
         Point<int16_t> pos, uint8_t st, int32_t) {
 
-        itemid = iid;
-        name = nm;
+        itemid   = iid;
+        name     = nm;
         uniqueid = uqid;
         set_position(pos.x(), pos.y());
         set_stance(st);
@@ -39,13 +39,13 @@ namespace jrc
 
         nl::node src = nl::nx::item["Pet"][strid + ".img"];
 
-        animations[MOVE] = src["move"];
+        animations[MOVE]  = src["move"];
         animations[STAND] = src["stand0"];
-        animations[JUMP] = src["jump"];
+        animations[JUMP]  = src["jump"];
         animations[ALERT] = src["alert"];
         animations[PRONE] = src["prone"];
-        animations[FLY] = src["fly"];
-        animations[HANG] = src["hang"];
+        animations[FLY]   = src["fly"];
+        animations[HANG]  = src["hang"];
 
         nl::node effsrc = nl::nx::effect["PetEff.img"][strid];
 
@@ -54,10 +54,10 @@ namespace jrc
 
     PetLook::PetLook()
     {
-        itemid = 0;
-        name = "";
+        itemid   = 0;
+        name     = "";
         uniqueid = 0;
-        stance = Stance::STAND;
+        stance   = Stance::STAND;
     }
 
     void PetLook::draw(double viewx, double viewy, float alpha) const
@@ -132,14 +132,23 @@ namespace jrc
                 }
 
                 if (charpos.y() - curpos.y() > 50.0f)
+                {
                     phobj.vforce = PETFLYFORCE;
+                }
                 else if (charpos.y() - curpos.y() < -50.0f)
+                {
                     phobj.vforce = -PETFLYFORCE;
+                }
                 else
+                {
                     phobj.vforce = 0.0f;
+                }
             }
             phobj.type = PhysicsObject::FLYING;
             phobj.clear_flag(PhysicsObject::NOGRAVITY);
+            break;
+        default:
+            // TODO: Handle all the other cases
             break;
         }
 

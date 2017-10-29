@@ -21,31 +21,30 @@
 
 #include "../../Constants.h"
 
+
 namespace jrc
 {
-    Textfield::Textfield(Text::Font font, Text::Alignment alignment,
-        Text::Color color, Rectangle<int16_t> bnd, size_t lim)
-        : textlabel(font, alignment, color, "", 0, false), marker(font, alignment, color, "|") {
+    Textfield::Textfield(Text::Font font,
+                         Text::Alignment alignment,
+                         Text::Color color,
+                         Rectangle<int16_t> bnd,
+                         size_t lim)
+        : textlabel(font, alignment, color, "", 0, false), text(),
+          marker(font, alignment, color, "|"),             markerpos(0),
+          bounds(bnd),                                     limit(lim),
+          crypt(0),                                        state(NORMAL)
+        {}
 
-        bounds = bnd;
-        limit = lim;
-        text = "";
-        markerpos = 0;
-        crypt = 0;
-        state = NORMAL;
-    }
+    Textfield::Textfield() = default;
 
-    Textfield::Textfield()
-    {
-        text = "";
-    }
-
-    Textfield::~Textfield() {}
+    Textfield::~Textfield() = default;
 
     void Textfield::draw(Point<int16_t> parent) const
     {
         if (state == DISABLED)
+        {
             return;
+        }
 
         Point<int16_t> absp = bounds.getlt() + parent;
         if (text.size() > 0)
@@ -63,7 +62,9 @@ namespace jrc
     void Textfield::update(Point<int16_t> parent)
     {
         if (state == DISABLED)
+        {
             return;
+        }
 
         parentpos = parent;
 
@@ -79,8 +80,8 @@ namespace jrc
     {
         if (state != st)
         {
-            state = st;
-            elapsed = 0;
+            state      = st;
+            elapsed    = 0;
             showmarker = true;
 
             if (state == FOCUSED)
@@ -159,7 +160,7 @@ namespace jrc
         case KeyType::NUMBER:
             if (!pressed)
             {
-                int8_t c = static_cast<int8_t>(key);
+                auto c = static_cast<int8_t>(key);
                 if (belowlimit())
                 {
                     text.insert(markerpos, 1, c);
@@ -203,7 +204,9 @@ namespace jrc
     Cursor::State Textfield::send_cursor(Point<int16_t> cursorpos, bool clicked)
     {
         if (state == DISABLED)
+        {
             return Cursor::IDLE;
+        }
 
         auto abs_bounds = get_bounds();
         if (abs_bounds.contains(cursorpos))
@@ -214,6 +217,8 @@ namespace jrc
                 {
                 case NORMAL:
                     set_state(FOCUSED);
+                    break;
+                default:
                     break;
                 }
                 return Cursor::CLICKING;
@@ -231,6 +236,8 @@ namespace jrc
                 {
                 case FOCUSED:
                     set_state(NORMAL);
+                    break;
+                default:
                     break;
                 }
             }
@@ -282,6 +289,6 @@ namespace jrc
         return Rectangle<int16_t>(
             bounds.getlt() + parentpos,
             bounds.getrb() + parentpos
-            );
+        );
     }
 }

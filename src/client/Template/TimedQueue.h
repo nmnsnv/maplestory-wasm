@@ -22,6 +22,7 @@
 #include <functional>
 #include <cstdint>
 
+
 namespace jrc
 {
     template <typename T>
@@ -29,10 +30,7 @@ namespace jrc
     {
     public:
         TimedQueue(std::function<void(const T&)> in_action)
-            : action(in_action) {
-
-            time = 0;
-        }
+            : action(in_action), time(0) {}
 
         void push(int64_t delay, const T& t)
         {
@@ -49,11 +47,13 @@ namespace jrc
         {
             time += timestep;
 
-            for (; !queue.empty(); queue.pop())
+            for ( ; !queue.empty(); queue.pop())
             {
                 const Timed& top = queue.top();
                 if (top.when > time)
+                {
                     break;
+                }
 
                 action(top.value);
             }
@@ -66,16 +66,16 @@ namespace jrc
             int64_t when;
 
             Timed(int64_t w, const T& v)
-                : when{ w }, value{ v } {}
+                : value{ v }, when{ w } {}
 
             template <typename...Args>
             Timed(int64_t w, Args&&...args)
-                : when{ w }, value{ std::forward<Args>(args)... } {}
+                : value{ std::forward<Args>(args)... }, when{ w } {}
         };
 
         struct TimedComparator
         {
-            bool operator ()(const Timed& a, const Timed& b) const
+            bool operator()(const Timed& a, const Timed& b) const
             {
                 return a.when > b.when;
             }
