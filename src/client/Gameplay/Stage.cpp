@@ -224,7 +224,7 @@ namespace jrc
     void Stage::check_drops()
     {
         Point<int16_t> playerpos = player.get_position();
-        MapDrops::Loot loot = drops.find_loot_at(playerpos);
+        MapDrops::Loot loot      = drops.find_loot_at(playerpos);
         if (loot.first)
         {
             PickupItemPacket(loot.first, loot.second).dispatch();

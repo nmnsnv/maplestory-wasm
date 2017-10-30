@@ -74,6 +74,8 @@ namespace jrc
         auto portalid = static_cast<uint8_t>(recv.read_byte());
 
         transition(mapid, portalid);
+
+        PlayerUpdatePacket().dispatch();
     }
 
     void SetfieldHandler::set_field(InPacket& recv) const
@@ -222,11 +224,11 @@ namespace jrc
             }
         }
 
-        std::map<int16_t, int64_t> completed;
+        std::map<int16_t, int64_t> completed = {};
         size = recv.read_short();
         for (int16_t i = 0; i < size; ++i)
         {
-            int16_t qid = recv.read_short();
+            int16_t qid  = recv.read_short();
             int64_t time = recv.read_long();
             quests.add_completed(qid, time);
         }
