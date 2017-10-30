@@ -19,6 +19,7 @@
 
 #include <GLFW/glfw3.h>
 
+
 namespace jrc
 {
     constexpr int32_t Keytable[90] =
@@ -33,15 +34,15 @@ namespace jrc
 
     Keyboard::Keyboard()
     {
-        keymap[GLFW_KEY_LEFT] = { KeyType::ACTION, KeyAction::LEFT };
+        keymap[GLFW_KEY_LEFT]  = { KeyType::ACTION, KeyAction::LEFT  };
         keymap[GLFW_KEY_RIGHT] = { KeyType::ACTION, KeyAction::RIGHT };
-        keymap[GLFW_KEY_UP] = { KeyType::ACTION, KeyAction::UP };
-        keymap[GLFW_KEY_DOWN] = { KeyType::ACTION, KeyAction::DOWN };
+        keymap[GLFW_KEY_UP]    = { KeyType::ACTION, KeyAction::UP    };
+        keymap[GLFW_KEY_DOWN]  = { KeyType::ACTION, KeyAction::DOWN  };
 
         textactions[GLFW_KEY_BACKSPACE] = KeyAction::BACK;
-        textactions[GLFW_KEY_ENTER] = KeyAction::RETURN;
-        textactions[GLFW_KEY_SPACE] = KeyAction::SPACE;
-        textactions[GLFW_KEY_TAB] = KeyAction::TAB;
+        textactions[GLFW_KEY_ENTER]     = KeyAction::RETURN;
+        textactions[GLFW_KEY_SPACE]     = KeyAction::SPACE;
+        textactions[GLFW_KEY_TAB]       = KeyAction::TAB;
     }
 
     int32_t Keyboard::shiftcode() const
@@ -81,15 +82,15 @@ namespace jrc
     {
         if (textactions.count(keycode))
         {
-            return{ KeyType::ACTION, textactions.at(keycode) };
+            return { KeyType::ACTION, textactions.at(keycode) };
         }
         else if (keycode > 47 && keycode < 65)
         {
-            return{ KeyType::NUMBER, keycode - (shift ? 15 : 0) };
+            return { KeyType::NUMBER, keycode - (shift ? 15 : 0) };
         }
         else if (keycode > 64 && keycode < 91)
         {
-            return{ KeyType::LETTER, keycode + (shift ? 0 : 32) };
+            return { KeyType::LETTER, keycode + (shift ? 0 : 32) };
         }
         else
         {
@@ -101,7 +102,7 @@ namespace jrc
             case GLFW_KEY_DOWN:
                 return keymap.at(keycode);
             default:
-                return{ KeyType::NONE, 0 };
+                return { KeyType::NONE, 0 };
             }
         }
     }
@@ -110,7 +111,9 @@ namespace jrc
     {
         auto iter = keymap.find(keycode);
         if (iter == keymap.end())
-            return{};
+        {
+            return {};
+        }
 
         return iter->second;
     }

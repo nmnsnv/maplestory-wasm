@@ -25,8 +25,12 @@ namespace jrc
     class PacketError : public std::runtime_error
     {
     public:
-        PacketError(const std::string& msg)
+        explicit PacketError(const std::string& msg) noexcept
             : std::runtime_error(PREFIX + msg) {}
+
+        /// Explicit copy constructor so that we can assure the compiler that
+        /// it does not throw (because doing so results in UB).
+        PacketError(const PacketError& other) noexcept = default;
 
     private:
         static constexpr const char* PREFIX = "Packet Error: ";

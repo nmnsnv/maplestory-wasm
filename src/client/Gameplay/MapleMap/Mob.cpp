@@ -31,19 +31,19 @@
 
 namespace jrc
 {
-    Mob::Mob(int32_t oi,
-             int32_t mid,
-             int8_t mode,
-             uint8_t stance,
-             uint16_t fh,
-             bool newspawn,
-             int8_t tm,
+    Mob::Mob(int32_t        oid,
+             int32_t        mid,
+             int8_t         mode,
+             uint8_t        stance,
+             uint16_t       fh,
+             bool           newspawn,
+             int8_t         tm,
              Point<int16_t> position)
-        : MapObject(oi)
+        : MapObject(oid)
     {
 
-        std::string strid = string_format::extend_id(mid, 7);
-        nl::node src      = nl::nx::mob[strid + ".img"];
+        std::string strid  = string_format::extend_id(mid, 7);
+        const nl::node src = nl::nx::mob[strid + ".img"];
 
         nl::node info = src["info"];
 
@@ -62,7 +62,7 @@ namespace jrc
         noflip      = info["noFlip"].get_bool();
         notattack   = info["notAttack"].get_bool();
         canjump     =  src["jump"].size() > 0;
-        canfly      =  src["fly"].size() > 0;
+        canfly      =  src["fly"].size()  > 0;
         canmove     =  src["move"].size() > 0 || canfly;
 
         if (canfly)
@@ -80,6 +80,13 @@ namespace jrc
         animations[DIE]  = src["die1"];
 
         name = nl::nx::string["Mob.img"][std::to_string(mid)]["name"].get_string();
+
+        std::cout << "Mob::Mob: \"" << name << "\"\n  ";
+        for (const auto& child : src)
+        {
+            std::cout << child.name() << ' ';
+        }
+        std::cout << "\n\n";
 
         nl::node sndsrc = nl::nx::sound["Mob.img"][strid];
 
@@ -417,6 +424,7 @@ namespace jrc
         Point<int16_t> head = animations.at(stance).get_head();
         position.shift_x((flip && !noflip) ? -head.x() : head.x());
         position.shift_y(head.y());
+
         return position;
     }
 

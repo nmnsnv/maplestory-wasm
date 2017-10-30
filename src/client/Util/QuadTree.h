@@ -20,6 +20,7 @@
 #include <vector>
 #include <unordered_map>
 
+
 namespace jrc
 {
     template<typename K, typename V>
@@ -32,10 +33,7 @@ namespace jrc
         };
 
         QuadTree(std::function<Direction(const V&, const V&)> c)
-        {
-            root = 0;
-            comparator = c;
-        }
+            : comparator(c), root(0) {}
 
         QuadTree()
             : QuadTree(nullptr) {}
@@ -55,7 +53,7 @@ namespace jrc
                 K current = root;
                 while (current)
                 {
-                    parent = current;
+                    parent  = current;
                     current = nodes[parent].addornext(key, value, comparator);
                 }
             }
@@ -68,18 +66,20 @@ namespace jrc
                 std::piecewise_construct,
                 std::forward_as_tuple(key),
                 std::forward_as_tuple(value, parent, 0, 0, 0, 0)
-                );
+            );
         }
 
         void erase(K key)
         {
             if (!nodes.count(key))
+            {
                 return;
+            }
 
             Node& toerase = nodes[key];
 
             std::vector<K> leaves;
-            for (size_t i = LEFT; i <= DOWN; i++)
+            for (size_t i = LEFT; i <= DOWN; ++i)
             {
                 K leafkey = toerase[i];
                 if (leafkey)
@@ -119,12 +119,12 @@ namespace jrc
             }
         }
 
-        V& operator [](K key)
+        V& operator[](K key)
         {
             return nodes[key].value;
         }
 
-        const V& operator [](K key) const
+        const V& operator[](K key) const
         {
             return nodes.at(key).value;
         }
@@ -133,7 +133,9 @@ namespace jrc
         K findfrom(K start, const V& value, std::function<bool(const V&, const V&)> predicate)
         {
             if (!start)
+            {
                 return 0;
+            }
 
             bool fulfilled = predicate(value, nodes[start].value);
             Direction dir = comparator(value, nodes[start].value);
@@ -245,11 +247,11 @@ namespace jrc
         {
             if (start)
             {
-                K parent = 0;
+                K parent  = 0;
                 K current = start;
                 while (current)
                 {
-                    parent = current;
+                    parent  = current;
                     current = nodes[parent].addornext(key, nodes[key].value, comparator);
                 }
 
@@ -285,18 +287,26 @@ namespace jrc
             void erase(K key)
             {
                 if (left == key)
+                {
                     left = 0;
+                }
                 else if (right == key)
+                {
                     right = 0;
+                }
                 else if (top == key)
+                {
                     top = 0;
+                }
                 else if (bottom == key)
+                {
                     bottom = 0;
+                }
             }
 
-            K addornext(K key, V val, std::function<Direction(const V&, const V&)> comparator)
+            K addornext(K key, V val, std::function<Direction(const V&, const V&)> cmptor)
             {
-                Direction dir = comparator(val, value);
+                Direction dir = cmptor(val, value);
                 K dirkey = leaf(dir);
                 if (!dirkey)
                 {
@@ -336,7 +346,7 @@ namespace jrc
                 }
             }
 
-            K operator [](size_t d)
+            K operator[](size_t d)
             {
                 auto dir = static_cast<Direction>(d);
                 return leaf(dir);

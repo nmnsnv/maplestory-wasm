@@ -23,6 +23,7 @@
 #include <iostream>
 #include <map>
 
+
 namespace jrc
 {
     void MapMobs::draw(Layer::Id layer, double viewx, double viewy, float alpha) const
@@ -32,7 +33,7 @@ namespace jrc
 
     void MapMobs::update(const Physics& physics)
     {
-        for (; !spawns.empty(); spawns.pop())
+        for ( ; !spawns.empty(); spawns.pop())
         {
             const MobSpawn& spawn = spawns.front();
 
@@ -106,7 +107,7 @@ namespace jrc
 
     AttackResult MapMobs::send_attack(const Attack& attack)
     {
-        Point<int16_t> origin = attack.origin;
+        Point<int16_t> origin    = attack.origin;
         Rectangle<int16_t> range = attack.range;
         int16_t hrange = static_cast<int16_t>(range.l() * attack.hrange);
         if (attack.toleft)
@@ -131,7 +132,7 @@ namespace jrc
         uint8_t mobcount = attack.mobcount;
         AttackResult result = attack;
         std::vector<int32_t> targets = find_closest(range, origin, mobcount);
-        for (auto& target : targets)
+        for (const auto& target : targets)
         {
             if (Optional<Mob> mob = mobs.get(target))
             {
@@ -167,7 +168,7 @@ namespace jrc
         Point<int16_t> origin, uint8_t mobcount) const {
 
         std::multimap<uint16_t, int32_t> distances;
-        for (auto& mmo : mobs)
+        for (const auto& mmo : mobs)
         {
             const Mob* mob = static_cast<const Mob*>(mmo.second.get());
             if (mob && mob->is_alive() && mob->is_in_range(range))
@@ -182,7 +183,9 @@ namespace jrc
         for (auto& iter : distances)
         {
             if (targets.size() >= mobcount)
+            {
                 break;
+            }
 
             targets.push_back(iter.second);
         }
@@ -209,8 +212,12 @@ namespace jrc
             Optional<Mob> mob = mmo.second.get();
             return mob && mob->is_alive() && mob->is_in_range(player_rect);
         });
+
         if (iter == mobs.end())
+        {
             return 0;
+        }
+
         return iter->second->get_oid();
     }
 
@@ -222,7 +229,7 @@ namespace jrc
         }
         else
         {
-            return{};
+            return {};
         }
     }
 
@@ -234,7 +241,7 @@ namespace jrc
         }
         else
         {
-            return{};
+            return {};
         }
     }
 
@@ -246,7 +253,7 @@ namespace jrc
         }
         else
         {
-            return{};
+            return {};
         }
     }
 }

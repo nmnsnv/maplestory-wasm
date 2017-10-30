@@ -17,12 +17,19 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "Portal.h"
 
+
 namespace jrc
 {
-    Portal::Portal(const Animation* a, Type t, std::string nm, bool intramap,
-        Point<int16_t> p, int32_t tid, std::string tnm)
-        : animation(a), type(t), name(nm), position(p), warpinfo(tid, intramap, tnm, nm) {
-
+    Portal::Portal(const Animation* a,
+                   Type             t,
+                   std::string      nm,
+                   bool             intramap,
+                   Point<int16_t>   p,
+                   int32_t          tid,
+                   std::string      tnm)
+        : animation(a), type(t), name(nm), position(p),
+          warpinfo(tid, intramap, tnm, nm)
+    {
         touched = false;
     }
 
@@ -37,7 +44,9 @@ namespace jrc
     void Portal::draw(Point<int16_t> viewpos, float inter) const
     {
         if (!animation || (type == HIDDEN && !touched))
+        {
             return;
+        }
 
         animation->draw(position + viewpos, inter);
     }

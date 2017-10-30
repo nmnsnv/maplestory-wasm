@@ -30,9 +30,9 @@ namespace jrc
     {
         recv.skip(1);
 
-        for (uint8_t i = 0; i < 90; i++)
+        for (uint8_t i = 0; i < 90; ++i)
         {
-            uint8_t type = recv.read_byte();
+            auto type = static_cast<uint8_t>(recv.read_byte());
             int32_t action = recv.read_int();
 
             UI::get().add_keymapping(i, type, action);
@@ -42,14 +42,14 @@ namespace jrc
 
     void SkillMacrosHandler::handle(InPacket& recv) const
     {
-        uint8_t size = recv.read_byte();
-        for (uint8_t i = 0; i < size; i++)
+        auto size = static_cast<uint8_t>(recv.read_byte());
+        for (uint8_t i = 0; i < size; ++i)
         {
             recv.read_string(); // name
-            recv.read_byte(); // 'shout' byte
-            recv.read_int(); // skill 1
-            recv.read_int(); // skill 2
-            recv.read_int(); // skill 3
+            recv.read_byte();   // 'shout' byte
+            recv.read_int();    // skill 1
+            recv.read_int();    // skill 2
+            recv.read_int();    // skill 3
         }
     }
 

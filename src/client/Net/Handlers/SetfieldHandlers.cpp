@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
+#include <Net/Packets/GameplayPackets.h>
 #include "SetfieldHandlers.h"
 
 #include "Helpers/ItemParser.h"
@@ -53,8 +54,8 @@ namespace jrc
     void SetfieldHandler::handle(InPacket& recv) const
     {
         int32_t channel = recv.read_int();
-        int8_t mode1 = recv.read_byte();
-        int8_t mode2 = recv.read_byte();
+        int8_t  mode1   = recv.read_byte();
+        int8_t  mode2   = recv.read_byte();
         if (mode1 == 0 && mode2 == 0)
         {
             change_map(recv, channel);
@@ -121,9 +122,11 @@ namespace jrc
         player.recalc_stats(true);
 
         uint8_t portalid = player.get_stats().get_portal();
-        int32_t mapid = player.get_stats().get_mapid();
+        int32_t mapid    = player.get_stats().get_mapid();
 
         transition(mapid, portalid);
+
+        PlayerUpdatePacket().dispatch();
 
         Sound(Sound::GAMESTART).play();
 
@@ -317,16 +320,17 @@ namespace jrc
         int16_t nysize = recv.read_short();
         for (int16_t i = 0; i < nysize; ++i)
         {
+            // TODO
         }
     }
 
     void SetfieldHandler::parse_areainfo(InPacket& recv) const
     {
-        std::map<int16_t, std::string> areainfo;
+        std::map<int16_t, std::string> areainfo = {};
         int16_t arsize = recv.read_short();
         for (int16_t i = 0; i < arsize; ++i)
         {
-            int16_t area = recv.read_short();
+            int16_t area   = recv.read_short();
             areainfo[area] = recv.read_string();
         }
     }

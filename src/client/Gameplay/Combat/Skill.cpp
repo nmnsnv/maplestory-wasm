@@ -24,11 +24,12 @@
 #include "nlnx/node.hpp"
 #include "nlnx/nx.hpp"
 
+
 namespace jrc
 {
     Skill::Skill(int32_t id)
-        : skillid(id) {
-
+        : skillid(id)
+    {
         const SkillData& data = SkillData::get(skillid);
 
         std::string strid;
@@ -60,7 +61,7 @@ namespace jrc
         else
         {
             bool isanimation = src["effect"]["0"].data_type() == nl::node::type::bitmap;
-            bool haseffect1 = src["effect"]["1"].size() > 0;
+            bool haseffect1  = src["effect"]["1"].size() > 0;
             if (isanimation)
             {
                 useeffect = std::make_unique<SingleUseEffect>(src);
@@ -83,10 +84,10 @@ namespace jrc
             }
         }
 
-        bool bylevelhit = src["CharLevel"]["10"]["hit"].size() > 0;
+        bool bylevelhit      = src["CharLevel"]["10"]["hit"].size() > 0;
         bool byskilllevelhit = src["level"]["1"]["hit"].size() > 0;
-        bool hashit0 = src["hit"]["0"].size() > 0;
-        bool hashit1 = src["hit"]["1"].size() > 0;
+        bool hashit0         = src["hit"]["0"].size() > 0;
+        bool hashit1         = src["hit"]["1"].size() > 0;
         if (bylevelhit)
         {
             if (hashit0 && hashit1)
@@ -181,7 +182,7 @@ namespace jrc
 
         if (stats.fixdamage)
         {
-            attack.fixdamage = stats.fixdamage;
+            attack.fixdamage  = stats.fixdamage;
             attack.damagetype = Attack::DMG_FIXED;
         }
         else if (stats.matk)
@@ -195,10 +196,10 @@ namespace jrc
             attack.maxdamage *= stats.damage;
             attack.damagetype = Attack::DMG_WEAPON;
         }
-        attack.critical += stats.critical;
+        attack.critical  += stats.critical;
         attack.ignoredef += stats.ignoredef;
         attack.mobcount = stats.mobcount;
-        attack.hrange = stats.hrange;
+        attack.hrange   = stats.hrange;
 
         switch (attack.type)
         {
@@ -278,7 +279,7 @@ namespace jrc
         if (level <= 0 || level > SkillData::get(skillid).get_masterlevel())
             return FBR_OTHER;
 
-        if (job.can_use(skillid) == false)
+        if (!job.can_use(skillid))
             return FBR_OTHER;
 
         const SkillData::Stats stats = SkillData::get(skillid).get_stats(level);
@@ -291,7 +292,9 @@ namespace jrc
 
         Weapon::Type reqweapon = SkillData::get(skillid).get_required_weapon();
         if (weapon != reqweapon && reqweapon != Weapon::NONE)
+        {
             return FBR_WEAPONTYPE;
+        }
 
         switch (weapon)
         {

@@ -24,6 +24,7 @@
 
 #include <queue>
 
+
 namespace jrc
 {
     // A collection of mobs on a map.

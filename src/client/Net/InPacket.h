@@ -22,72 +22,73 @@
 
 #include <cstdint>
 
+
 namespace jrc
 {
-    // A packet received from the server.
-    // Contains reading functions.
+    /// A packet received from the server.
+    /// Contains reading functions.
     class InPacket
     {
     public:
-        // Construct a packet from an array of bytes.
+        /// Construct a packet from an array of bytes.
         InPacket(const int8_t* bytes, size_t length);
 
-        // Check if there are more bytes available.
+        /// Check if there are more bytes available.
         bool available() const;
-        // Return the remaining length in bytes.
+        /// Return the remaining length in bytes.
         size_t length() const;
-        // Skip a number of bytes (by increasing the offset).
+        /// Skip a number of bytes (by increasing the offset).
         void skip(size_t count);
 
-        // Read a byte and check if it is 1.
+        /// Read a byte and check if it is 1.
         bool read_bool();
-        // Read a byte.
+        /// Read a byte.
         int8_t read_byte();
-        // Read a short.
+        /// Read a short.
         int16_t read_short();
-        // Read a int.
+        /// Read a int.
         int32_t read_int();
-        // Read a long.
+        /// Read a long.
         int64_t read_long();
 
-        // Read a point.
+        /// Read a point.
         Point<int16_t> read_point();
 
-        // Read a string.
+        /// Read a string.
         std::string read_string();
-        // Read a fixed-length string.
+        /// Read a fixed-length string.
         std::string read_padded_string(uint16_t length);
 
-        // Inspect a byte and check if it is 1. Does not advance the buffer position.
+        /// Inspect a byte and check if it is 1. Does not advance the buffer position.
         bool inspect_bool();
-        // Inspect a byte. Does not advance the buffer position.
+        /// Inspect a byte. Does not advance the buffer position.
         int8_t inspect_byte();
-        // Inspect a short. Does not advance the buffer position.
+        /// Inspect a short. Does not advance the buffer position.
         int16_t inspect_short();
-        // Inspect an int. Does not advance the buffer position.
+        /// Inspect an int. Does not advance the buffer position.
         int32_t inspect_int();
-        // Inspect a long. Does not advance the buffer position.
+        /// Inspect a long. Does not advance the buffer position.
         int64_t inspect_long();
 
     private:
         template <typename T>
-        // Read a number and advance the buffer position.
+        /// Read a number and advance the buffer position.
         T read()
         {
             size_t count = sizeof(T) / sizeof(int8_t);
             T all = 0;
-            for (size_t i = 0; i < count; i++)
+            for (size_t i = 0; i < count; ++i)
             {
                 T val = static_cast<uint8_t>(bytes[pos]);
                 all += val << (8 * i);
 
                 skip(1);
             }
-            return static_cast<T>(all);
+            return all;
         }
 
         template <typename T>
-        // Read without advancing the buffer position.
+        /// Read without advancing the buffer position.
         T inspect()
         {
             size_t before = pos;
@@ -101,4 +102,3 @@ namespace jrc
         size_t pos;
     };
 }
-

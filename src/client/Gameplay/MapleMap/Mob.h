@@ -66,8 +66,14 @@ namespace jrc
 
         /// Construct a mob by combining data from game files with
         /// data sent by the server.
-        Mob(int32_t oid, int32_t mobid, int8_t mode, uint8_t stance, uint16_t fhid,
-            bool newspawn, int8_t team, Point<int16_t> position);
+        Mob(int32_t        oid,
+            int32_t        mobid,
+            int8_t         mode,
+            uint8_t        stance,
+            uint16_t       fhid,
+            bool           newspawn,
+            int8_t         team,
+            Point<int16_t> position);
 
         /// Draw the mob.
         void draw(double viewx, double viewy, float alpha) const override;
@@ -130,12 +136,10 @@ namespace jrc
         /// Calculate the maximum damage.
         double calculate_maxdamage(int16_t leveldelta, double maxdamage, bool magic) const;
         /// Calculate a random damage line based on the specified values.
-        std::pair<int32_t, bool> next_damage(
-            double mindamage,
-            double maxdamage,
-            float hitchance,
-            float critical
-        ) const;
+        std::pair<int32_t, bool> next_damage(double mindamage,
+                                             double maxdamage,
+                                             float  hitchance,
+                                             float  critical) const;
 
         /// Return the current 'head' position.
         Point<int16_t> get_head_position(Point<int16_t> position) const;

@@ -79,15 +79,15 @@ namespace jrc
 
     void Stage::load_map(int32_t mapid)
     {
-        std::string strid = string_format::extend_id(mapid, 9);
+        std::string strid  = string_format::extend_id(mapid, 9);
         std::string prefix = std::to_string(mapid / 100000000);
-        nl::node src = nl::nx::map["Map"]["Map" + prefix][strid + ".img"];
+        nl::node src       = nl::nx::map["Map"]["Map" + prefix][strid + ".img"];
 
-        tilesobjs = MapTilesObjs(src);
+        tilesobjs   = MapTilesObjs(src);
         backgrounds = MapBackgrounds(src["back"]);
-        physics = Physics(src["foothold"]);
-        mapinfo = MapInfo(src, physics.get_fht().get_walls(), physics.get_fht().get_borders());
-        portals = MapPortals(src["portal"], mapid);
+        physics     = Physics(src["foothold"]);
+        mapinfo     = MapInfo(src, physics.get_fht().get_walls(), physics.get_fht().get_borders());
+        portals     = MapPortals(src["portal"], mapid);
     }
 
     void Stage::respawn(int8_t portalid)
@@ -96,6 +96,7 @@ namespace jrc
 
         Point<int16_t> spawnpoint = portals.get_portal_by_id(static_cast<uint8_t>(portalid));
         Point<int16_t> startpos   = physics.get_y_below(spawnpoint);
+
         player.respawn(startpos, mapinfo.is_underwater());
         camera.set_position(startpos);
         camera.set_view(mapinfo.get_walls(), mapinfo.get_borders());
@@ -175,21 +176,25 @@ namespace jrc
 
     void Stage::check_portals()
     {
+        std::cout << "check_portals;";
         if (player.is_attacking())
         {
             return;
         }
+        std::cout << " !player.is_attacking();";
 
         Point<int16_t> playerpos  = player.get_position();
         Portal::WarpInfo warpinfo = portals.find_warp_at(playerpos);
         if (warpinfo.intramap)
         {
+            std::cout << " warpinfo.intramap;";
             Point<int16_t> spawnpoint = portals.get_portal_by_name(warpinfo.toname);
             Point<int16_t> startpos   = physics.get_y_below(spawnpoint);
             player.respawn(startpos, mapinfo.is_underwater());
         }
         else if (warpinfo.valid)
         {
+            std::cout << " warpinfo.valid, mapid: " << warpinfo.mapid << std::endl;
             ChangeMapPacket(false, warpinfo.mapid, warpinfo.name, false).dispatch();
         }
     }

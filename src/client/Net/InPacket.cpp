@@ -17,13 +17,14 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "InPacket.h"
 
+
 namespace jrc
 {
     InPacket::InPacket(const int8_t* recv, size_t length)
     {
         bytes = recv;
-        top = length;
-        pos = 0;
+        top   = length;
+        pos   = 0;
     }
 
     bool InPacket::available() const
@@ -75,7 +76,7 @@ namespace jrc
     {
         auto x = read<int16_t>();
         auto y = read<int16_t>();
-        return{ x, y };
+        return { x, y };
     }
 
     std::string InPacket::read_string()

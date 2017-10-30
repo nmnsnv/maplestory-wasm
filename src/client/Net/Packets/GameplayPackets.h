@@ -18,10 +18,11 @@
 #pragma once
 #include "MovementPacket.h"
 
+
 namespace jrc
 {
-    // Requests the server to warp the player to a different map.
-    // Opcode: CHANGE_MAP(38)
+    /// Requests the server to warp the player to a different map.
+    /// Opcode: CHANGE_MAP(38)
     class ChangeMapPacket : public OutPacket
     {
     public:
@@ -36,8 +37,8 @@ namespace jrc
     };
 
 
-    // Updates the player's position with the server.
-    // Opcode: MOVE_PLAYER(41)
+    /// Updates the player's position with the server.
+    /// Opcode: MOVE_PLAYER(41)
     class MovePlayerPacket : public MovementPacket
     {
     public:
@@ -50,18 +51,18 @@ namespace jrc
     };
 
 
-    // Requests various party-related things.
-    // Opcode: PARTY_OPERATION(124)
+    /// Requests various party-related things.
+    /// Opcode: PARTY_OPERATION(124)
     class PartyOperationPacket : public OutPacket
     {
     public:
         enum Operation : int8_t
         {
-            CREATE = 1,
-            LEAVE = 2,
-            JOIN = 3,
-            INVITE = 4,
-            EXPEL = 5,
+            CREATE      = 1,
+            LEAVE       = 2,
+            JOIN        = 3,
+            INVITE      = 4,
+            EXPEL       = 5,
             PASS_LEADER = 6
         };
 
@@ -73,8 +74,8 @@ namespace jrc
     };
 
 
-    // Creates a new party.
-    // Operation: CREATE(1)
+    /// Creates a new party.
+    /// Operation: CREATE(1)
     class CreatePartyPacket : public PartyOperationPacket
     {
     public:
@@ -82,8 +83,8 @@ namespace jrc
     };
 
 
-    // Leaves a party
-    // Operation: LEAVE(2)
+    /// Leaves a party
+    /// Operation: LEAVE(2)
     class LeavePartyPacket : public PartyOperationPacket
     {
     public:
@@ -91,8 +92,8 @@ namespace jrc
     };
 
 
-    // Joins a party.
-    // Operation: JOIN(3)
+    /// Joins a party.
+    /// Operation: JOIN(3)
     class JoinPartyPacket : public PartyOperationPacket
     {
     public:
@@ -103,8 +104,8 @@ namespace jrc
     };
 
 
-    // Invites a player to a party.
-    // Operation: INVITE(4)
+    /// Invites a player to a party.
+    /// Operation: INVITE(4)
     class InviteToPartyPacket : public PartyOperationPacket
     {
     public:
@@ -115,8 +116,8 @@ namespace jrc
     };
 
 
-    // Expels someone from a party.
-    // Operation: EXPEL(5)
+    /// Expels someone from a party.
+    /// Operation: EXPEL(5)
     class ExpelFromPartyPacket : public PartyOperationPacket
     {
     public:
@@ -127,8 +128,8 @@ namespace jrc
     };
 
 
-    // Passes party leadership to another character.
-    // Operation: PASS_LEADER(6)
+    /// Passes party leadership to another character.
+    /// Operation: PASS_LEADER(6)
     class ChangePartyLeaderPacket : public PartyOperationPacket
     {
     public:
@@ -139,8 +140,8 @@ namespace jrc
     };
 
 
-    // Updates a mob's position with the server.
-    // Opcode: MOVE_MONSTER(188)
+    /// Updates a mob's position with the server.
+    /// Opcode: MOVE_MONSTER(188)
     class MoveMobPacket : public MovementPacket
     {
     public:
@@ -167,8 +168,8 @@ namespace jrc
     };
 
 
-    // Requests picking up an item.
-    // Opcode: PICKUP_ITEM(202)
+    /// Requests picking up an item.
+    /// Opcode: PICKUP_ITEM(202)
     class PickupItemPacket : public OutPacket
     {
     public:
@@ -179,5 +180,14 @@ namespace jrc
             write_point(position);
             write_int(oid);
         }
+    };
+
+    /// Tells the server that we're no longer transitioning between maps,
+    /// including initial login.
+    /// Opcode: PLAYER_UPDATE(0xDF)
+    class PlayerUpdatePacket : public OutPacket
+    {
+    public:
+        PlayerUpdatePacket() : OutPacket(PLAYER_UPDATE) {}
     };
 }

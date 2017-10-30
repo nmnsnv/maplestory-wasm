@@ -29,68 +29,69 @@
 
 #include "../Console.h"
 
+
 namespace jrc
 {
     // Opcodes for InPackets.
     enum PacketSwitch::Opcode : uint16_t
     {
         // Login 1
-        LOGIN_RESULT = 0,
-        SERVERLIST = 10,
-        CHARLIST = 11,
-        SERVER_IP = 12,
+        LOGIN_RESULT      = 0,
+        SERVERLIST        = 10,
+        CHARLIST          = 11,
+        SERVER_IP         = 12,
         CHARNAME_RESPONSE = 13,
         ADD_NEWCHAR_ENTRY = 14,
-        DELCHAR_RESPONSE = 15,
-        PING = 17,
+        DELCHAR_RESPONSE  = 15,
+        PING              = 17,
 
         // Player 1
         APPLY_BUFF = 20,
 
         // Login 2
-        SELECT_WORLD = 26,
+        SELECT_WORLD       = 26,
         RECOMMENDED_WORLDS = 27,
 
         // Inventory 1
         MODIFY_INVENTORY = 29,
 
         // Player 2
-        CHANGE_STATS = 31,
-        GIVE_BUFF = 32,
-        CANCEL_BUFF = 33,
+        CHANGE_STATS      = 31,
+        GIVE_BUFF         = 32,
+        CANCEL_BUFF       = 33,
         RECALCULATE_STATS = 35,
-        UPDATE_SKILL = 36,
+        UPDATE_SKILL      = 36,
 
         // Messaging 1
         SHOW_STATUS_INFO = 39,
-        MEMO_RESULT = 41,
-        ENABLE_REPORT = 47,
+        MEMO_RESULT      = 41,
+        ENABLE_REPORT    = 47,
 
         //Inventory 2
         GATHER_RESULT = 52,
-        SORT_RESULT = 53,
+        SORT_RESULT   = 53,
 
         // Player 3
-        UPDATE_GENDER = 58,
-        BUDDY_LIST = 63,
+        UPDATE_GENDER   = 58,
+        BUDDY_LIST      = 63,
         GUILD_OPERATION = 65,
 
         // Messaging 2
-        SERVER_MESSAGE = 68,
+        SERVER_MESSAGE     = 68,
         WEEK_EVENT_MESSAGE = 77,
 
-        FIELD_SET_VARIABLE = 92,
-        FAMILY_PRIV_LIST = 100,
-        CANCEL_RENAME_BY_OTHER = 120,
+        FIELD_SET_VARIABLE      = 92,
+        FAMILY_PRIV_LIST        = 100,
+        CANCEL_RENAME_BY_OTHER  = 120,
         SCRIPT_PROGRESS_MESSAGE = 122,
-        RECEIVE_POLICE = 123,
-        SKILL_MACROS = 124,
-        SET_FIELD = 125,
-        FIELD_EFFECT = 138,
-        CLOCK = 147,
+        RECEIVE_POLICE          = 123,
+        SKILL_MACROS            = 124,
+        SET_FIELD               = 125,
+        FIELD_EFFECT            = 138,
+        CLOCK                   = 147,
 
         // Mapobject
-        SPAWN_CHAR = 160,
+        SPAWN_CHAR  = 160,
         REMOVE_CHAR = 161,
 
         // Messaging
@@ -98,42 +99,42 @@ namespace jrc
         SCROLL_RESULT = 167,
 
         // Mapobject
-        SPAWN_PET = 168,
+        SPAWN_PET  = 168,
         CHAR_MOVED = 185,
 
         // Attack
-        ATTACKED_CLOSE = 186,
+        ATTACKED_CLOSE  = 186,
         ATTACKED_RANGED = 187,
-        ATTACKED_MAGIC = 188,
+        ATTACKED_MAGIC  = 188,
 
-        SHOW_ITEM_EFFECT = 194,
-        SHOW_CHAIR = 196,
-        UPDATE_CHARLOOK = 197,
-        SHOW_FOREIGN_EFFECT = 198,
+        SHOW_ITEM_EFFECT      = 194,
+        SHOW_CHAIR            = 196,
+        UPDATE_CHARLOOK       = 197,
+        SHOW_FOREIGN_EFFECT   = 198,
         SHOW_ITEM_GAIN_INCHAT = 206, // this is terribly named
-        LOCK_UI = 221,
-        TOGGLE_UI = 222,
+        LOCK_UI               = 221,
+        TOGGLE_UI             = 222,
 
         // Player
         ADD_COOLDOWN = 234,
 
         // Mapobject
-        SPAWN_MOB = 236,
-        KILL_MOB = 237,
-        SPAWN_MOB_C = 238,
-        MOB_MOVED = 239,
+        SPAWN_MOB         = 236,
+        KILL_MOB          = 237,
+        SPAWN_MOB_C       = 238,
+        MOB_MOVED         = 239,
         MOVE_MOB_RESPONSE = 240,
-        SHOW_MOB_HP = 250,
-        SPAWN_NPC = 257,
-        SPAWN_NPC_C = 259,
+        SHOW_MOB_HP       = 250,
+        SPAWN_NPC         = 257,
+        SPAWN_NPC_C       = 259,
         MAKE_NPC_SCRIPTED = 263,
-        DROP_LOOT = 268,
-        REMOVE_LOOT = 269,
-        SPAWN_REACTOR = 279,
-        REMOVE_REACTOR = 280,
+        DROP_LOOT         = 268,
+        REMOVE_LOOT       = 269,
+        SPAWN_REACTOR     = 279,
+        REMOVE_REACTOR    = 280,
 
         // NPC Interaction
-        NPC_DIALOGUE = 304,
+        NPC_DIALOGUE  = 304,
         OPEN_NPC_SHOP = 305,
 
         KEYMAP = 335
@@ -207,7 +208,7 @@ namespace jrc
         emplace<NPC_DIALOGUE, NpcDialogueHandler>();
         emplace<OPEN_NPC_SHOP, OpenNpcShopHandler>();
 
-        // Todo
+        // TODO
         emplace<MOVE_MOB_RESPONSE, NullHandler>();
         emplace<MEMO_RESULT, NullHandler>();
         emplace<ENABLE_REPORT, NullHandler>();

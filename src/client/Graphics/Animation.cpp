@@ -198,8 +198,8 @@ namespace jrc
     void Animation::draw(const DrawArgument& args, float alpha) const
     {
         int16_t interframe = frame.get(alpha);
-        float interopc   = opacity.get(alpha) / 255;
-        float interscale = xyscale.get(alpha) / 100;
+        float interopc     = opacity.get(alpha) / 255;
+        float interscale   = xyscale.get(alpha) / 100;
 
         bool modifyopc   = interopc   != 1.0f;
         bool modifyscale = interscale != 1.0f;

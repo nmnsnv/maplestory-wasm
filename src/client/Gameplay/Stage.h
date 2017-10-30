@@ -36,6 +36,7 @@
 #include "../Template/TimedQueue.h"
 #include "../Template/Singleton.h"
 
+
 namespace jrc
 {
     class Stage : public Singleton<Stage>
@@ -122,4 +123,3 @@ namespace jrc
         Combat combat;
     };
 }
-
