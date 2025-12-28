@@ -1,12 +1,13 @@
 diff --git a/Net/Session.cpp b/Net/Session.cpp
-index 03a1df7..cf3329f 100644
+index 03a1df7..199a70e 100644
 --- a/Net/Session.cpp
 +++ b/Net/Session.cpp
-@@ -18,10 +18,12 @@
+@@ -18,10 +18,13 @@
  #include "Session.h"
  
  #include "../Configuration.h"
 +#include "MapleStory.h"
++#include "../Util/Misc.h"
  
  namespace ms
  {
@@ -16,15 +17,24 @@ index 03a1df7..cf3329f 100644
  	{
  		connected = false;
  		length = 0;
-@@ -36,6 +38,7 @@ namespace ms
+@@ -36,14 +39,26 @@ namespace ms
  
  	bool Session::init(const char* host, const char* port)
  	{
-+		LOG(LOG_INFO, "Connecting to " << host << ":" << port);
++		std::string final_host = host;
++		if (final_host == "0.0.0.0")
++		{
++			final_host = getBrowserHostname();
++			LOG(LOG_DEBUG, "Host is 0.0.0.0, resolving to: " << final_host);
++		}
++
++		LOG(LOG_INFO, "Connecting to " << final_host << ":" << port);
  		// Connect to the server
- 		connected = socket.open(host, port);
+-		connected = socket.open(host, port);
++		connected = socket.open(final_host.c_str(), port);
  
-@@ -44,6 +47,10 @@ namespace ms
+ 		if (connected)
+ 		{
  			// Read keys necessary for communicating with the server
  			cryptography = { socket.get_buffer() };
  		}
@@ -35,7 +45,7 @@ index 03a1df7..cf3329f 100644
  
  		return connected;
  	}
-@@ -61,6 +68,7 @@ namespace ms
+@@ -61,6 +76,7 @@ namespace ms
  
  	void Session::reconnect(const char* address, const char* port)
  	{
