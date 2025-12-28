@@ -38,9 +38,9 @@ def update_patches_generic(system_root):
             if not status:
                 subprocess.run(['git', 'reset', 'HEAD'], cwd=target_dir)
                 continue
-                
+
             changed_files = status.splitlines()
-            
+
             # Prepare dir
             if patches_dir.exists():
                  # We prefer to keep existing patches if they are not touched?

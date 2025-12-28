@@ -1,0 +1,11 @@
+diff --git a/.gitignore b/.gitignore
+index f03269e6..c3c8e12e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -84,4 +84,4 @@ nbdist/
+ # Custom
+ logs/
+ wz*/
+-scripts*/
+\ No newline at end of file
++# scripts*/
