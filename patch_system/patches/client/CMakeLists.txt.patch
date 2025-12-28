@@ -1,0 +1,103 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..0e7e4d2
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,97 @@
++cmake_minimum_required(VERSION 3.10)
++project(MapleStoryClient)
++
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
++
++# Debug symbols option
++option(DEBUG_SYMBOLS "Enable debug symbols (-g)" OFF)
++
++# Emscripten settings
++if(EMSCRIPTEN)
++    add_compile_definitions(MS_PLATFORM_WASM=1)
++    add_compile_options("-fmacro-prefix-map=${CMAKE_SOURCE_DIR}/=/")
++    add_compile_options(
++        -sUSE_GLFW=3 
++        -sUSE_WEBGL2=1
++        -sUSE_FREETYPE=1 # MS WASM: Link with Emscripten's FreeType port
++        -Wno-c++11-narrowing
++        -Wno-deprecated-declarations
++        -fexceptions
++    )
++    add_link_options(
++        -sUSE_GLFW=3 
++        -sUSE_WEBGL2=1 
++        -sFULL_ES3=1
++        -sWASM=1 
++        -sALLOW_MEMORY_GROWTH=1
++        -sFORCE_FILESYSTEM=1
++        -fexceptions
++        -sUSE_ZLIB=1
++        -sUSE_FREETYPE=1 # MS WASM: Link with Emscripten's FreeType port
++        -lwebsocket.js # MS WASM: Link WebSocket library
++        -sASYNCIFY=1
++        -sASYNCIFY_IMPORTS=['emscripten_asm_const_int','emscripten_asm_const_double','emscripten_sleep']
++        -sASYNCIFY_STACK_SIZE=16777216
++        -sSTACK_SIZE=16777216
++        -sINITIAL_MEMORY=268435456  # Start with 256MB
++        -sEXPORTED_RUNTIME_METHODS=FS,ccall,cwrap
++        "--embed-file=${CMAKE_CURRENT_SOURCE_DIR}/fonts/Arial/Arial.ttf@fonts/Arial/Arial.ttf"
++        "--embed-file=${CMAKE_CURRENT_SOURCE_DIR}/fonts/Arial/Arial-Bold.ttf@fonts/Arial/Arial-Bold.ttf"
++        --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/LazyFS/lazyfs.js
++        -sASSERTIONS=1
++    )
++    
++    # Add debug symbols if enabled
++    if(DEBUG_SYMBOLS)
++        add_compile_options(-g)
++        add_link_options(-g3 -gsource-map)
++        message(STATUS "Debug symbols enabled with -g flag")
++    endif()
++    
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include list")
++endif()
++
++# Include directories
++include_directories(
++    includes
++    includes/NoLifeNx
++    includes/stb
++    includes/glew-2.1.0/include/GL
++    includes/bass24/c
++    includes/freetype/include
++    .
++)
++
++# Recursively find sources
++file(GLOB_RECURSE SOURCES
++    "Audio/*.cpp" "Audio/*.c"
++    "Character/*.cpp" "Character/*.c"
++    "Data/*.cpp" "Data/*.c"
++    "Gameplay/*.cpp" "Gameplay/*.c"
++    "Graphics/*.cpp" "Graphics/*.c"
++    "IO/*.cpp" "IO/*.c"
++    "LazyFS/*.cpp" "LazyFS/*.c"
++    "Net/*.cpp" "Net/*.c"
++    "Template/*.cpp" "Template/*.c"
++    "Util/*.cpp" "Util/*.c"
++)
++
++# Add specific files to avoid including everything in includes/ (like example code)
++list(APPEND SOURCES
++    "Configuration.cpp"
++    "MapleStory.cpp"
++    "includes/lz4.c"
++    "includes/stb/stb_vorbis.c"
++    "includes/NoLifeNx/nlnx/bitmap.cpp"
++    "includes/NoLifeNx/nlnx/node.cpp"
++    "includes/NoLifeNx/nlnx/audio.cpp"
++    "includes/NoLifeNx/nlnx/file.cpp"
++    "includes/NoLifeNx/nlnx/nx.cpp"
++)
++
++# Filter out main.cpp equivalents if multiple exist, or Windows specific ones if needed.
++# For now, we include everything. The user said "build to start, it will fail, as expected."
++
++add_executable(maplestory ${SOURCES})
++

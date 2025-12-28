@@ -1,0 +1,75 @@
+diff --git a/IO/UITypes/UIStatsInfo.cpp b/IO/UITypes/UIStatsInfo.cpp
+index 38e6b31..764162a 100644
+--- a/IO/UITypes/UIStatsInfo.cpp
++++ b/IO/UITypes/UIStatsInfo.cpp
+@@ -86,16 +86,8 @@ namespace ms
+ 
+ 		jobId = stats.get_stat(MapleStat::Id::JOB);
+ 
+-		if (jobId == Job::Level::BEGINNER)
+-		{
+-			buttons[Buttons::BT_HP]->set_active(false);
+-			buttons[Buttons::BT_MP]->set_active(false);
+-			buttons[Buttons::BT_STR]->set_active(false);
+-			buttons[Buttons::BT_DEX]->set_active(false);
+-			buttons[Buttons::BT_INT]->set_active(false);
+-			buttons[Buttons::BT_LUK]->set_active(false);
+-			buttons[Buttons::BT_AUTO]->set_active(false);
+-		}
++		// Note: Beginners need stat buttons enabled to allocate AP for job advancement
++		// The original code incorrectly disabled these buttons for beginners
+ 
+ 		update_ap();
+ 
+@@ -184,11 +176,12 @@ namespace ms
+ 	{
+ 		UIElement::draw_sprites(alpha);
+ 
+-		if (jobId == Job::Level::BEGINNER)
+-		{
+-			cover0.draw(position, alpha);
+-			cover1.draw(position, alpha);
+-		}
++		// Removed: Beginners need to see stat UI to allocate AP
++		// if (jobId == Job::Level::BEGINNER)
++		// {
++		// 	cover0.draw(position, alpha);
++		// 	cover1.draw(position, alpha);
++		// }
+ 
+ 		if (showdetail)
+ 		{
+@@ -215,15 +208,8 @@ namespace ms
+ 			if (i >= StatLabel::NUM_NORMAL)
+ 				labelpos.shift_x(213);
+ 
+-			if (jobId == Job::Level::BEGINNER)
+-			{
+-				if (i < AP || i > NUM_NORMAL)
+-					statlabels[i].draw(labelpos);
+-			}
+-			else
+-			{
+-				statlabels[i].draw(labelpos);
+-			}
++			// Draw all stat labels for all job levels including Beginners
++			statlabels[i].draw(labelpos);
+ 		}
+ 
+ 		UIElement::draw_buttons(alpha);
+@@ -315,13 +301,8 @@ namespace ms
+ 
+ 				statlabels[StatLabel::JOB].change_text(stats.get_jobname());
+ 
+-				buttons[Buttons::BT_HP]->set_active(jobId != Job::Level::BEGINNER);
+-				buttons[Buttons::BT_MP]->set_active(jobId != Job::Level::BEGINNER);
+-				buttons[Buttons::BT_STR]->set_active(jobId != Job::Level::BEGINNER);
+-				buttons[Buttons::BT_DEX]->set_active(jobId != Job::Level::BEGINNER);
+-				buttons[Buttons::BT_INT]->set_active(jobId != Job::Level::BEGINNER);
+-				buttons[Buttons::BT_LUK]->set_active(jobId != Job::Level::BEGINNER);
+-				buttons[Buttons::BT_AUTO]->set_active(jobId != Job::Level::BEGINNER);
++				// Beginners also need stat buttons to allocate AP for job advancement
++				// Buttons are enabled for all job levels now
+ 
+ 				break;
+ 			}

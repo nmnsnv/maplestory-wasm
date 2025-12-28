@@ -1,0 +1,97 @@
+diff --git a/LazyFS/LazyFileLoader.h b/LazyFS/LazyFileLoader.h
+new file mode 100644
+index 0000000..4299b3a
+--- /dev/null
++++ b/LazyFS/LazyFileLoader.h
+@@ -0,0 +1,91 @@
++#pragma once
++
++#include <LazyFS/LazyFileBackend.h>
++#include <string>
++#include <vector>
++
++namespace LazyFS
++{
++
++	/**
++	 * LazyFileLoader - Manages on-demand chunk loading for a file
++	 *
++	 * This class maintains an LRU cache of loaded chunks and provides access to
++	 * file data via offsets. It replaces the memory-mapped file strategy on WASM.
++	 */
++	class LazyFileLoader
++	{
++	  public:
++		LazyFileLoader(const std::string& path);
++		~LazyFileLoader();
++
++		LazyFileLoader(const LazyFileLoader&) = delete;
++		LazyFileLoader& operator=(const LazyFileLoader&) = delete;
++
++		/**
++		 * Open the file.
++		 * @return true if successful
++		 */
++		bool open();
++
++		/**
++		 * Get the total file size.
++		 */
++		size_t size() const;
++
++		/**
++		 * Get a pointer to data at the specified offset.
++		 * This ensures the relevant chunk is loaded in memory.
++		 * Note: The pointer is valid only until the chunk is evicted from cache.
++		 *
++		 * @param offset Byte offset in the file
++		 * @return Pointer to data, or nullptr if failed
++		 */
++		template <typename T> const T* get_data_at(size_t offset)
++		{
++			return static_cast<const T*>(get_contiguous_data(offset, sizeof(T)));
++		}
++
++		/**
++		 * Get a pointer to contiguous data of a specific size.
++		 * Handles cross-chunk stitching if necessary.
++		 */
++		const void* get_contiguous_data(size_t offset, size_t size);
++
++		/**
++		 * Static helper to load file (creates a Loader instance)
++		 * @param path Path to file
++		 * @param out_size Output for file size
++		 * @return opaque pointer to LazyFileLoader instance
++		 */
++		static void* load_file(const std::string& path, size_t& out_size);
++
++		/**
++		 * Static helper to free file (deletes Loader instance)
++		 */
++		static void free_file(void* handle);
++
++	  private:
++		// Maximum chunks to keep in memory (160 * 64KB = ~10MB per file)
++		static constexpr size_t CACHE_SIZE = 160;
++		static constexpr size_t CHUNK_SIZE = LazyFileBackend::CHUNK_SIZE;
++
++		struct Chunk
++		{
++			size_t index;
++			std::vector<uint8_t> data;
++			uint64_t last_access;
++		};
++
++		std::string path_;
++		std::unique_ptr<LazyFileBackend> backend_;
++		std::vector<std::unique_ptr<Chunk>> cache_;
++		uint64_t access_counter_ = 0;
++
++		std::vector<uint8_t> stitch_buffer_;
++
++		// const void* get_chunk_data(size_t offset, size_t size); // Replaced by get_contiguous_data implementation
++		Chunk* get_or_load_chunk(size_t chunk_index);
++	};
++
++} // namespace LazyFS

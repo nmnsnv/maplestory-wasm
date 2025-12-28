@@ -1,0 +1,13 @@
+diff --git a/Character/Look/Clothing.cpp b/Character/Look/Clothing.cpp
+index e407c9d..c56edb9 100644
+--- a/Character/Look/Clothing.cpp
++++ b/Character/Look/Clothing.cpp
+@@ -85,7 +85,7 @@ namespace ms
+ 		nl::node src = nl::nx::Character[category][strid + ".img"];
+ 		nl::node info = src["info"];
+ 
+-		vslot = info["vslot"];
++		vslot = std::string(info["vslot"]);
+ 
+ 		switch (int32_t standno = info["stand"])
+ 		{

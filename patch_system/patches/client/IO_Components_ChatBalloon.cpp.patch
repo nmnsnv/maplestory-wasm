@@ -1,0 +1,73 @@
+diff --git a/IO/Components/ChatBalloon.cpp b/IO/Components/ChatBalloon.cpp
+index 17f14dd..8656885 100644
+--- a/IO/Components/ChatBalloon.cpp
++++ b/IO/Components/ChatBalloon.cpp
+@@ -50,6 +50,8 @@ namespace ms
+ 
+ 		textlabel = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::BLACK, "", 80);
+ 
++		background = ColorBox(0, 0, Color::Name::WHITE, 0.8f);
++
+ 		duration = 0;
+ 	}
+ 
+@@ -70,6 +72,35 @@ namespace ms
+ 		int16_t width = textlabel.width();
+ 		int16_t height = textlabel.height();
+ 
++		// ChatBalloon vertical drawing logic seems to center text significantly below 'position'
++		// It draws text at position - (0, height + 4).
++		// Frame is drawn at position with width, height.
++		// Let's assume frame starts at position (bottom-center?) based on MapleFrame logic.
++
++		// Drawing background to match frame area
++		// MapleFrame::draw interprets position as bottom-center anchor.
++		// So we match that for ColorBox (but ColorBox usually draws from top-left unless adapted).
++		// ColorBox::draw takes DrawArgument(rect geometry).
++		// We need to calculate the bounding box.
++		
++		// Replicating MapleFrame::draw logic for bounding box:
++		// int16_t left = position.x() - width / 2;
++		// int16_t top = position.y() - height;
++		
++		// For ChatBalloon:
++		int16_t left = position.x() - width / 2;
++		int16_t top = position.y() - height;
++		
++		// Correction: ChatBalloon::draw passes (width, height) to frame.draw.
++		// Wait, MapleFrame calculates total width/height based on tiles if not passed explicit size?
++		// No, MapleFrame::draw(pos, rwidth, rheight) uses rwidth/rheight to calculate tiles.
++		
++		// So the frame covers approximately width x height, anchored at bottom-center.
++		
++		((ColorBox&)background).setwidth(width);
++		((ColorBox&)background).setheight(height);
++		background.draw(DrawArgument(Point<int16_t>(left, top), Point<int16_t>(width, height)));
++
+ 		frame.draw(position, width, height);
+ 		arrow.draw(position);
+ 		textlabel.draw(position - Point<int16_t>(0, height + 4));
+@@ -103,9 +134,12 @@ namespace ms
+ 		southeast = Balloon["se"];
+ 
+ 		xtile = std::max<int16_t>(north.width(), 1);
++// ... (inside constructor)
+ 		ytile = std::max<int16_t>(west.height(), 1);
+ 
+ 		textlabel = Text(Text::Font::A12B, Text::Alignment::LEFT, Color::Name::BLACK);
++
++		background = ColorBox(0, 0, Color::Name::WHITE, 0.8f);
+ 	}
+ 
+ 	void ChatBalloonHorizontal::draw(Point<int16_t> position) const
+@@ -118,6 +152,10 @@ namespace ms
+ 		int16_t right = left + width;
+ 		int16_t bottom = top + height;
+ 
++		((ColorBox&)background).setwidth(width);
++		((ColorBox&)background).setheight(height);
++		background.draw(DrawArgument(Point<int16_t>(left, top), Point<int16_t>(width, height)));
++
+ 		northwest.draw(DrawArgument(left, top));
+ 		southwest.draw(DrawArgument(left, bottom));
+ 

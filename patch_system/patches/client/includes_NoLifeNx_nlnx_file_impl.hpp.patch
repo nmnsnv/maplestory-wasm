@@ -1,0 +1,43 @@
+diff --git a/includes/NoLifeNx/nlnx/file_impl.hpp b/includes/NoLifeNx/nlnx/file_impl.hpp
+index 84b7e84..ec9c3ff 100644
+--- a/includes/NoLifeNx/nlnx/file_impl.hpp
++++ b/includes/NoLifeNx/nlnx/file_impl.hpp
+@@ -1,6 +1,6 @@
+ //////////////////////////////////////////////////////////////////////////////
+ // NoLifeNx - Part of the NoLifeStory project                               //
+-// Copyright © 2013 Peter Atashian                                          //
++// Copyright Â© 2013 Peter Atashian                                          //
+ //                                                                          //
+ // This program is free software: you can redistribute it and/or modify     //
+ // it under the terms of the GNU Affero General Public License as           //
+@@ -36,11 +36,22 @@ namespace nl {
+ #pragma pack(pop)
+     struct _file_data {
+         void const * base = nullptr;
++#ifdef MS_PLATFORM_WASM
++        // On WASM, we use offsets into the file instead of pointers
++        // because we can't map the whole file into contiguous memory.
++        // We resolve these offsets on-demand via LazyFileLoader.
++        uint64_t node_table = 0;
++        uint64_t string_table = 0;
++        uint64_t bitmap_table = 0;
++        uint64_t audio_table = 0;
++        uint64_t header = 0; // Usually 0
++#else
+         node::data const * node_table = nullptr;
+         uint64_t const * string_table = nullptr;
+         uint64_t const * bitmap_table = nullptr;
+         uint64_t const * audio_table = nullptr;
+         file::header const * header = nullptr;
++#endif
+ #ifdef _WIN32
+         void * file_handle = nullptr;
+         void * map = nullptr;
+@@ -49,4 +60,7 @@ namespace nl {
+         size_t size = 0;
+ #endif
+     };
++
++// I/O read function - reads data from file at specified offset
++bool io_read(const _file_data *fd, void *buf, size_t size, uint64_t offset);
+ }

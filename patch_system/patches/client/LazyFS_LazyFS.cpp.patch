@@ -1,0 +1,97 @@
+diff --git a/LazyFS/LazyFS.cpp b/LazyFS/LazyFS.cpp
+new file mode 100644
+index 0000000..a6bcee3
+--- /dev/null
++++ b/LazyFS/LazyFS.cpp
+@@ -0,0 +1,91 @@
++//////////////////////////////////////////////////////////////////////////////////
++// LazyFS - Lazy Filesystem for WebAssembly
++// Generic HTTP Range-based file loading system
++//////////////////////////////////////////////////////////////////////////////////
++#include "LazyFS.h"
++
++#ifdef MS_PLATFORM_WASM
++#include <emscripten.h>
++#include <iostream>
++#include <LazyFS/LazyFileBackend.h>
++
++namespace LazyFS
++{
++	void Initialize()
++	{
++		// Sync C++ CHUNK_SIZE to JavaScript and set WebSocket URL
++		EM_ASM({
++			if (typeof Module.LazyFS !== 'undefined') {
++				Module.LazyFS.CHUNK_SIZE = $0;
++				console.log('[LazyFS] Chunk size synced from C++:', $0, 'bytes');
++				
++				// Auto-detect WebSocket URL based on page location
++				// Default to same host, port 8765
++				var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
++				var host = window.location.hostname;
++				Module.LazyFS.ASSETS_WS_URL = protocol + '//' + host + ':8765';
++				console.log('[LazyFS] Assets WebSocket URL:', Module.LazyFS.ASSETS_WS_URL);
++			} else {
++				console.error('[LazyFS] JavaScript backend not loaded during Initialize!');
++			}
++		}, (int)LazyFileBackend::CHUNK_SIZE);
++	}
++
++	bool RegisterFile(const std::string& filepath, const std::string& url)
++	{
++		std::cout << "[LazyFS] Registering file: " << filepath << std::endl;
++
++		// Register the file with LazyFS and fetch its size via WebSocket
++		int result = EM_ASM_INT({
++			var filepath = UTF8ToString($0);
++			
++			if (typeof Module.LazyFS !== 'undefined' && Module.LazyFS.registerFile) {
++				// Use Asyncify to await the WebSocket connection and file size fetch
++				return Asyncify.handleAsync(async () => {
++					Module.LazyFS.registerFile(filepath);
++					// Connect to WebSocket and fetch file size
++					try {
++						await Module.LazyFS.connect();
++						var size = await Module.LazyFS.getFileSize(filepath);
++						var fileEntry = Module.LazyFS.files.get(filepath);
++						if (fileEntry) {
++							fileEntry.size = size;
++						}
++						return size > 0 ? 1 : 0;
++					} catch (e) {
++						console.error('[LazyFS] Failed to get file size:', e);
++						return 0;
++					}
++				});
++			} else {
++				console.error('[LazyFS] JavaScript backend not loaded!');
++				return 0;
++			}
++		}, filepath.c_str());
++
++		if (result == 1) {
++			std::cout << "[LazyFS] File registered: " << filepath << std::endl;
++			return true;
++		} else {
++			std::cerr << "[LazyFS] Failed to register file: " << filepath << std::endl;
++			return false;
++		}
++	}
++}
++
++#else
++// Non-Emscripten platforms: LazyFS is not available
++namespace LazyFS
++{
++	void Initialize()
++	{
++		// No-op on non-WASM platforms
++	}
++
++	bool PreloadFile(const std::string& filepath, const std::string& url)
++	{
++		// LazyFS is only available on Emscripten/WASM
++		return false;
++	}
++}
++#endif

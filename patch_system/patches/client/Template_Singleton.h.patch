@@ -1,0 +1,16 @@
+diff --git a/Template/Singleton.h b/Template/Singleton.h
+index eef3a22..34d5635 100644
+--- a/Template/Singleton.h
++++ b/Template/Singleton.h
+@@ -30,6 +30,11 @@ namespace ms
+ 			return instance;
+ 		}
+ 
++		static T* get_ptr()
++		{
++			return &instance;
++		}
++
+ 	private:
+ 		T& operator = (const T&) = delete;
+ 

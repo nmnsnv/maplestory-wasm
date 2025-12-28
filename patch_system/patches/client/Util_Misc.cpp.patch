@@ -1,0 +1,13 @@
+diff --git a/Util/Misc.cpp b/Util/Misc.cpp
+index 4a4494e..db539c8 100644
+--- a/Util/Misc.cpp
++++ b/Util/Misc.cpp
+@@ -222,7 +222,7 @@ namespace ms
+ 			{
+ 				log_history.push_back(message);
+ 
+-				LOG(LOG_DEBUG, message);
++				LOG(LOG_TRACE, message);
+ 			}
+ 		}
+ 	}

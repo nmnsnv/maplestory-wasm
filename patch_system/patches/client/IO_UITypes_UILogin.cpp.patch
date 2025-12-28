@@ -1,0 +1,35 @@
+diff --git a/IO/UITypes/UILogin.cpp b/IO/UITypes/UILogin.cpp
+index d0d854d..af17db6 100644
+--- a/IO/UITypes/UILogin.cpp
++++ b/IO/UITypes/UILogin.cpp
+@@ -29,7 +29,9 @@
+ 
+ #include "../../Net/Packets/LoginPackets.h"
+ 
++#ifndef MS_PLATFORM_WASM
+ #include <windows.h>
++#endif
+ 
+ #ifdef USE_NX
+ #include <nlnx/nx.hpp>
+@@ -225,6 +227,8 @@ namespace ms
+ 				account.set_state(Textfield::State::FOCUSED);
+ 		};
+ 
++		LOG(LOG_INFO, "Trying to login with account: " << account_text << " and password length: " << password_text.length());
++
+ 		if (account_text.empty())
+ 		{
+ 			UI::get().emplace<UILoginNotice>(UILoginNotice::Message::NOT_REGISTERED, okhandler);
+@@ -273,7 +277,11 @@ namespace ms
+ 				return;
+ 		}
+ 
++#ifdef MS_PLATFORM_WASM
++		LOG(LOG_ERROR, "Buttons::BtResetPIC not implemented in WASM");
++#else
+ 		ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
++#endif
+ 	}
+ 
+ 	Button::State UILogin::button_pressed(uint16_t id)

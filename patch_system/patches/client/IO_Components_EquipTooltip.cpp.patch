@@ -1,0 +1,43 @@
+diff --git a/IO/Components/EquipTooltip.cpp b/IO/Components/EquipTooltip.cpp
+index e496797..c0e897f 100644
+--- a/IO/Components/EquipTooltip.cpp
++++ b/IO/Components/EquipTooltip.cpp
+@@ -300,11 +300,18 @@ namespace ms
+ 
+ 					is_weapon_preview = equipdata.is_weapon();
+ 
+-					if (is_weapon_preview)
++					if (is_weapon_preview && WeaponData::has(item_id))
+ 					{
+ 						const WeaponData& weapon = WeaponData::get(item_id);
+ 						wepspeed_preview = Text(Text::Font::A11M, Text::Alignment::LEFT, Color::Name::WHITE, "Attack Speed: " + weapon.getspeedstring());
+ 					}
++					else if (is_weapon_preview)
++					{
++						// Weapon data not cached - skip to avoid Asyncify crash in WASM
++						// TODO: Support Asyncify
++						height_preview -= 18;
++						is_weapon_preview = false;
++					}
+ 					else
+ 					{
+ 						height_preview -= 18;
+@@ -518,11 +525,17 @@ namespace ms
+ 
+ 		is_weapon = equipdata.is_weapon();
+ 
+-		if (is_weapon)
++		if (is_weapon && WeaponData::has(item_id))
+ 		{
+ 			const WeaponData& weapon = WeaponData::get(item_id);
+ 			wepspeed = Text(Text::Font::A11M, Text::Alignment::LEFT, Color::Name::WHITE, "Attack Speed: " + weapon.getspeedstring());
+ 		}
++		else if (is_weapon)
++		{
++			// Weapon data not cached - skip to avoid Asyncify crash in WASM
++			height -= 18;
++			is_weapon = false;
++		}
+ 		else
+ 		{
+ 			height -= 18;

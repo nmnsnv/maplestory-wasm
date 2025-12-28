@@ -1,0 +1,30 @@
+diff --git a/IO/Window.h b/IO/Window.h
+index e01eae0..e93517b 100644
+--- a/IO/Window.h
++++ b/IO/Window.h
+@@ -23,7 +23,7 @@
+ 
+ #define GLEW_STATIC
+ #include <glew.h>
+-#include <glfw3.h>
++#include <GLFW/glfw3.h>
+ 
+ #include <functional>
+ 
+@@ -49,6 +49,8 @@ namespace ms
+ 		std::string getclipboard() const;
+ 
+ 		void toggle_fullscreen();
++		
++		bool is_recreating() const { return recreating_window; }
+ 
+ 	private:
+ 		void updateopc();
+@@ -56,6 +58,7 @@ namespace ms
+ 		GLFWwindow* glwnd;
+ 		GLFWwindow* context;
+ 		bool fullscreen;
++		bool recreating_window = false;
+ 		float opacity;
+ 		float opcstep;
+ 		std::function<void()> fadeprocedure;

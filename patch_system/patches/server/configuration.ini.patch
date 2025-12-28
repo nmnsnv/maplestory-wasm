@@ -1,0 +1,17 @@
+diff --git a/configuration.ini b/configuration.ini
+index 23ca6a54..b155dbbc 100644
+--- a/configuration.ini
++++ b/configuration.ini
+@@ -1,7 +1,7 @@
+ NAME=MapleStory
+-HOST=127.0.0.1
+-URL=jdbc:mysql://localhost:3306/maplestory
++HOST=0.0.0.0
++URL=jdbc:mysql://server-db:3306/maplestory
+ DB_USER=root
+-DB_PASS=
+-JAVA8=FALSE
++DB_PASS=root
++JAVA8=TRUE
+ SHUTDOWNHOOK=true
+\ No newline at end of file

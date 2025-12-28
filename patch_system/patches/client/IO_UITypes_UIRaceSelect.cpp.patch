@@ -1,0 +1,19 @@
+diff --git a/IO/UITypes/UIRaceSelect.cpp b/IO/UITypes/UIRaceSelect.cpp
+index 1b9cbb3..e575a0f 100644
+--- a/IO/UITypes/UIRaceSelect.cpp
++++ b/IO/UITypes/UIRaceSelect.cpp
+@@ -246,10 +246,10 @@ namespace ms
+ 
+ 		if (dot_pos)
+ 		{
+-			dot.draw(DrawArgument(dot_pos["pos_ctrl"][dot_pos["ctrl"]]));
+-			dot.draw(DrawArgument(dot_pos["pos_def"][dot_pos["def"]]));
+-			dot.draw(DrawArgument(dot_pos["pos_pow"][dot_pos["pow"]]));
+-			dot.draw(DrawArgument(dot_pos["pos_spd"][dot_pos["spd"]]));
++			dot.draw(DrawArgument((Point<int16_t>)dot_pos["pos_ctrl"][dot_pos["ctrl"]]));
++			dot.draw(DrawArgument((Point<int16_t>)dot_pos["pos_def"][dot_pos["def"]]));
++			dot.draw(DrawArgument((Point<int16_t>)dot_pos["pos_pow"][dot_pos["pow"]]));
++			dot.draw(DrawArgument((Point<int16_t>)dot_pos["pos_spd"][dot_pos["spd"]]));
+ 		}
+ 
+ 		UIElement::draw_buttons(inter);

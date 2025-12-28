@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Serves the static files (HTML, WASM, Assets)
+  html-server:
+    container_name: html-server
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    command: python web/server.py
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    networks:
+      - maplestory-network
+    restart: unless-stopped
+
+  # Proxies WebSocket connections to the TCP Game Server
+  ws-proxy:
+    container_name: ws-proxy
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    # to ensure the client connects to 'host.docker.internal' or configure
+    # this proxy to route correctly.
+    command: python web/ws_proxy.py --ws-port 8080
+    environment:
+      - IS_DOCKER=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    networks:
+      - maplestory-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Serves assets via WebSocket for LazyFS
+  assets-server:
+    container_name: assets-server
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    command: python web/assets_server.py --port 8765 --directory .
+    ports:
+      - "8765:8765"
+    volumes:
+      - .:/app
+    networks:
+      - maplestory-network
+    restart: unless-stopped
+
+  # Builder service - run with: docker-compose run --rm wasm-builder
+  wasm-builder:
+    container_name: wasm-builder
+    build:
+      context: .
+      dockerfile: docker/builder.Dockerfile
+    volumes:
+      - .:/app
+    networks:
+      - maplestory-network
+    profiles: ["tools"]
+
+networks:
+  maplestory-network:
+    external: true

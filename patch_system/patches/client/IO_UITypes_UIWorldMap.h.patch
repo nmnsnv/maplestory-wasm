@@ -1,0 +1,13 @@
+diff --git a/IO/UITypes/UIWorldMap.h b/IO/UITypes/UIWorldMap.h
+index b4f2850..b396505 100644
+--- a/IO/UITypes/UIWorldMap.h
++++ b/IO/UITypes/UIWorldMap.h
+@@ -114,5 +114,7 @@ namespace ms
+ 		Point<int16_t> background_dimensions;
+ 		Point<int16_t> base_position;
+ 		Point<int16_t> search_text_dim;
++
++		int16_t hovered_spot_index;
+ 	};
+ }
+\ No newline at end of file

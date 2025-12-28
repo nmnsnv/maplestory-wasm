@@ -1,0 +1,15 @@
+diff --git a/src/scripting/event/EventScriptManager.java b/src/scripting/event/EventScriptManager.java
+index 56c05d5f..ecea3a5a 100644
+--- a/src/scripting/event/EventScriptManager.java
++++ b/src/scripting/event/EventScriptManager.java
+@@ -69,6 +69,10 @@ public class EventScriptManager extends AbstractScriptManager {
+ 
+     public void init() {
+         for (EventEntry entry : events.values()) {
++            if (entry.iv == null) {
++                System.out.println("Warning: Script is null for event: " + entry.em.getName());
++                continue;
++            }
+             try {
+                 ((ScriptEngine) entry.iv).put("em", entry.em);
+                 entry.iv.invokeFunction("init", (Object) null);

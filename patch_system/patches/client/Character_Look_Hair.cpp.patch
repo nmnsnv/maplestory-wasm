@@ -1,0 +1,13 @@
+diff --git a/Character/Look/Hair.cpp b/Character/Look/Hair.cpp
+index d38b64b..bf8f757 100644
+--- a/Character/Look/Hair.cpp
++++ b/Character/Look/Hair.cpp
+@@ -98,7 +98,7 @@ namespace ms
+ 			}
+ 		}
+ 
+-		name = nl::nx::String["Eqp.img"]["Eqp"]["Hair"][std::to_string(hairid)]["name"];
++		name = nl::nx::String["Eqp.img"]["Eqp"]["Hair"][std::to_string(hairid)]["name"].get_string();
+ 
+ 		constexpr size_t NUM_COLORS = 8;
+ 

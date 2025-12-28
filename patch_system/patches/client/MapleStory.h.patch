@@ -1,0 +1,54 @@
+diff --git a/MapleStory.h b/MapleStory.h
+index b5f974a..4bef6b2 100644
+--- a/MapleStory.h
++++ b/MapleStory.h
+@@ -39,7 +39,7 @@
+ #ifdef _DEBUG
+ 	#define LOG_LEVEL LOG_DEBUG
+ #else
+-	#define LOG_LEVEL LOG_WARN
++	#define LOG_LEVEL LOG_DEBUG
+ #endif
+ 
+ // Log Text
+@@ -53,8 +53,38 @@
+ 	level == LOG_TRACE		? "TRACE"	: "UNDEFINED")
+ 
+ // Log Commands
++#ifdef MS_PLATFORM_WASM
++
++#include <emscripten.h>
++#include <sstream>
++#include <iostream>
++
++// Helper function to convert log messages to JavaScript
++inline void sendLogToJS(int level, const std::string& msg) {
++	const char* levelText = LOG_TEXT(level);
++	EM_ASM({
++		if (typeof Module !== 'undefined' && Module.addCppLog) {
++			Module.addCppLog(UTF8ToString($0), UTF8ToString($1));
++		}
++		console.log('[C++] [' + UTF8ToString($0) + '] ' + UTF8ToString($1));
++	}, levelText, msg.c_str());
++}
++
++#define LOG(level, message) do { \
++	if (level <= LOG_LEVEL) { \
++		std::ostringstream oss; \
++		oss << "[" << __FILE__ << ":" << __LINE__ << "] " << message; \
++		sendLogToJS(level, oss.str()); \
++	} \
++} while(0)
++
++#else
++
+ #ifdef _DEBUG
+ 	#define LOG(level, message) level <= LOG_LEVEL ? std::cout << "[" << LOG_TEXT(level) << "]: " << message << std::endl : std::cout
+ #else
+ 	#define LOG(level, message) void(0)
+-#endif
+\ No newline at end of file
++#endif
++
++#endif
++

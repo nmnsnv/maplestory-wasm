@@ -1,0 +1,18 @@
+diff --git a/includes/NoLifeNx/nlnx/nx.cpp b/includes/NoLifeNx/nlnx/nx.cpp
+index 5c3b123..ebd7b49 100644
+--- a/includes/NoLifeNx/nlnx/nx.cpp
++++ b/includes/NoLifeNx/nlnx/nx.cpp
+@@ -32,7 +32,13 @@ namespace nl
+ 
+ 		bool exists(std::string name)
+ 		{
++#ifdef MS_PLATFORM_WASM
++			// On WASM, files are loaded on-demand via LazyFS
++			// Skip the existence check since files aren't in VFS yet
++			return true;
++#else
+ 			return std::ifstream(name).is_open();
++#endif
+ 		}
+ 
+ 		node add_file(std::string name)

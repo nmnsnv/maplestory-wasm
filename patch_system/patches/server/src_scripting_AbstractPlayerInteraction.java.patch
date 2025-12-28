@@ -1,0 +1,13 @@
+diff --git a/src/scripting/AbstractPlayerInteraction.java b/src/scripting/AbstractPlayerInteraction.java
+index e3141842..e542241f 100644
+--- a/src/scripting/AbstractPlayerInteraction.java
++++ b/src/scripting/AbstractPlayerInteraction.java
+@@ -1067,7 +1067,7 @@ public class AbstractPlayerInteraction {
+                 }
+         }
+         
+-        public static String getFirstJobStatRequirement(int jobType) {
++        public String getFirstJobStatRequirement(int jobType) {
+                 switch(jobType) {
+                     case 1:
+                         return "STR " + 35;

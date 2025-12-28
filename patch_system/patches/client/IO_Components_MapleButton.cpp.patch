@@ -1,0 +1,24 @@
+diff --git a/IO/Components/MapleButton.cpp b/IO/Components/MapleButton.cpp
+index e41a709..8c3a39e 100644
+--- a/IO/Components/MapleButton.cpp
++++ b/IO/Components/MapleButton.cpp
+@@ -28,6 +28,19 @@ namespace ms
+ 		else
+ 			textures[Button::State::NORMAL] = normal["0"];
+ 
++		// if (!src)
++		// {
++		// 	std::cout << "[MapleButton] Created with invalid source node!" << std::endl;
++		// }
++		// else
++		// {
++		// 	std::string name = src.name();
++		// 	if (!textures[Button::State::NORMAL].is_valid() && animations[Button::State::NORMAL].get_bounds().left() == 0) // rough check for empty animation
++		// 		std::cout << "[MapleButton] Warning: Button '" << name << "' has invalid NORMAL texture/anim. Ptr: " << this << std::endl;
++
++		// 	if (textures[Button::State::NORMAL].is_valid())
++		// 		std::cout << "[MapleButton] Button '" << name << "' NORMAL texture valid. ID: " << textures[Button::State::NORMAL].width() << "x" << textures[Button::State::NORMAL].height() << std::endl;
++		// }
+ 		textures[Button::State::PRESSED] = src["pressed"]["0"];
+ 		textures[Button::State::MOUSEOVER] = src["mouseOver"]["0"];
+ 		textures[Button::State::DISABLED] = src["disabled"]["0"];

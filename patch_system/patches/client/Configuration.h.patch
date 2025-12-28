@@ -1,0 +1,26 @@
+diff --git a/Configuration.h b/Configuration.h
+index 23320eb..2ecf1f0 100644
+--- a/Configuration.h
++++ b/Configuration.h
+@@ -266,13 +266,19 @@ namespace ms
+ 	// IP Address which the client will connect to
+ 	struct ServerIP : public Configuration::StringEntry
+ 	{
+-		ServerIP() : StringEntry("ServerIP", "127.0.0.1") {}
++		ServerIP() : StringEntry("ServerIP", "") {
++			value = getBrowserHostname();
++		}
+ 	};
+ 
+ 	// Port which the client will connect to
+ 	struct ServerPort : public Configuration::StringEntry
+ 	{
+-		ServerPort() : StringEntry("ServerPort", "8484") {}
++#ifdef MS_PLATFORM_WASM
++		ServerPort() : StringEntry("ServerPort", "8484") {}  // WebSocket proxy port
++#else
++		ServerPort() : StringEntry("ServerPort", "8484") {}  // Direct TCP port
++#endif
+ 	};
+ 
+ 	// Whether to start in full screen mode

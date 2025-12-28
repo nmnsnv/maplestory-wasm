@@ -1,0 +1,48 @@
+diff --git a/Gameplay/MapleMap/MapPortals.cpp b/Gameplay/MapleMap/MapPortals.cpp
+index 45183a5..9514247 100644
+--- a/Gameplay/MapleMap/MapPortals.cpp
++++ b/Gameplay/MapleMap/MapPortals.cpp
+@@ -18,6 +18,7 @@
+ #include "MapPortals.h"
+ 
+ #include "../../Constants.h"
++#include "../../MapleStory.h"
+ 
+ #include "../../Util/Misc.h"
+ 
+@@ -29,6 +30,8 @@ namespace ms
+ {
+ 	MapPortals::MapPortals(nl::node src, int32_t mapid)
+ 	{
++		LOG(LOG_TRACE, "[MapPortals] Loading portals for map " << mapid);
++		
+ 		for (auto sub : src)
+ 		{
+ 			int8_t portal_id = string_conversion::or_default<int8_t>(sub.name(), -1);
+@@ -41,6 +44,9 @@ namespace ms
+ 			std::string target_name = sub["tn"];
+ 			int32_t target_id = sub["tm"];
+ 			Point<int16_t> position = { sub["x"], sub["y"] };
++			std::string script = sub["script"];
++
++			LOG(LOG_TRACE, "[MapPortals] Portal #" << (int)portal_id << ": '" << name << "' type=" << (int)type << " pos=(" << position.x() << "," << position.y() << ") -> map " << target_id << " script='" << script << "'");
+ 
+ 			const Animation* animation = &animations[type];
+ 			bool intramap = target_id == mapid;
+@@ -76,6 +82,8 @@ namespace ms
+ 			case Portal::TOUCH:
+ 				portal.update(playerpos);
+ 				break;
++			default:
++				break;
+ 			}
+ 		}
+ 
+@@ -139,6 +147,7 @@ namespace ms
+ 
+ 		animations[Portal::HIDDEN] = src["ph"]["default"]["portalContinue"];
+ 		animations[Portal::REGULAR] = src["pv"]["default"];
++		animations[Portal::SCRIPTED] = src["pv"]["default"];  // Scripted portals use same animation as regular
+ 	}
+ 
+ 	std::unordered_map<Portal::Type, Animation> MapPortals::animations;

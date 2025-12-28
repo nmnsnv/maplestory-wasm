@@ -1,0 +1,35 @@
+diff --git a/Util/HardwareInfo.h b/Util/HardwareInfo.h
+index 4e00f56..8fe1750 100644
+--- a/Util/HardwareInfo.h
++++ b/Util/HardwareInfo.h
+@@ -19,8 +19,10 @@
+ 
+ #include "../Configuration.h"
+ 
++#ifndef MS_PLATFORM_WASM
+ #include <Windows.h>
+ #include <IPHlpApi.h>
++#endif
+ 
+ namespace ms
+ {
+@@ -29,6 +31,10 @@ namespace ms
+ 	public:
+ 		HardwareInfo()
+ 		{
++#ifdef MS_PLATFORM_WASM
++			Configuration::get().set_hwid("001122334455", "66778899");
++			Configuration::get().set_macs("00-00-00-00-00-00");
++#else
+ 			size_t size = 18;
+ 
+ 			// Hard Drive VolumeSerialNumber
+@@ -122,6 +128,7 @@ namespace ms
+ 			free(volumeSerialNumber);
+ 			free(hwid);
+ 			free(macs);
++#endif
+ 		}
+ 	};
+ }
+\ No newline at end of file

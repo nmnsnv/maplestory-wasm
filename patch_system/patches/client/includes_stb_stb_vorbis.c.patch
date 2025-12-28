@@ -1,0 +1,13 @@
+diff --git a/includes/stb/stb_vorbis.c b/includes/stb/stb_vorbis.c
+index fd02caf..243b263 100644
+--- a/includes/stb/stb_vorbis.c
++++ b/includes/stb/stb_vorbis.c
+@@ -563,7 +563,7 @@ enum STBVorbisError
+    #if defined(_MSC_VER) || defined(__MINGW32__)
+       #include <malloc.h>
+    #endif
+-   #if defined(__linux__) || defined(__linux) || defined(__EMSCRIPTEN__)
++   #if defined(__linux__) || defined(__linux) || defined(MS_PLATFORM_WASM)
+       #include <alloca.h>
+    #endif
+ #else // STB_VORBIS_NO_CRT

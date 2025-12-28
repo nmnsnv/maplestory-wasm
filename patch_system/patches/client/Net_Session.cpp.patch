@@ -1,0 +1,45 @@
+diff --git a/Net/Session.cpp b/Net/Session.cpp
+index 03a1df7..cf3329f 100644
+--- a/Net/Session.cpp
++++ b/Net/Session.cpp
+@@ -18,10 +18,12 @@
+ #include "Session.h"
+ 
+ #include "../Configuration.h"
++#include "MapleStory.h"
+ 
+ namespace ms
+ {
+-	Session::Session()
++	// TODO: Move socket info to Configuration
++	Session::Session() : socket() // WebSocket proxy address
+ 	{
+ 		connected = false;
+ 		length = 0;
+@@ -36,6 +38,7 @@ namespace ms
+ 
+ 	bool Session::init(const char* host, const char* port)
+ 	{
++		LOG(LOG_INFO, "Connecting to " << host << ":" << port);
+ 		// Connect to the server
+ 		connected = socket.open(host, port);
+ 
+@@ -44,6 +47,10 @@ namespace ms
+ 			// Read keys necessary for communicating with the server
+ 			cryptography = { socket.get_buffer() };
+ 		}
++		else
++		{
++			LOG(LOG_ERROR, "Failed to connect");
++		}
+ 
+ 		return connected;
+ 	}
+@@ -61,6 +68,7 @@ namespace ms
+ 
+ 	void Session::reconnect(const char* address, const char* port)
+ 	{
++		LOG(LOG_INFO, "Reconnecting to " << address << ":" << port);
+ 		// Close the current connection and open a new one
+ 		bool success = socket.close();
+ 

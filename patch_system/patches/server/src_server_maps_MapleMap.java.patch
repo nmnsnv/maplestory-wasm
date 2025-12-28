@@ -1,0 +1,14 @@
+diff --git a/src/server/maps/MapleMap.java b/src/server/maps/MapleMap.java
+index 2f2e7026..29ff2f54 100644
+--- a/src/server/maps/MapleMap.java
++++ b/src/server/maps/MapleMap.java
+@@ -721,7 +721,8 @@ public class MapleMap {
+         final List<MonsterDropEntry>  dropEntry = new ArrayList<>();
+         final List<MonsterDropEntry> visibleQuestEntry = new ArrayList<>();
+         final List<MonsterDropEntry> otherQuestEntry = new ArrayList<>();
+-        sortDropEntries(ServerConstants.USE_SPAWN_RELEVANT_LOOT ? chr.retrieveRelevantDrops(mob.getId()) : mi.retrieveEffectiveDrop(mob.getId()), dropEntry, visibleQuestEntry, otherQuestEntry, chr);
++        List<MonsterDropEntry> retrievedDrops = ServerConstants.USE_SPAWN_RELEVANT_LOOT ? chr.retrieveRelevantDrops(mob.getId()) : mi.retrieveEffectiveDrop(mob.getId());
++        sortDropEntries(retrievedDrops, dropEntry, visibleQuestEntry, otherQuestEntry, chr);
+         
+         registerMobItemDrops(droptype, mobpos, chRate, pos, dropEntry, visibleQuestEntry, otherQuestEntry, globalEntry, chr, mob);
+     }

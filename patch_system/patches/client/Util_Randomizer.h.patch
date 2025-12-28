@@ -1,0 +1,13 @@
+diff --git a/Util/Randomizer.h b/Util/Randomizer.h
+index fe77e7e..d40cd02 100644
+--- a/Util/Randomizer.h
++++ b/Util/Randomizer.h
+@@ -88,7 +88,7 @@ namespace ms
+ 		template <class E>
+ 		E next_enum(E from, E to) const
+ 		{
+-			auto next_underlying = next_int<std::underlying_type<E>::type>(from, to);
++			auto next_underlying = next_int<typename std::underlying_type<E>::type>(from, to);
+ 
+ 			return static_cast<E>(next_underlying);
+ 		}

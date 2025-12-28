@@ -1,0 +1,51 @@
+diff --git a/Util/NxFiles.cpp b/Util/NxFiles.cpp
+index bfe68f4..5e2f39e 100644
+--- a/Util/NxFiles.cpp
++++ b/Util/NxFiles.cpp
+@@ -18,20 +18,37 @@
+ #include "NxFiles.h"
+ 
+ #ifdef USE_NX
+-#include <fstream>
+-
+ #include <nlnx/node.hpp>
+ #include <nlnx/nx.hpp>
+ 
++#ifdef MS_PLATFORM_WASM
++#include <LazyFS/LazyFS.h>
++#else
++#include <fstream>
++#endif
++
+ namespace ms
+ {
+ 	namespace NxFiles
+ 	{
+ 		Error init()
+ 		{
++#ifdef MS_PLATFORM_WASM
++			// WASM Platform: Initialize LazyFS and register all .nx files for on-demand loading
++			LazyFS::Initialize();
++			for (auto filename : filenames)
++			{
++				std::string url = std::string("/assets/") + filename;
++				if (!LazyFS::RegisterFile(filename, url)) {
++					return Error(Error::Code::MISSING_FILE, filename);
++				}
++			}
++#else
++			// Native Platform: Check file existence
+ 			for (auto filename : filenames)
+ 				if (std::ifstream{ filename }.good() == false)
+ 					return Error(Error::Code::MISSING_FILE, filename);
++#endif
+ 
+ 			try
+ 			{
+@@ -53,4 +70,4 @@ namespace ms
+ 		}
+ 	}
+ }
+-#endif
+\ No newline at end of file
++#endif

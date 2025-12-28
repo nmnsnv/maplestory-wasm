@@ -1,0 +1,64 @@
+diff --git a/Gameplay/MapleMap/MapNpcs.cpp b/Gameplay/MapleMap/MapNpcs.cpp
+index 2f7cc5a..3bcf01b 100644
+--- a/Gameplay/MapleMap/MapNpcs.cpp
++++ b/Gameplay/MapleMap/MapNpcs.cpp
+@@ -19,6 +19,7 @@
+ 
+ #include "Npc.h"
+ 
++#include "../../MapleStory.h"
+ #include "../../Net/Packets/NpcInteractionPackets.h"
+ 
+ namespace ms
+@@ -69,25 +70,42 @@ namespace ms
+ 
+ 	Cursor::State MapNpcs::send_cursor(bool pressed, Point<int16_t> position, Point<int16_t> viewpos)
+ 	{
++		Npc* closest_npc = nullptr;
++		int32_t closest_distance = INT32_MAX;
++		
+ 		for (auto& map_object : npcs)
+ 		{
+ 			Npc* npc = static_cast<Npc*>(map_object.second.get());
+ 
+ 			if (npc && npc->is_active() && npc->inrange(position, viewpos))
+ 			{
+-				if (pressed)
++				// Calculate distance from click to NPC center
++				Point<int16_t> npc_pos = npc->get_position() + viewpos;
++				int32_t dx = position.x() - npc_pos.x();
++				int32_t dy = position.y() - npc_pos.y();
++				int32_t distance = dx * dx + dy * dy; // Squared distance is fine for comparison
++				
++				if (distance < closest_distance)
+ 				{
+-					// TODO: Try finding dialog first
+-					TalkToNPCPacket(npc->get_oid()).dispatch();
+-
+-					return Cursor::State::IDLE;
+-				}
+-				else
+-				{
+-					return Cursor::State::CANCLICK;
++					closest_distance = distance;
++					closest_npc = npc;
+ 				}
+ 			}
+ 		}
++		
++		if (closest_npc)
++		{
++			if (pressed)
++			{
++				LOG(LOG_INFO, "[MapNpcs] Selected closest NPC: " << closest_npc->get_name() << " (oid: " << closest_npc->get_oid() << ")");
++				TalkToNPCPacket(closest_npc->get_oid()).dispatch();
++				return Cursor::State::IDLE;
++			}
++			else
++			{
++				return Cursor::State::CANCLICK;
++			}
++		}
+ 
+ 		return Cursor::State::IDLE;
+ 	}

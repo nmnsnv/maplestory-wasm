@@ -1,0 +1,22 @@
+diff --git a/src/constants/ServerConstants.java b/src/constants/ServerConstants.java
+index 7f575bfe..45f2405c 100644
+--- a/src/constants/ServerConstants.java
++++ b/src/constants/ServerConstants.java
+@@ -50,7 +50,7 @@ public class ServerConstants {
+     public static final boolean ENABLE_PIN = false;                         // Pick true/false to enable or disable Pin.
+     public static final int BYPASS_PIC_EXPIRATION = 0;                      // Enables PIC bypass, which will remain active for that account by that client machine for N minutes. Set 0 to disable.
+     public static final int BYPASS_PIN_EXPIRATION = 0;                      // Enables PIN bypass, which will remain active for that account by that client machine for N minutes. Set 0 to disable.
+-    public static final boolean AUTOMATIC_REGISTER = false;                 // Automatically register players when they login with a nonexistent username.
++    public static final boolean AUTOMATIC_REGISTER = true;                 // Automatically register players when they login with a nonexistent username.
+     public static final boolean BCRYPT_MIGRATION = true;                    // Performs a migration from old SHA-1 and SHA-512 password to bcrypt.
+     public static final boolean COLLECTIVE_CHARSLOT = false;                // Available character slots are contabilized globally rather than per world server.
+     public static final boolean DETERRED_MULTICLIENT = false;               // Enables multi-client and suspicious remote IP detection on the login system. Besides blocking logging in with several client sessions on the same machine, this also blocks suspicious login attempts for players that tries to login on an account using several diferent remote addresses.
+@@ -85,7 +85,7 @@ public class ServerConstants {
+     public static final boolean USE_SERVER_AUTOASSIGNER = false;            // Custom-builtin autoassigner, uses algorithm based on distributing AP accordingly with required secondary stat on equipments.
+     public static final boolean USE_REFRESH_RANK_MOVE = true;
+     public static final boolean USE_ENFORCE_ADMIN_ACCOUNT = true;           // Forces accounts having GM characters to be treated as a "GM account" by the client (localhost). Some of the GM account perks is the ability to FLY, but unable to TRADE.
+-    public static final boolean USE_ENFORCE_NOVICE_EXPRATE = true;          // Hardsets experience rate 1x for beginners level 10 or under. Ideal for roaming on novice areas without caring too much about losing some stats.
++    public static final boolean USE_ENFORCE_NOVICE_EXPRATE = false;         // Hardsets experience rate 1x for beginners level 10 or under. Ideal for roaming on novice areas without caring too much about losing some stats.
+     public static final boolean USE_ENFORCE_HPMP_SWAP = true;               // Forces players to reuse stats (via AP Resetting) located on HP/MP pool only inside the HP/MP stats.
+     public static final boolean USE_ENFORCE_MOB_LEVEL_RANGE = true;         // Players N levels below the killed mob will gain no experience from defeating it.
+     public static final boolean USE_ENFORCE_JOB_LEVEL_RANGE = false;        // Caps the player level on the minimum required to advance their current jobs.

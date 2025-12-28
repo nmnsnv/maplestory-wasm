@@ -1,0 +1,30 @@
+diff --git a/Dockerfile b/Dockerfile
+new file mode 100644
+index 00000000..0b9729de
+--- /dev/null
++++ b/Dockerfile
+@@ -0,0 +1,24 @@
++
++FROM eclipse-temurin:8-jdk
++
++# Install bash and findutils (for find command in compile script)
++RUN apt-get update && apt-get install -y bash findutils && rm -rf /var/lib/apt/lists/*
++
++WORKDIR /app
++
++# Copy all files
++COPY . .
++
++# Ensure scripts are executable
++RUN chmod +x *.sh
++
++# Compile
++RUN ./posix-compile.sh
++
++# Expose Login server port
++EXPOSE 8484
++# Expose Channel server ports (ranges for multiple channels)
++EXPOSE 7575-7600
++
++# Set heap size and run
++CMD ["./posix-launch.sh"]

@@ -1,0 +1,147 @@
+diff --git a/LazyFS/LazyFileBackend.h b/LazyFS/LazyFileBackend.h
+new file mode 100644
+index 0000000..2f8238f
+--- /dev/null
++++ b/LazyFS/LazyFileBackend.h
+@@ -0,0 +1,141 @@
++#pragma once
++
++#include <emscripten.h>
++#include <emscripten/val.h>
++#include <memory>
++#include <string>
++
++namespace LazyFS
++{
++
++	/**
++	 * LazyFileBackend - Lazy loading file access using HTTP Range requests
++	 *
++	 * This class provides on-demand file chunk loading from a remote backend server.
++	 * Instead of loading entire files into memory, it fetches chunks as needed using
++	 * HTTP Range requests through the JavaScript bridge layer (lazy_fs.js).
++	 *
++	 * Key features:
++	 * - Minimum 10MB chunk size for efficient network usage
++	 * - In-memory chunk caching (JavaScript side)
++	 * - Supports read(), seek(), and stat() operations
++	 * - Compatible with mmap-style random access patterns
++	 */
++	class LazyFileBackend
++	{
++	  public:
++		// 64KB chunks - with WebSocket binary frames, per-chunk overhead is ~15 bytes
++		// Small chunks = less wasted data for small reads (like NX headers)
++		static constexpr size_t CHUNK_SIZE = 64 * 1024;
++
++		/**
++		 * Open a file for lazy loading
++		 * @param path Path to the file (relative to web server root)
++		 * @return true if file was successfully opened, false otherwise
++		 */
++		bool open(const std::string& path);
++
++		/**
++		 * Close the file and release resources
++		 */
++		void close();
++
++		/**
++		 * Read data from file at current position
++		 * @param buffer Output buffer
++		 * @param size Number of bytes to read
++		 * @return Number of bytes actually read
++		 */
++		size_t read(void* buffer, size_t size);
++
++		/**
++		 * Seek to a specific position in the file
++		 * @param offset Byte offset from beginning of file
++		 * @return true if seek was successful
++		 */
++		bool seek(size_t offset);
++
++		/**
++		 * Get current position in file
++		 */
++		size_t tell() const
++		{
++			return current_offset_;
++		}
++
++		/**
++		 * Get file size
++		 */
++		size_t size() const
++		{
++			return file_size_;
++		}
++
++		/**
++		 * Check if file is open
++		 */
++		bool is_open() const
++		{
++			return is_open_;
++		}
++
++		/**
++		 * Get the file path
++		 */
++		const std::string& path() const
++		{
++			return path_;
++		}
++
++	  private:
++		std::string path_;
++		size_t file_size_ = 0;
++		size_t current_offset_ = 0;
++		bool is_open_ = false;
++
++		/**
++		 * Fetch data from the server (calls JavaScript)
++		 * @param offset Byte offset in file
++		 * @param size Number of bytes to fetch
++		 * @param out_buffer Output buffer
++		 * @return true if fetch was successful
++		 */
++		bool fetch_data(size_t offset, size_t size, void* out_buffer);
++	};
++
++	/**
++	 * LazyFile - RAII wrapper for LazyFileBackend
++	 */
++	class LazyFile
++	{
++	  public:
++		LazyFile() = default;
++		explicit LazyFile(const std::string& path);
++		~LazyFile();
++
++		// Disable copy, enable move
++		LazyFile(const LazyFile&) = delete;
++		LazyFile& operator=(const LazyFile&) = delete;
++		LazyFile(LazyFile&&) noexcept;
++		LazyFile& operator=(LazyFile&&) noexcept;
++
++		bool open(const std::string& path);
++		void close();
++		size_t read(void* buffer, size_t size);
++		bool seek(size_t offset);
++		size_t tell() const;
++		size_t size() const;
++		bool is_open() const;
++		const std::string& path() const;
++
++		// Get underlying backend (for advanced usage)
++		LazyFileBackend* backend()
++		{
++			return backend_.get();
++		}
++
++	  private:
++		std::unique_ptr<LazyFileBackend> backend_;
++	};
++
++} // namespace LazyFS

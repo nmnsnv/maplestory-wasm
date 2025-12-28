@@ -1,0 +1,13 @@
+diff --git a/IO/UITypes/UITermsOfService.cpp b/IO/UITypes/UITermsOfService.cpp
+index c37ac5d..030a167 100644
+--- a/IO/UITypes/UITermsOfService.cpp
++++ b/IO/UITypes/UITermsOfService.cpp
+@@ -135,7 +135,7 @@ namespace ms
+ 			int32_t i = std::stoi(name);
+ 
+ 			if (i >= offset && i <= offset + 5)
+-				shownText += text;
++				shownText += text.get_string();
+ 		}
+ 
+ 		text.change_text(shownText);

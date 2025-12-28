@@ -1,0 +1,35 @@
+diff --git a/Gameplay/MapleMap/Mob.cpp b/Gameplay/MapleMap/Mob.cpp
+index f3fa46b..6d4aa4b 100644
+--- a/Gameplay/MapleMap/Mob.cpp
++++ b/Gameplay/MapleMap/Mob.cpp
+@@ -48,15 +48,18 @@ namespace ms
+ 		undead = info["undead"].get_bool();
+ 		noflip = info["noFlip"].get_bool();
+ 		notattack = info["notAttack"].get_bool();
+-		canjump = src["jump"].size() > 0;
+-		canfly = src["fly"].size() > 0;
+-		canmove = src["move"].size() > 0 || canfly;
+ 		
++		// Resolve link first - some mobs reference another mob for animations
+ 		std::string linkid = info["link"];
+ 		nl::node link_src = nl::nx::Mob[linkid + ".img"];
+ 		nl::node link = link_src ? link_src : src;
+ 		nl::node fly = link["fly"];
+ 
++		// Calculate movement capabilities from the resolved link, not src
++		canjump = link["jump"].size() > 0;
++		canfly = link["fly"].size() > 0;
++		canmove = link["move"].size() > 0 || canfly;
++
+ 		if (canfly)
+ 		{
+ 			animations[Stance::STAND] = fly;
+@@ -72,7 +75,7 @@ namespace ms
+ 		animations[Stance::HIT] = link["hit1"];
+ 		animations[Stance::DIE] = link["die1"];
+ 
+-		name = nl::nx::String["Mob.img"][std::to_string(mid)]["name"];
++		name = nl::nx::String["Mob.img"][std::to_string(mid)]["name"].get_string();
+ 
+ 		nl::node sndsrc = nl::nx::Sound["Mob.img"][strid];
+ 

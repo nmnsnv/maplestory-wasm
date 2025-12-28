@@ -1,0 +1,46 @@
+diff --git a/.clang-format b/.clang-format
+new file mode 100644
+index 0000000..6439ce5
+--- /dev/null
++++ b/.clang-format
+@@ -0,0 +1,39 @@
++Language:        Cpp
++BasedOnStyle:    Microsoft
++
++# --- 1. Indentation & Spacing ---
++UseTab:          Always
++IndentWidth:     4
++TabWidth:        4
++
++# --- 2. Line Length ---
++ColumnLimit:     500
++
++# --- 3. Brace Wrapping & Layout ---
++BreakBeforeBraces: Allman
++AllowShortFunctionsOnASingleLine: None
++
++# --- 4. Lambdas ---
++AllowShortLambdasOnASingleLine: None
++
++# --- 5. Namespaces ---
++NamespaceIndentation: All
++FixNamespaceComments: false
++
++# --- 6. Pointers & References ---
++PointerAlignment: Left
++DerivePointerAlignment: false
++
++# --- 7. Argument Wrapping ---
++BinPackArguments: false
++AlignAfterOpenBracket: BlockIndent
++
++# --- 8. Switch Cases ---
++IndentCaseLabels: true
++
++# --- 9. Braced List Spacing ---
++Cpp11BracedListStyle: false
++
++# --- 10. Table Alignment (THE FIX) ---
++# 'Left' aligns the columns to the left, creating the table look.
++AlignArrayOfStructures: Left
+\ No newline at end of file

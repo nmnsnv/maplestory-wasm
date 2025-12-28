@@ -1,0 +1,13 @@
+diff --git a/Data/WeaponData.cpp b/Data/WeaponData.cpp
+index 65ff059..23aee67 100644
+--- a/Data/WeaponData.cpp
++++ b/Data/WeaponData.cpp
+@@ -49,7 +49,7 @@ namespace ms
+ 			usesounds[true] = soundsrc["Attack"];
+ 		}
+ 
+-		afterimage = src["afterImage"];
++		afterimage = src["afterImage"].get_string();
+ 	}
+ 
+ 	bool WeaponData::is_valid() const

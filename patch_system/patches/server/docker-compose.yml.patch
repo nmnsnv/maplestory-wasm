@@ -1,0 +1,38 @@
+diff --git a/docker-compose.yml b/docker-compose.yml
+new file mode 100644
+index 00000000..1825382d
+--- /dev/null
++++ b/docker-compose.yml
+@@ -0,0 +1,32 @@
++
++version: '3'
++services:
++  server-db:
++    image: mariadb:latest
++    environment:
++      MYSQL_ROOT_PASSWORD: root
++      MYSQL_DATABASE: maplestory
++    volumes:
++      - ./sql:/docker-entrypoint-initdb.d
++      - db_data:/var/lib/mysql
++    ports:
++      - "3306:3306"
++    healthcheck:
++      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-proot"]
++      timeout: 20s
++      retries: 10
++
++  server-maplestory:
++    build: .
++    ports:
++      - "8484:8484"
++      - "7575-7585:7575-7585"
++    depends_on:
++      server-db:
++        condition: service_healthy
++    volumes:
++      - ../../serverAssets:/app/wz
++      - ./scripts:/app/scripts
++
++volumes:
++  db_data:

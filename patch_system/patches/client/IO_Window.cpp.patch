@@ -1,0 +1,135 @@
+diff --git a/IO/Window.cpp b/IO/Window.cpp
+index e1da640..3fbc4fb 100644
+--- a/IO/Window.cpp
++++ b/IO/Window.cpp
+@@ -22,9 +22,16 @@
+ #include "../Configuration.h"
+ #include "../Timer.h"
+ 
++#ifdef MS_PLATFORM_WASM
++#include <emscripten.h>
++// MS WASM: Disable SIMD for stb_image to prevent potential WASM instruction set issues
++#define STBI_NO_SIMD
++#endif
+ #define STB_IMAGE_IMPLEMENTATION
+ #include <stb_image.h>
++#ifndef MS_PLATFORM_WASM
+ #include <Windows.h>
++#endif
+ 
+ namespace ms
+ {
+@@ -127,6 +134,9 @@ namespace ms
+ 
+ 	void close_callback(GLFWwindow* window)
+ 	{
++		if (Window::get().is_recreating())
++			return;
++
+ 		UI::get().send_close();
+ 
+ 		glfwSetWindowShouldClose(window, GL_FALSE);
+@@ -139,6 +149,17 @@ namespace ms
+ 		if (!glfwInit())
+ 			return Error::Code::GLFW;
+ 
++#ifdef MS_PLATFORM_WASM
++		if (Error error = initwindow())
++			return error;
++
++		if (Error error = GraphicsGL::get().init())
++			return error;
++
++		GraphicsGL::get().reinit();
++
++		return Error::Code::NONE;
++#else
+ 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+ 		context = glfwCreateWindow(1, 1, "", nullptr, nullptr);
+ 		glfwMakeContextCurrent(context);
+@@ -150,12 +171,17 @@ namespace ms
+ 			return error;
+ 
+ 		return initwindow();
++#endif
+ 	}
+ 
+ 	Error Window::initwindow()
+ 	{
+ 		if (glwnd)
++		{
++			recreating_window = true;
+ 			glfwDestroyWindow(glwnd);
++			recreating_window = false;
++		}
+ 
+ 		glwnd = glfwCreateWindow(
+ 			width,
+@@ -171,20 +197,29 @@ namespace ms
+ 		glfwMakeContextCurrent(glwnd);
+ 
+ 		bool vsync = Setting<VSync>::get().load();
++#ifndef MS_PLATFORM_WASM
+ 		glfwSwapInterval(vsync ? 1 : 0);
++#endif
+ 
+ 		glViewport(0, 0, width, height);
++#ifndef MS_PLATFORM_WASM
++		// MS WASM: Fixed-function pipeline calls (glMatrixMode, glLoadIdentity) are not supported in GLES3
+ 		glMatrixMode(GL_PROJECTION);
+ 		glLoadIdentity();
++#endif
+ 
++#ifndef MS_PLATFORM_WASM
+ 		glfwSetInputMode(glwnd, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
++#endif
+ 
+ 		double xpos, ypos;
+ 
+ 		glfwGetCursorPos(glwnd, &xpos, &ypos);
+ 		cursor_callback(glwnd, xpos, ypos);
+ 
++#ifndef MS_PLATFORM_WASM
+ 		glfwSetInputMode(glwnd, GLFW_STICKY_KEYS, GL_TRUE);
++#endif
+ 		glfwSetKeyCallback(glwnd, key_callback);
+ 		glfwSetMouseButtonCallback(glwnd, mousekey_callback);
+ 		glfwSetCursorPosCallback(glwnd, cursor_callback);
+@@ -192,9 +227,14 @@ namespace ms
+ 		glfwSetScrollCallback(glwnd, scroll_callback);
+ 		glfwSetWindowCloseCallback(glwnd, close_callback);
+ 
++#ifndef MS_PLATFORM_WASM
+ 		char buf[256];
++#ifdef MS_PLATFORM_WASM
++		strcpy(buf, "Icon.png");
++#else
+ 		GetCurrentDirectoryA(256, buf);
+ 		strcat_s(buf, sizeof(buf), "\\Icon.png");
++#endif
+ 
+ 		GLFWimage images[1];
+ 
+@@ -207,9 +247,22 @@ namespace ms
+ 
+ 		glfwSetWindowIcon(glwnd, 1, images);
+ 		stbi_image_free(images[0].pixels);
++#endif
+ 
+ 		GraphicsGL::get().reinit();
+ 
++#ifdef MS_PLATFORM_WASM
++		// Prevent default browser behavior for Tab and Arrow keys
++		EM_ASM({
++			window.addEventListener("keydown", function(e) {
++				// Tab (9), Left (37), Up (38), Right (39), Down (40)
++				if ([9, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
++					e.preventDefault();
++				}
++			}, false);
++		});
++#endif
++
+ 		return Error::Code::NONE;
+ 	}
+ 

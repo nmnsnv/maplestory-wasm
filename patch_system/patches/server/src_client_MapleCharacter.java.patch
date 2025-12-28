@@ -1,0 +1,12 @@
+diff --git a/src/client/MapleCharacter.java b/src/client/MapleCharacter.java
+index f03def17..628fdc07 100644
+--- a/src/client/MapleCharacter.java
++++ b/src/client/MapleCharacter.java
+@@ -352,6 +352,7 @@ public class MapleCharacter extends AbstractMapleCharacterObject {
+         ret.job = MapleJob.BEGINNER;
+         ret.level = 1;
+         ret.accountid = c.getAccID();
++        ret.meso.set(1000);
+         ret.buddylist = new BuddyList(20);
+         ret.maplemount = null;
+         ret.getInventory(MapleInventoryType.EQUIP).setSlotLimit(24);

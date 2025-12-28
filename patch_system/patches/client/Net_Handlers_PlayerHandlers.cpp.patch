@@ -1,0 +1,45 @@
+diff --git a/Net/Handlers/PlayerHandlers.cpp b/Net/Handlers/PlayerHandlers.cpp
+index ab161eb..595b6b7 100644
+--- a/Net/Handlers/PlayerHandlers.cpp
++++ b/Net/Handlers/PlayerHandlers.cpp
+@@ -24,9 +24,12 @@
+ 
+ #include "../../IO/UITypes/UIBuffList.h"
+ #include "../../IO/UITypes/UICashShop.h"
++#include "../../IO/UITypes/UINotice.h"
+ #include "../../IO/UITypes/UISkillBook.h"
+ #include "../../IO/UITypes/UIStatsInfo.h"
+ 
++#include "../Packets/GameplayPackets.h"
++
+ namespace ms
+ {
+ 	void ChangeChannelHandler::handle(InPacket& recv) const
+@@ -83,6 +86,27 @@ namespace ms
+ 		case MapleStat::Id::MESO:
+ 			player.get_inventory().set_meso(recv.read_int());
+ 			break;
++		case MapleStat::Id::HP:
++		{
++			int16_t hp = recv.read_short();
++			player.get_stats().set_stat(stat, hp);
++			recalculate = true;
++
++			if (hp <= 0)
++			{
++				UI::get().emplace<UIYesNo>(
++					"You have died. Do you want to respawn?",
++					[](bool yes)
++					{
++						if (yes)
++						{
++							ChangeMapPacket(true, 0, "", false).dispatch();
++						}
++					}
++				);
++			}
++			break;
++		}
+ 		default:
+ 			player.get_stats().set_stat(stat, recv.read_short());
+ 			recalculate = true;

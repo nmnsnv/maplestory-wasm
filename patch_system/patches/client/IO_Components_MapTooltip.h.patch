@@ -1,0 +1,12 @@
+diff --git a/IO/Components/MapTooltip.h b/IO/Components/MapTooltip.h
+index b09c5a6..f6c9aa9 100644
+--- a/IO/Components/MapTooltip.h
++++ b/IO/Components/MapTooltip.h
+@@ -74,5 +74,6 @@ namespace ms
+ 		int16_t fillheight;
+ 
+ 		ColorLine separator;
++		int32_t current_mapid;
+ 	};
+ }
+\ No newline at end of file

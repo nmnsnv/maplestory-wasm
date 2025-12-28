@@ -1,0 +1,25 @@
+diff --git a/.clangd b/.clangd
+new file mode 100644
+index 0000000..9c6ceac
+--- /dev/null
++++ b/.clangd
+@@ -0,0 +1,19 @@
++CompileFlags:
++  CompilationDatabase: ../../build
++  Remove: [-sUSE_GLFW=3, -sUSE_WEBGL2=1, -sUSE_FREETYPE=1, -sUSE_SDL=2, -sUSE_SDL_MIXER=2]
++  Add:
++    # Define WASM platform for Emscripten target
++    - -DMS_PLATFORM_WASM=1
++    # Emscripten-specific flags to help clangd understand the environment
++    - -DMS_PLATFORM_WASM=1
++    # Suppress warnings that are handled by Emscripten
++    - -Wno-c++11-narrowing
++    - -Wno-deprecated-declarations
++    # Add Emscripten include paths
++    - "-isystem/opt/homebrew/Cellar/emscripten/4.0.21/libexec/cache/sysroot/include/c++/v1"
++    - "-isystem/opt/homebrew/Cellar/emscripten/4.0.21/libexec/cache/sysroot/include/compat"
++    - "-isystem/opt/homebrew/Cellar/emscripten/4.0.21/libexec/cache/sysroot/include"
++    - "-isystem/opt/homebrew/Cellar/emscripten/4.0.21/libexec/llvm/lib/clang/22/include"
++    - "-target"
++    - "wasm32-unknown-emscripten"
++    - "--sysroot=/opt/homebrew/Cellar/emscripten/4.0.21/libexec/cache/sysroot"

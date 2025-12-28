@@ -1,0 +1,39 @@
+diff --git a/Util/ScreenResolution.h b/Util/ScreenResolution.h
+index a8c5c1d..dcab736 100644
+--- a/Util/ScreenResolution.h
++++ b/Util/ScreenResolution.h
+@@ -19,16 +19,24 @@
+ 
+ #include "../Configuration.h"
+ 
++#ifndef MS_PLATFORM_WASM
+ #include <windef.h>
+ #include <WinUser.h>
++#endif
+ 
+ namespace ms
+ {
+ 	class ScreenResolution
+ 	{
+-	public:
++	  public:
+ 		ScreenResolution()
+ 		{
++#ifdef MS_PLATFORM_WASM
++			Configuration::get().set_max_width(1024);
++			Configuration::get().set_max_height(768);
++
++			Configuration::get().set_caps_lock_enabled(false);
++#else
+ 			RECT desktop;
+ 
+ 			// Get a handle to the desktop window
+@@ -45,6 +53,7 @@ namespace ms
+ 			int nVirtKey = GetKeyState(20);
+ 
+ 			Configuration::get().set_caps_lock_enabled(nVirtKey);
++#endif
+ 		}
+ 	};
+ }
+\ No newline at end of file

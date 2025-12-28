@@ -1,0 +1,40 @@
+diff --git a/sql/db_drops.sql b/sql/db_drops.sql
+index b6932681..130771ac 100644
+--- a/sql/db_drops.sql
++++ b/sql/db_drops.sql
+@@ -3,8 +3,35 @@
+ 
+ USE `maplestory`;
+ 
++  CREATE TABLE IF NOT EXISTS `temp_data` (
++    `id` bigint(20) NOT NULL AUTO_INCREMENT,
++    `dropperid` int(11) NOT NULL,
++    `itemid` int(11) NOT NULL DEFAULT '0',
++    `minimum_quantity` int(11) NOT NULL DEFAULT '1',
++    `maximum_quantity` int(11) NOT NULL DEFAULT '1',
++    `questid` int(11) NOT NULL DEFAULT '0',
++    `chance` int(11) NOT NULL DEFAULT '0',
++    PRIMARY KEY (`dropperid`, `itemid`),
++    KEY `mobid` (`dropperid`),
++    UNIQUE KEY `id` (`id`)
++  ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
++
+   INSERT IGNORE INTO temp_data (`dropperid`, `itemid`, `minimum_quantity`, `maximum_quantity`, `questid`, `chance`) VALUES
+   #-- copy+paste inside here as many drop data as possible from the spider (drop generator) files --
++  (100000, 4000019, 1, 1, 0, 200000),
++  (100000, 2000000, 1, 1, 0, 40000),
++  (100000, 2040002, 1, 1, 0, 750),
++  (100000, 2041045, 1, 1, 0, 750),
++  (100000, 2041043, 1, 1, 0, 750),
++  (100000, 4020000, 1, 1, 0, 7000),
++  (100000, 4010000, 1, 1, 0, 7000),
++  (100000, 1002067, 1, 1, 0, 700),
++  (100000, 1302000, 1, 1, 0, 700),
++  (100000, 1040002, 1, 1, 0, 700),
++  (100000, 1052095, 1, 1, 0, 700),
++  (100000, 0, 10, 50, 0, 500000), -- Snail Meso
++  (100100, 0, 10, 50, 0, 500000), -- Blue Snail? No 100100 is Snail too.
++
+ (5100004, 2383034, 1, 1, 0, 10000),
+ (2100108, 2381030, 1, 1, 0, 10000),
+ (3230300, 2382021, 1, 1, 0, 10000),

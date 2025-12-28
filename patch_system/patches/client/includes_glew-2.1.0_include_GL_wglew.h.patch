@@ -1,0 +1,20 @@
+diff --git a/includes/glew-2.1.0/include/GL/wglew.h b/includes/glew-2.1.0/include/GL/wglew.h
+index 2097c0f..ead82ec 100644
+--- a/includes/glew-2.1.0/include/GL/wglew.h
++++ b/includes/glew-2.1.0/include/GL/wglew.h
+@@ -63,6 +63,8 @@
+ 
+ #define __wglext_h_
+ 
++#ifndef MS_PLATFORM_WASM
++
+ #if !defined(WINAPI)
+ #  ifndef WIN32_LEAN_AND_MEAN
+ #    define WIN32_LEAN_AND_MEAN 1
+@@ -1444,4 +1446,6 @@ GLEWAPI GLboolean GLEWAPIENTRY wglewGetExtension (const char *name);
+ 
+ #undef GLEWAPI
+ 
++#endif /* MS_PLATFORM_WASM */
++
+ #endif /* __wglew_h__ */

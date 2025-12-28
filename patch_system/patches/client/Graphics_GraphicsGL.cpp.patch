@@ -1,0 +1,287 @@
+diff --git a/Graphics/GraphicsGL.cpp b/Graphics/GraphicsGL.cpp
+index ba6d5ef..faa2b8e 100644
+--- a/Graphics/GraphicsGL.cpp
++++ b/Graphics/GraphicsGL.cpp
+@@ -17,6 +17,11 @@
+ //////////////////////////////////////////////////////////////////////////////////
+ #include "GraphicsGL.h"
+ 
++#ifdef MS_PLATFORM_WASM
++// MS WASM: GL_BGRA is not available in GLES3, mapping to GL_RGBA. Colors might need swizzling if source is BGRA.
++#define GL_BGRA GL_RGBA
++#endif
++
+ #include "../Configuration.h"
+ 
+ namespace ms
+@@ -28,13 +33,35 @@ namespace ms
+ 		VWIDTH = Constants::Constants::get().get_viewwidth();
+ 		VHEIGHT = Constants::Constants::get().get_viewheight();
+ 		SCREEN = Rectangle<int16_t>(0, VWIDTH, 0, VHEIGHT);
++
++		atlas = 0;
++		shaderProgram = 0;
+ 	}
+ 
+ 	Error GraphicsGL::init()
+ 	{
++
+ 		// Setup parameters
+ 		// ----------------
+ 		const char* vertexShaderSource =
++#ifdef MS_PLATFORM_WASM
++			"precision highp float;\n"
++			"attribute vec4 coord;"
++			"attribute vec4 color;"
++			"varying vec2 texpos;"
++			"varying vec4 colormod;"
++			"uniform vec2 screensize;"
++			"uniform int yoffset;"
++
++			"void main(void)"
++			"{"
++			"	float x = -1.0 + coord.x * 2.0 / screensize.x;"
++			"	float y = 1.0 - (coord.y + float(yoffset)) * 2.0 / screensize.y;"
++			"   gl_Position = vec4(x, y, 0.0, 1.0);"
++			"	texpos = coord.zw;"
++			"	colormod = color;"
++			"}";
++#else
+ 			"#version 120\n"
+ 			"attribute vec4 coord;"
+ 			"attribute vec4 color;"
+@@ -51,8 +78,35 @@ namespace ms
+ 			"	texpos = coord.zw;"
+ 			"	colormod = color;"
+ 			"}";
++#endif
+ 
+ 		const char* fragmentShaderSource =
++#ifdef MS_PLATFORM_WASM
++			"precision highp float;\n"
++			"varying vec2 texpos;"
++			"varying vec4 colormod;"
++			"uniform sampler2D texture;"
++			"uniform vec2 atlassize;"
++			"uniform int fontregion;"
++
++			"void main(void)"
++			"{"
++			"	if (texpos.y < 0.0)"
++			"	{"
++			"		gl_FragColor = colormod;"
++			"	}"
++			"	else if (texpos.y <= float(fontregion))"
++			"	{"
++			"		gl_FragColor = vec4(1, 1, 1, texture2D(texture, texpos / "
++			"atlassize).r) * colormod;"
++			"	}"
++			"	else"
++			"	{"
++			"		gl_FragColor = texture2D(texture, texpos / atlassize) * "
++			"colormod;"
++			"	}"
++			"}";
++#else
+ 			"#version 120\n"
+ 			"varying vec2 texpos;"
+ 			"varying vec4 colormod;"
+@@ -68,13 +122,16 @@ namespace ms
+ 			"	}"
+ 			"	else if (texpos.y <= fontregion)"
+ 			"	{"
+-			"		gl_FragColor = vec4(1, 1, 1, texture2D(texture, texpos / atlassize).r) * colormod;"
++			"		gl_FragColor = vec4(1, 1, 1, texture2D(texture, texpos / "
++			"atlassize).r) * colormod;"
+ 			"	}"
+ 			"	else"
+ 			"	{"
+-			"		gl_FragColor = texture2D(texture, texpos / atlassize) * colormod;"
++			"		gl_FragColor = texture2D(texture, texpos / atlassize) * "
++			"colormod;"
+ 			"	}"
+ 			"}";
++#endif
+ 
+ 		const GLsizei bufSize = 512;
+ 
+@@ -83,11 +140,15 @@ namespace ms
+ 
+ 		// Initialize and configure
+ 		// ------------------------
++#ifndef EMSCRIPTEN
+ 		if (GLenum error = glewInit())
+ 			return Error(Error::Code::GLEW, (const char*)glewGetErrorString(error));
+ 
+ 		LOG(LOG_INFO, "Using OpenGL " << glGetString(GL_VERSION));
+ 		LOG(LOG_INFO, "Using GLEW " << glewGetString(GLEW_VERSION));
++#else
++		LOG(LOG_INFO, "Using OpenGL ES " << glGetString(GL_VERSION));
++#endif
+ 
+ 		if (FT_Init_FreeType(&ftlibrary))
+ 			return Error::Code::FREETYPE;
+@@ -178,6 +239,7 @@ namespace ms
+ 
+ 		// Vertex Buffer Object
+ 		glGenBuffers(1, &VBO);
++		glGenBuffers(1, &IBO);
+ 
+ 		glGenTextures(1, &atlas);
+ 		glBindTexture(GL_TEXTURE_2D, atlas);
+@@ -237,10 +299,16 @@ namespace ms
+ 		FT_Face face;
+ 
+ 		if (FT_New_Face(ftlibrary, name, 0, &face))
++		{
++			printf("[GraphicsGL] Failed to load font: %s\n", name);
+ 			return false;
++		}
+ 
+ 		if (FT_Set_Pixel_Sizes(face, pixelw, pixelh))
++		{
++			printf("[GraphicsGL] Failed to set pixel sizes for font: %s\n", name);
+ 			return false;
++		}
+ 
+ 		FT_GlyphSlot g = face->glyph;
+ 
+@@ -293,7 +361,26 @@ namespace ms
+ 			GLshort w = static_cast<GLshort>(g->bitmap.width);
+ 			GLshort h = static_cast<GLshort>(g->bitmap.rows);
+ 
+-			glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, w, h, GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer);
++			if (w > 0 && h > 0)
++			{
++#ifdef MS_PLATFORM_WASM
++				// WebGL 2 does not support GL_RED/GL_UNSIGNED_BYTE with glTexSubImage2D for
++				// RGBA textures unless using specific internal formats Easier to just
++				// expand to RGBA here
++				std::vector<uint8_t> rgba_buffer(w * h * 4);
++				for (int i = 0; i < w * h; ++i)
++				{
++					uint8_t val = g->bitmap.buffer[i];
++					rgba_buffer[i * 4 + 0] = val; // R
++					rgba_buffer[i * 4 + 1] = 0;	  // G
++					rgba_buffer[i * 4 + 2] = 0;	  // B
++					rgba_buffer[i * 4 + 3] = 0;	  // A (doesn't matter for shader currently)
++				}
++				glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data());
++#else
++				glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, w, h, GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer);
++#endif
++			}
+ 
+ 			Offset offset = Offset(ox, oy, w, h);
+ 			fonts[id].chars[c] = { ax, ay, w, h, l, t, offset };
+@@ -301,11 +388,16 @@ namespace ms
+ 			ox += w;
+ 		}
+ 
++		FT_Done_Face(face);
++
+ 		return true;
+ 	}
+ 
+ 	void GraphicsGL::reinit()
+ 	{
++		if (atlas == 0)
++			return;
++
+ 		int32_t new_width = Constants::Constants::get().get_viewwidth();
+ 		int32_t new_height = Constants::Constants::get().get_viewheight();
+ 
+@@ -481,7 +573,24 @@ namespace ms
+ 		LOG(LOG_TRACE, "Used: [" << usedpercent << "] Wasted: [" << wastedpercent << "]");
+ #endif
+ 
++#ifdef MS_PLATFORM_WASM
++		// WebGL 2 does not support GL_BGRA, so we need to manually swap the channels
++		// from BGRA (what the game uses) to RGBA (what WebGL expects).
++		int32_t len = width * height * 4;
++		std::vector<uint8_t> rgba_buffer(len);
++		const uint8_t* src = (const uint8_t*)bmp.data();
++		for (int i = 0; i < len; i += 4)
++		{
++			rgba_buffer[i] = src[i + 2];	 // R = B
++			rgba_buffer[i + 1] = src[i + 1]; // G = G
++			rgba_buffer[i + 2] = src[i];	 // B = R
++			rgba_buffer[i + 3] = src[i + 3]; // A = A
++		}
++
++		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data());
++#else
+ 		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_BGRA, GL_UNSIGNED_BYTE, bmp.data());
++#endif
+ 
+ 		return offsets.emplace(
+ 			std::piecewise_construct,
+@@ -580,6 +689,7 @@ namespace ms
+ 						switch (c)
+ 						{
+ 							// \r\n - Moves down a line
++							/*
+ 							case 'rn':
+ 							case 'RN':
+ 							{
+@@ -587,6 +697,7 @@ namespace ms
+ 								skip += 4;
+ 								break;
+ 							}
++							*/
+ 							// \n - New line
+ 							case 'n':
+ 							case 'N':
+@@ -940,6 +1051,8 @@ namespace ms
+ 			case Text::Alignment::RIGHT:
+ 				line_x -= ax;
+ 				break;
++			case Text::Alignment::LEFT:
++				break;
+ 		}
+ 
+ 		lines.push_back({ words, { line_x, line_y } });
+@@ -985,6 +1098,8 @@ namespace ms
+ 
+ 				break;
+ 			}
++			case Text::Background::NONE:
++				break;
+ 		}
+ 
+ 		for (const Text::Layout::Line& line : layout)
+@@ -1090,15 +1205,32 @@ namespace ms
+ 		glClear(GL_COLOR_BUFFER_BIT);
+ 
+ 		GLsizeiptr csize = quads.size() * sizeof(Quad);
+-		GLsizeiptr fsize = quads.size() * Quad::LENGTH;
+ 
+ 		glEnableVertexAttribArray(attribute_coord);
+ 		glEnableVertexAttribArray(attribute_color);
+ 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+ 		glBufferData(GL_ARRAY_BUFFER, csize, quads.data(), GL_STREAM_DRAW);
+ 
+-		glDrawArrays(GL_QUADS, 0, fsize);
++		// Initialize indices for GL_TRIANGLES (2 triangles per quad, 6 indices per quad)
++		std::vector<GLushort> indices;
++		indices.reserve(quads.size() * 6);
++		for (size_t i = 0; i < quads.size(); ++i)
++		{
++			GLushort base = static_cast<GLushort>(i * 4);
++			indices.push_back(base + 0);
++			indices.push_back(base + 1);
++			indices.push_back(base + 2);
++			indices.push_back(base + 0);
++			indices.push_back(base + 2);
++			indices.push_back(base + 3);
++		}
++
++		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
++		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STREAM_DRAW);
++
++		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_SHORT, 0);
+ 
++		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+ 		glDisableVertexAttribArray(attribute_coord);
+ 		glDisableVertexAttribArray(attribute_color);
+ 		glBindBuffer(GL_ARRAY_BUFFER, 0);

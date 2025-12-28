@@ -1,0 +1,270 @@
+diff --git a/Net/SockInternal.cpp b/Net/SockInternal.cpp
+new file mode 100644
+index 0000000..76532ee
+--- /dev/null
++++ b/Net/SockInternal.cpp
+@@ -0,0 +1,264 @@
++
++#include "SockInternal.h"
++#include "MapleStory.h"
++#include "Template/Singleton.h"
++#include "Util/Misc.h"
++#include <cstddef>
++#include <cstdint>
++#include <emscripten/emscripten.h>
++#include <emscripten/websocket.h>
++#include <memory>
++#include <unordered_map>
++#include <vector>
++
++#define MAX_PACKET_LENGTH 4096 * 16
++
++#define WEB_SOCK_PORT "8080"
++
++namespace
++{
++	bool onopen(int eventType, const EmscriptenWebSocketOpenEvent* event, void* userData);
++	bool onmessage(int eventType, const EmscriptenWebSocketMessageEvent* event, void* userData);
++	bool onerror(int eventType, const EmscriptenWebSocketErrorEvent* event, void* userData);
++	bool onclose(int eventType, const EmscriptenWebSocketCloseEvent* event, void* userData);
++
++	enum class WebSockState
++	{
++		CONNECTING,
++		OPEN,
++		CLOSED
++	};
++
++	class WebSockInstance
++	{
++	  public:
++		WebSockInstance(EMSCRIPTEN_WEBSOCKET_T socket, size_t initial_buffer_size)
++		{
++			this->socket = socket;
++			this->buffer.reserve(initial_buffer_size);
++			this->connected = WebSockState::CONNECTING;
++		}
++
++		~WebSockInstance()
++		{
++			// Vector cleans up itself
++		}
++
++		void on_received(uint8_t* data, size_t len)
++		{
++			// Append data to buffer
++			buffer.insert(buffer.end(), data, data + len);
++		}
++
++		void disconnect()
++		{
++			if (connected != WebSockState::CLOSED)
++			{
++				emscripten_websocket_close(socket, 1000, "Client closing");
++				// Note: socket deletion from emscripten should happen here or managed externally
++				emscripten_websocket_delete(socket);
++				connected = WebSockState::CLOSED;
++			}
++		}
++
++		void on_open()
++		{
++			connected = WebSockState::OPEN;
++		}
++
++		size_t send(const void* data, size_t len)
++		{
++			if (connected != WebSockState::OPEN)
++				return 0;
++			return emscripten_websocket_send_binary(socket, const_cast<void*>(static_cast<const void*>(data)), len);
++		}
++
++		size_t send(std::string data)
++		{
++			return send(data.c_str(), data.size());
++		}
++
++		WebSockState get_state()
++		{
++			return connected;
++		}
++
++		size_t receive(char* data, size_t len, size_t timeout)
++		{
++			size_t sleep_len = std::min((size_t)5, timeout);
++			size_t time_slept = 0;
++
++			while (buffer.empty() && timeout > 0 && time_slept < timeout)
++			{
++				emscripten_sleep(sleep_len);
++				time_slept += sleep_len;
++			}
++
++			if (buffer.empty())
++				return 0;
++
++			size_t bytes_to_copy = std::min(buffer.size(), len);
++			std::memcpy(data, buffer.data(), bytes_to_copy);
++
++			// Remove read data from buffer
++			buffer.erase(buffer.begin(), buffer.begin() + bytes_to_copy);
++
++			return bytes_to_copy;
++		}
++
++	  private:
++		EMSCRIPTEN_WEBSOCKET_T socket;
++		std::vector<int8_t> buffer;
++		WebSockState connected;
++	};
++
++	class WebSockManager : public ms::Singleton<WebSockManager>
++	{
++	  public:
++		int connect(const std::string& address, const std::string& port)
++		{
++			std::string ws_url = "ws://";
++			ws_url += ms::getBrowserHostname(); // Dynamic hostname from browser
++			ws_url += ":";
++			ws_url += WEB_SOCK_PORT; // Proxy server port
++
++			LOG(LOG_INFO, "Connecting to WebSocket proxy: " << ws_url);
++
++			// Check if WebSocket is supported
++			if (!emscripten_websocket_is_supported())
++			{
++				LOG(LOG_ERROR, "WebSocket is not supported in this browser");
++				return WS_SOCK_ERROR;
++			}
++
++			// Create WebSocket attributes
++			EmscriptenWebSocketCreateAttributes attrs;
++			emscripten_websocket_init_create_attributes(&attrs);
++			attrs.url = ws_url.c_str();
++			attrs.protocols = nullptr; // No specific protocol
++			attrs.createOnMainThread = true;
++
++			// Create the WebSocket
++			EMSCRIPTEN_WEBSOCKET_T socket = emscripten_websocket_new(&attrs);
++			if (socket <= 0)
++			{
++				LOG(LOG_ERROR, "Failed to create WebSocket");
++				return false;
++			}
++
++			instances.insert(std::make_pair(socket, std::make_unique<WebSockInstance>(socket, MAX_PACKET_LENGTH)));
++			auto sock_instance = instances.find(socket)->second.get();
++
++			// Set callbacks
++			emscripten_websocket_set_onopen_callback(socket, sock_instance, onopen);
++			emscripten_websocket_set_onmessage_callback(socket, sock_instance, onmessage);
++			emscripten_websocket_set_onerror_callback(socket, sock_instance, onerror);
++			emscripten_websocket_set_onclose_callback(socket, sock_instance, onclose);
++
++			// TODO: I think this should be blocking?
++			while (sock_instance->get_state() == WebSockState::CONNECTING)
++			{
++				emscripten_sleep(5);
++			}
++
++			std::ostringstream oss;
++			oss << address << ":" << port;
++			sock_instance->send(oss.str());
++
++			return socket;
++		}
++
++		WebSockInstance* get_instance(int socket)
++		{
++			auto instance = instances.find(socket);
++			if (instance == instances.end())
++			{
++				return nullptr;
++			}
++			return instance->second.get();
++		}
++
++		void remove_instance(int socket)
++		{
++			auto it = instances.find(socket);
++			if (it != instances.end())
++			{
++				// The unique_ptr will destruct WebSockInstance, causing WebSockInstance destructor to run.
++				// However, we should make sure the socket is actually closed/deleted in emscripten
++				// if it hasn't been already.
++				// WebSockInstance::disconnect() handles safety checks.
++				it->second->disconnect();
++				instances.erase(it);
++			}
++		}
++
++	  private:
++		std::unordered_map<int, std::unique_ptr<WebSockInstance>> instances;
++	};
++
++	bool onopen(int eventType, const EmscriptenWebSocketOpenEvent* event, void* userData)
++	{
++		auto instance = static_cast<WebSockInstance*>(userData);
++		instance->on_open();
++		return true;
++	}
++
++	bool onmessage(int eventType, const EmscriptenWebSocketMessageEvent* event, void* userData)
++	{
++		auto instance = static_cast<WebSockInstance*>(userData);
++		instance->on_received(event->data, event->numBytes);
++		return true;
++	}
++
++	bool onerror(int eventType, const EmscriptenWebSocketErrorEvent* event, void* userData)
++	{
++		// Find the socket ID associated with this instance is tricky because userData is the instance pointer.
++		// However, we can iterate to find it or just trust the system.
++		// A cleaner way is to pass the socket ID or store it in the instance and look it up.
++		// Since we have the socket internally in the instance, we can't easily reach back to Manager to remove it
++		// purely from userData unless we pass Manager or have a reverse lookup.
++
++		// But wait, the socket ID IS in the event! event->socket
++
++		WebSockManager::get().remove_instance(event->socket);
++		return true;
++	}
++
++	bool onclose(int eventType, const EmscriptenWebSocketCloseEvent* event, void* userData)
++	{
++		WebSockManager::get().remove_instance(event->socket);
++		return true;
++	}
++}
++
++size_t ws_connect(const std::string& address, std::string& port)
++{
++	return WebSockManager::get().connect(address, port);
++}
++
++// TODO: implement timeout
++int ws_send(size_t socket, const char* bytes, size_t length, size_t timeout)
++{
++	auto instance = WebSockManager::get().get_instance(static_cast<int>(socket));
++	if (instance == nullptr)
++	{
++		return WS_SOCK_ERROR;
++	}
++	return instance->send(bytes, length);
++}
++
++int ws_recv(size_t socket, char* bytes, size_t length, size_t timeout)
++{
++	auto instance = WebSockManager::get().get_instance(static_cast<int>(socket));
++	if (instance == nullptr)
++	{
++		return WS_SOCK_ERROR;
++	}
++	return instance->receive(bytes, length, timeout);
++}
++
++int ws_closesocket(size_t socket)
++{
++	WebSockManager::get().remove_instance(static_cast<int>(socket));
++	return WS_SOCK_OK;
++}

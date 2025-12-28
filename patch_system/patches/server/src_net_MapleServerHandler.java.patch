@@ -1,0 +1,21 @@
+diff --git a/src/net/MapleServerHandler.java b/src/net/MapleServerHandler.java
+index 4e837621..73802b4b 100644
+--- a/src/net/MapleServerHandler.java
++++ b/src/net/MapleServerHandler.java
+@@ -186,11 +186,11 @@ public class MapleServerHandler extends IoHandlerAdapter {
+                     }
+                 }
+ 
+-                if (op != null) {
+-                    System.out.println("Received Packet: " + op.name());
+-                } else {
+-                    System.out.println("Received Packet: " + packetId);
+-                }
++                // if (op != null) {
++                //     System.out.println("Received Packet: " + op.name());
++                // } else {
++                //     System.out.println("Received Packet: " + packetId);
++                // }
+             }
+         }
+ 

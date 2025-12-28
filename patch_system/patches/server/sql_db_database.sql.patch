@@ -1,0 +1,23 @@
+diff --git a/sql/db_database.sql b/sql/db_database.sql
+index 466b420f..6e2c76dc 100644
+--- a/sql/db_database.sql
++++ b/sql/db_database.sql
+@@ -203,7 +203,7 @@ CREATE TABLE IF NOT EXISTS `cooldowns` (
+ ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+ 
+ CREATE TABLE IF NOT EXISTS `temp_data` (
+-  `id` bigint(20) NOT NULL,
++  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+   `dropperid` int(11) NOT NULL,
+   `itemid` int(11) NOT NULL DEFAULT '0',
+   `minimum_quantity` int(11) NOT NULL DEFAULT '1',
+@@ -211,7 +211,8 @@ CREATE TABLE IF NOT EXISTS `temp_data` (
+   `questid` int(11) NOT NULL DEFAULT '0',
+   `chance` int(11) NOT NULL DEFAULT '0',
+   PRIMARY KEY (`dropperid`, `itemid`),
+-  KEY `mobid` (`dropperid`)
++  KEY `mobid` (`dropperid`),
++  UNIQUE KEY `id` (`id`)
+ ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=0 ;
+ 
+ INSERT IGNORE INTO `temp_data` (`id`, `dropperid`, `itemid`, `minimum_quantity`, `maximum_quantity`, `questid`, `chance`) VALUES

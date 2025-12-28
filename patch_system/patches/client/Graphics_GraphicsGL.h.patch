@@ -1,0 +1,29 @@
+diff --git a/Graphics/GraphicsGL.h b/Graphics/GraphicsGL.h
+index e06e5e4..85017af 100644
+--- a/Graphics/GraphicsGL.h
++++ b/Graphics/GraphicsGL.h
+@@ -93,10 +93,12 @@ namespace ms
+ 
+ 			Offset()
+ 			{
+-				left = 0;
+-				right = 0;
+-				top = 0;
+-				bottom = 0;
++				// Use -1 to indicate solid-color quad (no texture)
++				// Shader checks for negative texpos.y to detect this
++				left = -1;
++				right = -1;
++				top = -1;
++				bottom = -1;
+ 			}
+ 		};
+ 
+@@ -260,6 +262,7 @@ namespace ms
+ 
+ 		std::vector<Quad> quads;
+ 		GLuint VBO;
++		GLuint IBO;
+ 		GLuint atlas;
+ 
+ 		GLint shaderProgram;

@@ -1,0 +1,36 @@
+diff --git a/IO/UITypes/UILogo.cpp b/IO/UITypes/UILogo.cpp
+index 83b2e0f..d2dec8e 100644
+--- a/IO/UITypes/UILogo.cpp
++++ b/IO/UITypes/UILogo.cpp
+@@ -44,6 +44,11 @@ namespace ms
+ 
+ 		Wizet = Logo["Wizet"];
+ 		WizetEnd = Logo["Wizet"]["28"];
++		
++		std::cout << "UILogo Check: Logo valid? " << (bool)Logo << std::endl;
++		std::cout << "UILogo Check: Wizet valid? " << (bool)Logo["Wizet"] << std::endl;
++		std::cout << "UILogo Check: Wizet Children: " << Logo["Wizet"].size() << std::endl;
++		std::cout << "UILogo Check: WizetEnd Node valid? " << (bool)Logo["Wizet"]["28"] << std::endl;
+ 	}
+ 
+ 	void UILogo::draw(float inter) const
+@@ -51,9 +56,19 @@ namespace ms
+ 		if (!user_clicked)
+ 		{
+ 			if (!wizet_ended)
++			{
++				// std::cout << "UILogo: Drawing Wizet Animation. Ptr: " << &Wizet << std::endl;
+ 				Wizet.draw(position, inter);
++			}
+ 			else
++			{
++				static bool log_once = false;
++				if (!log_once) {
++					std::cout << "UILogo: Drawing WizetEnd Texture. Ptr: " << &WizetEnd << std::endl;
++					log_once = true;
++				}
+ 				WizetEnd.draw(position);
++			}
+ 		}
+ 		else
+ 		{

@@ -1,0 +1,14 @@
+{
+    "repos": {
+        "client": {
+            "url": "https://github.com/ryantpayton/MapleStory-Client.git",
+            "rev": "4712e2233836fd265fc9ece7e40179ab76704da2",
+            "path": "src/client"
+        },
+        "server": {
+            "url": "https://github.com/ryantpayton/MapleStory-Server.git",
+            "rev": "f8bac70d143cb1e91aa2e6f5854c999a3c6d04f1",
+            "path": "src/server"
+        }
+    }
+}

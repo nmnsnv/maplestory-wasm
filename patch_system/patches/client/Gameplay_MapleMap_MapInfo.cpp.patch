@@ -1,0 +1,13 @@
+diff --git a/Gameplay/MapleMap/MapInfo.cpp b/Gameplay/MapleMap/MapInfo.cpp
+index e4036e5..e09003c 100644
+--- a/Gameplay/MapleMap/MapInfo.cpp
++++ b/Gameplay/MapleMap/MapInfo.cpp
+@@ -41,7 +41,7 @@ namespace ms
+ 		cloud = info["cloud"].get_bool();
+ 		fieldlimit = info["fieldLimit"];
+ 		hideminimap = info["hideMinimap"].get_bool();
+-		mapmark = info["mapMark"];
++		mapmark = info["mapMark"].get_string();
+ 		swim = info["swim"].get_bool();
+ 		town = info["town"].get_bool();
+ 

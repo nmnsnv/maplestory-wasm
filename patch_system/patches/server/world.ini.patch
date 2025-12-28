@@ -1,0 +1,14 @@
+diff --git a/world.ini b/world.ini
+index 63362de6..b3084bbb 100644
+--- a/world.ini
++++ b/world.ini
+@@ -10,6 +10,9 @@ flag0=0
+ servermessage0=Welcome to Scania!
+ eventmessage0=Scania!
+ whyamirecommended0=Welcome to Scania!
++exprate0=20
++mesorate0=10
++droprate0=10
+ channels0=2
+ 
+ #Properties for Bera 1

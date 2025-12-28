@@ -1,0 +1,195 @@
+diff --git a/includes/NoLifeNx/nlnx/file.cpp b/includes/NoLifeNx/nlnx/file.cpp
+index 060ca62..6a14e74 100644
+--- a/includes/NoLifeNx/nlnx/file.cpp
++++ b/includes/NoLifeNx/nlnx/file.cpp
+@@ -18,6 +18,12 @@
+ 
+ #include "file_impl.hpp"
+ #include "node_impl.hpp"
++
++// LazyFS integration for WASM
++#ifdef MS_PLATFORM_WASM
++#include <LazyFS/LazyFileLoader.h>
++#endif
++
+ #ifdef _WIN32
+ #  ifdef _MSC_VER
+ #    include <codecvt>
+@@ -38,6 +44,7 @@
+ #  include <unistd.h>
+ #endif
+ #include <stdexcept>
++#include <iostream>
+ 
+ namespace nl {
+     file::file(std::string name) {
+@@ -80,6 +87,15 @@ namespace nl {
+ #  endif
+         if (!m_data->base)
+             throw std::runtime_error("Failed to map view of file " + name);
++#else
++#ifdef MS_PLATFORM_WASM
++        // WASM: Use LazyFS instead of mmap
++        size_t file_size = 0;
++        m_data->base = LazyFS::LazyFileLoader::load_file(name, file_size);
++        if (!m_data->base || file_size == 0)
++            throw std::runtime_error("Failed to load file via LazyFS: " + name);
++        m_data->size = file_size;
++        m_data->file_handle = -1; // No file handle for LazyFS
+ #else
+         m_data->file_handle = ::open(name.c_str(), O_RDONLY);
+         if (m_data->file_handle == -1)
+@@ -92,6 +108,35 @@ namespace nl {
+         if (reinterpret_cast<intptr_t>(m_data->base) == -1)
+             throw std::runtime_error("Failed to create memory mapping of file " + name);
+ #endif
++#endif
++
++        // Initialize tables
++#ifdef MS_PLATFORM_WASM
++        // WASM: Store offsets directly
++        m_data->header = 0; // Header is at start of file
++        
++        // We need to read the header to get offsets
++        // LazyFileLoader handles this read
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto header_ptr = loader->get_data_at<header>(0);
++        if (!header_ptr) throw std::runtime_error("Failed to read header for " + name);
++        
++        if (header_ptr->magic != 0x34474B50) {
++            std::cout << "[NoLifeNx] Invalid Magic for " << name << ": 0x" << std::hex << header_ptr->magic << std::dec << std::endl;
++            // Print first few chars to check for HTML/Text
++            std::cout << "[NoLifeNx] First 4 chars: " << 
++                (char)(header_ptr->magic & 0xFF) << 
++                (char)((header_ptr->magic >> 8) & 0xFF) << 
++                (char)((header_ptr->magic >> 16) & 0xFF) << 
++                (char)((header_ptr->magic >> 24) & 0xFF) << std::endl;
++            throw std::runtime_error(name + " is not a PKG4 NX file");
++        }
++            
++        m_data->node_table = header_ptr->node_offset;
++        m_data->string_table = header_ptr->string_offset;
++        m_data->bitmap_table = header_ptr->bitmap_offset;
++        m_data->audio_table = header_ptr->audio_offset;
++#else
+         m_data->header = reinterpret_cast<header const *>(m_data->base);
+         if (m_data->header->magic != 0x34474B50)
+             throw std::runtime_error(name + " is not a PKG4 NX file");
+@@ -99,6 +144,7 @@ namespace nl {
+         m_data->string_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->string_offset);
+         m_data->bitmap_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->bitmap_offset);
+         m_data->audio_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->audio_offset);
++#endif
+     }
+     void file::close() {
+         if (!m_data) return;
+@@ -106,33 +152,109 @@ namespace nl {
+         ::UnmapViewOfFile(m_data->base);
+         ::CloseHandle(m_data->map);
+         ::CloseHandle(m_data->file_handle);
++#else
++#ifdef MS_PLATFORM_WASM
++        // WASM: Free LazyFS-loaded file
++        if (m_data->base) {
++            LazyFS::LazyFileLoader::free_file(const_cast<void *>(m_data->base));
++        }
+ #else
+         ::munmap(const_cast<void *>(m_data->base), m_data->size);
+         ::close(m_data->file_handle);
++#endif
+ #endif
+         delete m_data;
+         m_data = nullptr;
+     }
+     node file::root() const {
++#ifdef MS_PLATFORM_WASM
++        // Root node is at node_table offset
++        return {reinterpret_cast<node::data const*>(static_cast<uintptr_t>(m_data->node_table)), m_data};
++#else
+         return {m_data->node_table, m_data};
++#endif
+     }
+     file::operator node() const {
+         return root();
+     }
+     uint32_t file::string_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->string_count : 0;
++#else
+         return m_data->header->string_count;
++#endif
+     }
+     uint32_t file::bitmap_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->bitmap_count : 0;
++#else
+         return m_data->header->bitmap_count;
++#endif
+     }
+     uint32_t file::audio_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->audio_count : 0;
++#else
+         return m_data->header->audio_count;
++#endif
+     }
+     uint32_t file::node_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->node_count : 0;
++#else
+         return m_data->header->node_count;
++#endif
+     }
+     std::string file::get_string(uint32_t i) const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        
++        // Resolve string table entry
++        size_t table_entry_offset = m_data->string_table + i * sizeof(uint64_t);
++        auto offset_ptr = loader->get_data_at<uint64_t>(table_entry_offset);
++        if (!offset_ptr) return {};
++        uint64_t string_offset = *offset_ptr;
++        
++        // Read string length and content (similar logic to node.cpp)
++        auto len_ptr = loader->get_data_at<uint16_t>(string_offset);
++        if (!len_ptr) return {};
++        uint16_t len = *len_ptr;
++        
++        auto char_ptr = static_cast<const char*>(loader->get_contiguous_data(string_offset + 2, len));
++        if (!char_ptr) return {};
++        
++        return {char_ptr, len};
++#else
+         auto const s = reinterpret_cast<char const *>(m_data->base) + m_data->string_table[i];
+         return {s + 2, *reinterpret_cast<uint16_t const *>(s)};
++#endif
++    }
++
++    bool io_read(const _file_data *fd, void *buf, size_t size, uint64_t offset) {
++        if (!fd || !buf || size == 0)
++            return false;
++#ifdef MS_PLATFORM_WASM
++        // Use LazyFS to fetch the data
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(fd->base));
++        if (!loader)
++            return false;
++        const void* data = loader->get_contiguous_data(offset, size);
++        if (!data)
++            return false;
++        memcpy(buf, data, size);
++        return true;
++#else
++        // Use pread for native builds
++        ssize_t result = pread(fd->file_handle, buf, size, offset);
++        return result == static_cast<ssize_t>(size);
++#endif
+     }
+ }

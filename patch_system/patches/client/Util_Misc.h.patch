@@ -1,0 +1,49 @@
+diff --git a/Util/Misc.h b/Util/Misc.h
+index 3405df1..1cc7788 100644
+--- a/Util/Misc.h
++++ b/Util/Misc.h
+@@ -22,6 +22,10 @@
+ #include <iostream>
+ #include <unordered_map>
+ 
++#ifdef MS_PLATFORM_WASM
++#include <emscripten.h>
++#endif
++
+ namespace ms
+ {
+ 	namespace string_conversion
+@@ -105,4 +109,32 @@ namespace ms
+ 
+ 		static std::list<std::string> log_history;
+ 	}
++
++#ifdef MS_PLATFORM_WASM
++	// Get the browser's hostname (window.location.hostname) for WASM builds
++	// Returns "127.0.0.1" as fallback
++	inline std::string getBrowserHostname()
++	{
++		char* hostname = (char*)EM_ASM_PTR({
++			var hostname = window.location.hostname;
++			var len = lengthBytesUTF8(hostname) + 1;
++			var ptr = _malloc(len);
++			stringToUTF8(hostname, ptr, len);
++			return ptr;
++		});
++		std::string result;
++		if (hostname && strlen(hostname) > 0) {
++			result = hostname;
++		} else {
++			result = "127.0.0.1";
++		}
++		if (hostname) free(hostname);
++		return result;
++	}
++#else
++	inline std::string getBrowserHostname()
++	{
++		return "127.0.0.1";
++	}
++#endif
+ }
+\ No newline at end of file

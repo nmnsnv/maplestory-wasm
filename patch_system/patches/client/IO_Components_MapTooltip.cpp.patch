@@ -1,0 +1,108 @@
+diff --git a/IO/Components/MapTooltip.cpp b/IO/Components/MapTooltip.cpp
+index 92949cb..4bf409e 100644
+--- a/IO/Components/MapTooltip.cpp
++++ b/IO/Components/MapTooltip.cpp
+@@ -26,7 +26,7 @@
+ namespace ms
+ {
+ 	// TODO: Get number of available quests
+-	MapTooltip::MapTooltip() : parent(Tooltip::Parent::NONE), title(""), description(""), fillwidth(0), fillheight(0)
++	MapTooltip::MapTooltip() : parent(Tooltip::Parent::NONE), title(""), description(""), fillwidth(0), fillheight(0), current_mapid(-1)
+ 	{
+ 		nl::node Frame = nl::nx::UI["UIToolTip.img"]["Item"]["Frame2"];
+ 		nl::node WorldMap = nl::nx::UI["UIWindow2.img"]["ToolTip"]["WorldMap"];
+@@ -40,6 +40,51 @@ namespace ms
+ 		//Party = WorldMap["Party"];
+ 	}
+ 
++    // ... (rest of methods)
++
++	void MapTooltip::set_mapid(int32_t mapid, bool portal)
++	{
++		if (mapid == current_mapid)
++			return;
++
++		current_mapid = mapid;
++
++		std::unordered_map<int64_t, std::pair<std::string, std::string>> life = NxHelper::Map::get_life_on_map(mapid);
++
++		switch (parent)
++		{
++			case Tooltip::Parent::WORLDMAP:
++				set_worldmap_mapid(life, portal);
++				break;
++			case Tooltip::Parent::MINIMAP:
++				set_minimap_mapid(life, portal);
++				break;
++			default:
++				break;
++		}
++	}
++
++	void MapTooltip::reset()
++	{
++		parent = Tooltip::Parent::NONE;
++		current_mapid = -1;
++
++		title = "";
++		title_label.change_text("");
++
++		description = "";
++		desc_label.change_text("");
++
++		for (uint8_t i = 0; i < MAX_LIFE; i++)
++		{
++			mob_labels[i].change_text("");
++			npc_labels[i].change_text("");
++		}
++
++		fillwidth = 0;
++		fillheight = 0;
++	}
++
+ 	void MapTooltip::draw(Point<int16_t> position) const
+ 	{
+ 		if (title_label.empty())
+@@ -121,42 +166,7 @@ namespace ms
+ 		}
+ 	}
+ 
+-	void MapTooltip::set_mapid(int32_t mapid, bool portal)
+-	{
+-		std::unordered_map<int64_t, std::pair<std::string, std::string>> life = NxHelper::Map::get_life_on_map(mapid);
+-
+-		switch (parent)
+-		{
+-			case Tooltip::Parent::WORLDMAP:
+-				set_worldmap_mapid(life, portal);
+-				break;
+-			case Tooltip::Parent::MINIMAP:
+-				set_minimap_mapid(life, portal);
+-				break;
+-			default:
+-				break;
+-		}
+-	}
+-
+-	void MapTooltip::reset()
+-	{
+-		parent = Tooltip::Parent::NONE;
+-
+-		title = "";
+-		title_label.change_text("");
+-
+-		description = "";
+-		desc_label.change_text("");
+ 
+-		for (uint8_t i = 0; i < MAX_LIFE; i++)
+-		{
+-			mob_labels[i].change_text("");
+-			npc_labels[i].change_text("");
+-		}
+-
+-		fillwidth = 0;
+-		fillheight = 0;
+-	}
+ 
+ 	void MapTooltip::draw_worldmap(Point<int16_t> position) const
+ 	{

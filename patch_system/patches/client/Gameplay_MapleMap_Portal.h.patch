@@ -1,0 +1,15 @@
+diff --git a/Gameplay/MapleMap/Portal.h b/Gameplay/MapleMap/Portal.h
+index b90fa3b..9dacc19 100644
+--- a/Gameplay/MapleMap/Portal.h
++++ b/Gameplay/MapleMap/Portal.h
+@@ -58,7 +58,9 @@ namespace ms
+ 
+ 			WarpInfo(int32_t m, bool i, std::string tn, std::string n) : mapid(m), intramap(i), toname(tn), name(n)
+ 			{
+-				valid = mapid < 999999999;
++				// Portals are valid if they have a real target map OR if they have a portal name
++				// (scripted portals have mapid 999999999 but still work via server scripts)
++				valid = mapid < 999999999 || !n.empty();
+ 			}
+ 
+ 			WarpInfo() : WarpInfo(999999999, false, {}, {}) {}

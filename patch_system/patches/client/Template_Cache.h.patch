@@ -1,0 +1,20 @@
+diff --git a/Template/Cache.h b/Template/Cache.h
+index f9494d0..6fe6bb3 100644
+--- a/Template/Cache.h
++++ b/Template/Cache.h
+@@ -43,6 +43,15 @@ namespace ms
+ 			return iter->second;
+ 		}
+ 
++		// Check if an object is already in cache (without loading).
++		// Useful for WASM to avoid async loading in synchronous callbacks.
++		// TODO: Support Asyncify; This is a workaround to non-async methods (like mouse click etc)
++		// If we'll post all of those as tasks for later runs, it should be fixed.
++		static bool has(std::int32_t id)
++		{
++			return cache.find(id) != cache.end();
++		}
++
+ 	private:
+ 		static std::unordered_map<std::int32_t, T> cache;
+ 	};

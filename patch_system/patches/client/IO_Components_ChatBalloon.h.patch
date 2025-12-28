@@ -1,0 +1,28 @@
+diff --git a/IO/Components/ChatBalloon.h b/IO/Components/ChatBalloon.h
+index 80a7862..8e86a70 100644
+--- a/IO/Components/ChatBalloon.h
++++ b/IO/Components/ChatBalloon.h
+@@ -20,6 +20,7 @@
+ #include "MapleFrame.h"
+ 
+ #include "../../Graphics/Text.h"
++#include "../../Graphics/Geometry.h"
+ 
+ namespace ms
+ {
+@@ -40,6 +41,7 @@ namespace ms
+ 		static constexpr int16_t DURATION = 4000; // 4 seconds
+ 
+ 		MapleFrame frame;
++		ColorBox background;
+ 		Text textlabel;
+ 		Texture arrow;
+ 		int16_t duration;
+@@ -56,6 +58,7 @@ namespace ms
+ 
+ 	private:
+ 		Text textlabel;
++		ColorBox background;
+ 		Texture arrow;
+ 		Texture center;
+ 		Texture northeast;

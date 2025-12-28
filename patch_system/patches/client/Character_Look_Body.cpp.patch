@@ -1,0 +1,13 @@
+diff --git a/Character/Look/Body.cpp b/Character/Look/Body.cpp
+index 68fc8c1..f5d6da7 100644
+--- a/Character/Look/Body.cpp
++++ b/Character/Look/Body.cpp
+@@ -118,7 +118,7 @@ namespace ms
+ 		{
+ 			LOG(LOG_DEBUG, "Skin [" << skin << "] is using the default value.");
+ 
+-			name = nl::nx::String["Eqp.img"]["Eqp"]["Skin"][skin]["name"];
++			name = nl::nx::String["Eqp.img"]["Eqp"]["Skin"][skin]["name"].get_string();
+ 		}
+ 	}
+ 

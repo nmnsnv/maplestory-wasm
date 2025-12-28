@@ -1,0 +1,13 @@
+diff --git a/Data/JobData.cpp b/Data/JobData.cpp
+index 6baf650..6852bc2 100644
+--- a/Data/JobData.cpp
++++ b/Data/JobData.cpp
+@@ -33,7 +33,7 @@ namespace ms
+ 
+ 		icon = src["info"]["icon"];
+ 
+-		name = strsrc["bookName"];
++		name = strsrc["bookName"].get_string();
+ 
+ 		for (nl::node sub : src["skill"])
+ 		{

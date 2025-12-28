@@ -1,0 +1,158 @@
+diff --git a/MapleStory.cpp b/MapleStory.cpp
+index 26969c4..26ed2f4 100644
+--- a/MapleStory.cpp
++++ b/MapleStory.cpp
+@@ -22,6 +22,10 @@
+ #include "Util/HardwareInfo.h"
+ #include "Util/ScreenResolution.h"
+ 
++#ifdef MS_PLATFORM_WASM
++#include <emscripten.h>
++#endif
++
+ #ifdef USE_NX
+ #include "Util/NxFiles.h"
+ #else
+@@ -32,31 +36,43 @@ namespace ms
+ {
+ 	Error init()
+ 	{
++		LOG(LOG_INFO, "Init Session");
+ 		if (Error error = Session::get().init())
+ 			return error;
+ 
+ #ifdef USE_NX
++		LOG(LOG_INFO, "Init NxFiles");
+ 		if (Error error = NxFiles::init())
+ 			return error;
+ #else
++		LOG(LOG_INFO, "Init WzFiles");
+ 		if (Error error = WzFiles::init())
+ 			return error;
+ #endif
+ 
++		LOG(LOG_INFO, "Init Window");
+ 		if (Error error = Window::get().init())
+ 			return error;
+ 
++		LOG(LOG_INFO, "Init Sound");
+ 		if (Error error = Sound::init())
+ 			return error;
+ 
++		LOG(LOG_INFO, "Init Music");
+ 		if (Error error = Music::init())
+ 			return error;
+ 
++		LOG(LOG_INFO, "Init Char");
+ 		Char::init();
++		LOG(LOG_INFO, "Init DamageNumber");
+ 		DamageNumber::init();
++		LOG(LOG_INFO, "Init MapPortals");
+ 		MapPortals::init();
++		LOG(LOG_INFO, "Init Stage");
+ 		Stage::get().init();
++		LOG(LOG_INFO, "Init UI");
+ 		UI::get().init();
++		LOG(LOG_INFO, "Init complete");
+ 
+ 		return Error::NONE;
+ 	}
+@@ -85,10 +101,60 @@ namespace ms
+ 			&& Window::get().not_closed();
+ 	}
+ 
++#ifdef MS_PLATFORM_WASM
++	static int64_t timestep = Constants::TIMESTEP * 1000;
++	static int64_t accumulator = timestep;
++	static int64_t period = 0;
++	static int32_t samples = 0;
++
++	void main_tick()
++	{
++		if (!running())
++		{
++			LOG(LOG_WARN, "Main loop stopped");
++			emscripten_cancel_main_loop();
++			Sound::close();
++			return;
++		}
++
++		int64_t elapsed = Timer::get().stop();
++
++		// Update game with constant timestep as many times as possible.
++		for (accumulator += elapsed; accumulator >= timestep; accumulator -= timestep)
++			update();
++
++		// Draw the game. Interpolate to account for remaining time.
++		float alpha = static_cast<float>(accumulator) / timestep;
++		draw(alpha);
++
++		bool show_fps = Configuration::get().get_show_fps();
++		if (show_fps)
++		{
++			if (samples < 100)
++			{
++				period += elapsed;
++				samples++;
++			}
++			else if (period)
++			{
++				int64_t fps = (samples * 1000000) / period;
++				LOG(LOG_INFO, "FPS: " << fps);
++				period = 0;
++				samples = 0;
++			}
++		}
++	}
++#endif
++
+ 	void loop()
+ 	{
+ 		Timer::get().start();
+ 
++#ifdef MS_PLATFORM_WASM
++		accumulator = timestep;
++		LOG(LOG_INFO, "Starting main loop via emscripten_set_main_loop");
++		emscripten_set_main_loop(main_tick, 0, 1);
++#else
+ 		int64_t timestep = Constants::TIMESTEP * 1000;
+ 		int64_t accumulator = timestep;
+ 
+@@ -129,6 +195,7 @@ namespace ms
+ 		}
+ 
+ 		Sound::close();
++#endif
+ 	}
+ 
+ 	void start()
+@@ -156,20 +223,27 @@ namespace ms
+ 		}
+ 		else
+ 		{
++			LOG(LOG_INFO, "Init successful. Starting game loop.");
+ 			loop();
+ 		}
+ 	}
+ }
+ 
+-#ifdef _DEBUG
++#if defined(_DEBUG) || defined(MS_PLATFORM_WASM)
+ int main()
+ #else
+ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+ #endif
+ {
++#ifdef MS_PLATFORM_WASM
++	LOG(LOG_INFO, "NOAM_LOG: Starting");
++#endif
+ 	ms::HardwareInfo();
++	LOG(LOG_INFO, "NOAM_LOG: HardwareInfo");
+ 	ms::ScreenResolution();
++	LOG(LOG_INFO, "NOAM_LOG: ScreenResolution");
+ 	ms::start();
++	LOG(LOG_INFO, "NOAM_LOG: start");
+ 
+ 	return 0;
+ }
+\ No newline at end of file

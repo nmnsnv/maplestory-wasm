@@ -1,0 +1,178 @@
+diff --git a/LazyFS/LazyFileLoader.cpp b/LazyFS/LazyFileLoader.cpp
+new file mode 100644
+index 0000000..4679229
+--- /dev/null
++++ b/LazyFS/LazyFileLoader.cpp
+@@ -0,0 +1,172 @@
++#include <LazyFS/LazyFileLoader.h>
++#include <cstring>
++#include <iostream>
++#include <vector>
++
++namespace LazyFS
++{
++
++	LazyFileLoader::LazyFileLoader(const std::string& path) : path_(path)
++	{
++		cache_.reserve(CACHE_SIZE);
++	}
++
++	LazyFileLoader::~LazyFileLoader() = default;
++
++	bool LazyFileLoader::open()
++	{
++		backend_ = std::make_unique<LazyFileBackend>();
++		return backend_->open(path_);
++	}
++
++	size_t LazyFileLoader::size() const
++	{
++		return backend_ ? backend_->size() : 0;
++	}
++
++	void* LazyFileLoader::load_file(const std::string& path, size_t& out_size)
++	{
++		auto loader = new LazyFileLoader(path);
++		if (!loader->open())
++		{
++			delete loader;
++			out_size = 0;
++			return nullptr;
++		}
++		out_size = loader->size();
++		return static_cast<void*>(loader);
++	}
++
++	void LazyFileLoader::free_file(void* handle)
++	{
++		if (handle)
++		{
++			delete static_cast<LazyFileLoader*>(handle);
++		}
++	}
++
++	const void* LazyFileLoader::get_contiguous_data(size_t offset, size_t size)
++	{
++		if (!backend_ || !backend_->is_open())
++			return nullptr;
++
++		size_t chunk_index = offset / CHUNK_SIZE;
++		size_t chunk_offset = offset % CHUNK_SIZE;
++
++		// Fast path: Data fits entirely within a single chunk
++		if (chunk_offset + size <= CHUNK_SIZE)
++		{
++			Chunk* chunk = get_or_load_chunk(chunk_index);
++			if (!chunk)
++				return nullptr;
++
++			// Verify chunk data is large enough (EOF handling)
++			if (chunk->data.size() < chunk_offset + size)
++			{
++				// If we request data past EOF inside a chunk, we could return nullptr or short read
++				// But get_data_at implies we expect valid data.
++				// For now, allow reading partial if it fits in chunk, but strict check is safer.
++				if (chunk->data.size() <= chunk_offset)
++					return nullptr;
++			}
++			return chunk->data.data() + chunk_offset;
++		}
++
++		// Slow path: Data spans across chunks - Stitching
++		// std::cout << "[LazyFS] Stitching " << size << " bytes at " << offset << std::endl;
++		stitch_buffer_.resize(size);
++		size_t bytes_copied = 0;
++		size_t current_offset = offset;
++
++		while (bytes_copied < size)
++		{
++			size_t current_chunk_idx = current_offset / CHUNK_SIZE;
++			size_t current_chunk_off = current_offset % CHUNK_SIZE;
++			size_t bytes_left_in_chunk = CHUNK_SIZE - current_chunk_off;
++			size_t to_copy = std::min(size - bytes_copied, bytes_left_in_chunk);
++
++			Chunk* chunk = get_or_load_chunk(current_chunk_idx);
++			if (!chunk)
++				return nullptr;
++
++			// Handle EOF within chunk
++			if (chunk->data.size() < current_chunk_off + to_copy)
++			{
++				if (current_chunk_off >= chunk->data.size())
++					break; // EOF reached
++				to_copy = chunk->data.size() - current_chunk_off;
++			}
++
++			std::memcpy(stitch_buffer_.data() + bytes_copied, chunk->data.data() + current_chunk_off, to_copy);
++			bytes_copied += to_copy;
++			current_offset += to_copy;
++
++			if (to_copy == 0)
++				break; // Should not happen unless logic error or true EOF
++		}
++
++		return stitch_buffer_.data();
++	}
++
++	LazyFileLoader::Chunk* LazyFileLoader::get_or_load_chunk(size_t chunk_index)
++	{
++		access_counter_++;
++
++		// Check cache
++		for (auto& chunk : cache_)
++		{
++			if (chunk->index == chunk_index)
++			{
++				chunk->last_access = access_counter_;
++				return chunk.get();
++			}
++		}
++
++		// Not in cache, load it
++		auto new_chunk = std::make_unique<Chunk>();
++		new_chunk->index = chunk_index;
++		new_chunk->last_access = access_counter_;
++
++		// Determine size to read
++		size_t file_sum_size = backend_->size();
++		size_t start_pos = chunk_index * CHUNK_SIZE;
++		size_t end_pos = std::min(start_pos + CHUNK_SIZE, file_sum_size);
++		size_t bytes_to_read = end_pos - start_pos;
++
++		new_chunk->data.resize(bytes_to_read);
++
++		if (!backend_->seek(start_pos))
++		{
++			std::cerr << "[LazyFS] Seek failed for chunk " << chunk_index << std::endl;
++			return nullptr;
++		}
++
++		size_t read = backend_->read(new_chunk->data.data(), bytes_to_read);
++		if (read != bytes_to_read)
++		{
++			std::cerr << "[LazyFS] Read failed for chunk " << chunk_index << std::endl;
++			return nullptr;
++		}
++
++		// std::cout << "[LazyFS] Loaded chunk " << chunk_index << " (" << read << " bytes)" << std::endl;
++
++		// Add to cache (evict if needed)
++		if (cache_.size() >= CACHE_SIZE)
++		{
++			// Find LRU
++			auto lru_it = cache_.begin();
++			for (auto it = cache_.begin(); it != cache_.end(); ++it)
++			{
++				if ((*it)->last_access < (*lru_it)->last_access)
++				{
++					lru_it = it;
++				}
++			}
++			cache_.erase(lru_it);
++		}
++
++		cache_.push_back(std::move(new_chunk));
++		return cache_.back().get();
++	}
++
++} // namespace LazyFS

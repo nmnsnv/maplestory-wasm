@@ -1,0 +1,68 @@
+diff --git a/IO/UITypes/UIWorldMap.cpp b/IO/UITypes/UIWorldMap.cpp
+index 9149ad5..9e15bec 100644
+--- a/IO/UITypes/UIWorldMap.cpp
++++ b/IO/UITypes/UIWorldMap.cpp
+@@ -76,6 +76,8 @@ namespace ms
+ 		set_search(true);
+ 
+ 		dragarea = Point<int16_t>(bg_dimensions_x, 20);
++
++		hovered_spot_index = -1;
+ 	}
+ 
+ 	void UIWorldMap::draw(float alpha) const
+@@ -155,6 +157,13 @@ namespace ms
+ 			update_world(user_map);
+ 		}
+ 
++		if (hovered_spot_index != -1 && (size_t)hovered_spot_index < map_spots.size())
++		{
++			auto& spot = map_spots[hovered_spot_index];
++			int32_t map_id = spot.second.map_ids.empty() ? 0 : spot.second.map_ids[0];
++			UI::get().show_map(Tooltip::Parent::WORLDMAP, spot.second.title, spot.second.description, map_id, spot.second.bolded, false);
++		}
++
+ 		search_text.update(get_search_pos(), search_text_dim);
+ 
+ 		for (size_t i = 0; i < MAPSPOT_TYPE_MAX; i++)
+@@ -247,9 +256,11 @@ namespace ms
+ 			return new_state;
+ 
+ 		show_path_img = false;
++		hovered_spot_index = -1;
+ 
+-		for (auto path : map_spots)
++		for (size_t i = 0; i < map_spots.size(); ++i)
+ 		{
++			auto& path = map_spots[i];
+ 			Point<int16_t> p = path.first + position + base_position - 10;
+ 			Point<int16_t> d = p + path.second.marker.get_dimensions();
+ 			Rectangle<int16_t> abs_bounds = Rectangle<int16_t>(p, d);
+@@ -258,8 +269,7 @@ namespace ms
+ 			{
+ 				path_img = path.second.path;
+ 				show_path_img = path_img.is_valid();
+-
+-				UI::get().show_map(Tooltip::Parent::WORLDMAP, path.second.title, path.second.description, path.second.map_ids[0], path.second.bolded, false);
++				hovered_spot_index = i;
+ 				break;
+ 			}
+ 		}
+@@ -294,7 +304,7 @@ namespace ms
+ 			WorldMap = nl::nx::Map["WorldMap"]["WorldMap.img"];
+ 
+ 		base_img = WorldMap["BaseImg"][0];
+-		parent_map = WorldMap["info"]["parentMap"];
++		parent_map = WorldMap["info"]["parentMap"].get_string();
+ 
+ 		link_images.clear();
+ 		link_maps.clear();
+@@ -312,7 +322,7 @@ namespace ms
+ 			Texture link_image = l["linkImg"];
+ 
+ 			link_images[i] = link_image;
+-			link_maps[i] = l["linkMap"];
++			link_maps[i] = l["linkMap"].get_string();
+ 
+ 			buttons[i] = std::make_unique<AreaButton>(base_position - link_image.get_origin(), link_image.get_dimensions());
+ 			buttons[i]->set_active(true);

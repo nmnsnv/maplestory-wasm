@@ -1,0 +1,13 @@
+diff --git a/IO/Keyboard.cpp b/IO/Keyboard.cpp
+index cb5f18d..96da98e 100644
+--- a/IO/Keyboard.cpp
++++ b/IO/Keyboard.cpp
+@@ -17,7 +17,7 @@
+ //////////////////////////////////////////////////////////////////////////////////
+ #include "Keyboard.h"
+ 
+-#include <glfw3.h>
++#include <GLFW/glfw3.h>
+ 
+ namespace ms
+ {
