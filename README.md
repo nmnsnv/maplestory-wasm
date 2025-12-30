@@ -148,7 +148,10 @@ cd maplestory-wasm
 ./scripts/run_all.sh
 ```
 
-Then open **http://localhost:8000** in your browser. That's it! 🎉
+Then open **http://<Your-LAN-IP>:8000** in your browser (e.g., `192.168.1.X:8000`).
+
+> [!WARNING]
+> You **must** use your LAN IP. Accessing via `localhost` or `127.0.0.1` **will not work** due to docker networking.
 
 > **Note:** The Docker setup automatically syncs sources, applies patches, builds the WASM client, and starts all services.
 
@@ -220,7 +223,7 @@ python web/assets_server.py
 
 #### 5. Play
 
-Open **http://localhost:8000** in a modern browser (Chrome, Firefox, Edge).
+Open **http://<Your-LAN-IP>:8000** in a modern browser. Do NOT use `localhost`.
 
 </details>
 
