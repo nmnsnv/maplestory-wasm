@@ -1,0 +1,12 @@
+diff --git a/Net/Cryptography.cpp b/Net/Cryptography.cpp
+index e5dd07b..bdd42a5 100644
+--- a/Net/Cryptography.cpp
++++ b/Net/Cryptography.cpp
+@@ -16,6 +16,7 @@
+ // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
+ //////////////////////////////////////////////////////////////////////////////
+ #include "Cryptography.h"
++#include <cstddef>
+ 
+ namespace jrc
+ {

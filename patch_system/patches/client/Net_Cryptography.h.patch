@@ -1,0 +1,12 @@
+diff --git a/Net/Cryptography.h b/Net/Cryptography.h
+index c1dd2a4..571e455 100644
+--- a/Net/Cryptography.h
++++ b/Net/Cryptography.h
+@@ -21,6 +21,7 @@
+ #include "../Journey.h"
+ 
+ #include <cstdint>
++#include <cstddef>
+ 
+ namespace jrc
+ {

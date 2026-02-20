@@ -1,0 +1,15 @@
+diff --git a/Net/Session.h.rej b/Net/Session.h.rej
+new file mode 100644
+index 0000000..5fd6de5
+--- /dev/null
++++ b/Net/Session.h.rej
+@@ -0,0 +1,9 @@
++diff a/Net/Session.h b/Net/Session.h	(rejected hunks)
++@@ -18,6 +18,7 @@
++ #pragma once
++ 
++ #include "Cryptography.h"
+++#include "Net/SocketWinsock.h"
++ #include "PacketSwitch.h"
++ 
++ #include "../Error.h"

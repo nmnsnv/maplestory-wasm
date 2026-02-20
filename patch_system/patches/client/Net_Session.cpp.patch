@@ -1,55 +1,47 @@
 diff --git a/Net/Session.cpp b/Net/Session.cpp
-index 03a1df7..199a70e 100644
+index 9832e7f..c750fd9 100644
 --- a/Net/Session.cpp
 +++ b/Net/Session.cpp
-@@ -18,10 +18,13 @@
+@@ -18,7 +18,9 @@
  #include "Session.h"
  
  #include "../Configuration.h"
-+#include "MapleStory.h"
+-
++#ifdef MS_PLATFORM_WASM
 +#include "../Util/Misc.h"
++#endif
  
- namespace ms
+ namespace jrc
  {
--	Session::Session()
-+	// TODO: Move socket info to Configuration
-+	Session::Session() : socket() // WebSocket proxy address
- 	{
- 		connected = false;
- 		length = 0;
-@@ -36,14 +39,26 @@ namespace ms
+@@ -39,14 +41,31 @@ namespace jrc
  
- 	bool Session::init(const char* host, const char* port)
- 	{
-+		std::string final_host = host;
-+		if (final_host == "0.0.0.0")
-+		{
-+			final_host = getBrowserHostname();
-+			LOG(LOG_DEBUG, "Host is 0.0.0.0, resolving to: " << final_host);
-+		}
-+
-+		LOG(LOG_INFO, "Connecting to " << final_host << ":" << port);
- 		// Connect to the server
--		connected = socket.open(host, port);
-+		connected = socket.open(final_host.c_str(), port);
+     bool Session::init(const char* host, const char* port)
+     {
++#ifdef MS_PLATFORM_WASM
++        std::string final_host = host;
++        if (final_host == "0.0.0.0")
++        {
++            final_host = getBrowserHostname();
++            Console::get().print("Host is 0.0.0.0, resolving to: " + final_host);
++        }
++        Console::get().print("Connecting to " + final_host + ":" + port);
++        connected = socket.open(final_host.c_str(), port);
++#else
+         // Connect to the server.
+         connected = socket.open(host, port);
++#endif
  
- 		if (connected)
- 		{
- 			// Read keys necessary for communicating with the server
- 			cryptography = { socket.get_buffer() };
- 		}
-+		else
-+		{
-+			LOG(LOG_ERROR, "Failed to connect");
-+		}
+         if (connected)
+         {
+             // Read keys neccessary for communicating with the server.
+             cryptography = { socket.get_buffer() };
+         }
++#ifdef MS_PLATFORM_WASM
++        else
++        {
++            Console::get().print("Failed to connect");
++        }
++#endif
  
- 		return connected;
- 	}
-@@ -61,6 +76,7 @@ namespace ms
- 
- 	void Session::reconnect(const char* address, const char* port)
- 	{
-+		LOG(LOG_INFO, "Reconnecting to " << address << ":" << port);
- 		// Close the current connection and open a new one
- 		bool success = socket.close();
- 
+         return connected;
+     }

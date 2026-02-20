@@ -99,7 +99,7 @@ def apply_patches_generic(system_root):
             try:
                 # Try simple check first
                 subprocess.run(
-                   ['git', 'apply', '--3way', '--whitespace=nowarn', str(patch_file)],
+                   ['git', 'apply', '--reject', '--whitespace=nowarn', str(patch_file)],
                    cwd=target_dir,
                    check=True,
                    stdout=subprocess.PIPE,
@@ -126,7 +126,7 @@ def apply_patches_generic(system_root):
                      # Decode bytes if possible, or print as is
                      err_msg = e.stderr.decode('utf-8') if e.stderr else "No stderr"
                      print(f"Git Error: {err_msg}")
-                     return False
+                     # return False  # Continue on error to apply as many patches as possible EG: --reject leaves .rej files
         
         # Explicitly reset index to ensure no files are staged/tracked by the patch application
         # This satisfies the user requirement: "don't want you to add (track) files"

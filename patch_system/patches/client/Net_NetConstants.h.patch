@@ -1,0 +1,12 @@
+diff --git a/Net/NetConstants.h b/Net/NetConstants.h
+index 00f977a..4de81f1 100644
+--- a/Net/NetConstants.h
++++ b/Net/NetConstants.h
+@@ -17,6 +17,7 @@
+ //////////////////////////////////////////////////////////////////////////////
+ #pragma once
+ #include <cstdint>
++#include <cstddef>
+ 
+ namespace jrc
+ {

@@ -1,154 +1,85 @@
 diff --git a/Net/SocketWinsock.cpp b/Net/SocketWinsock.cpp
-index c619ba6..5c56a42 100644
+index 0548ab5..af22d15 100644
 --- a/Net/SocketWinsock.cpp
 +++ b/Net/SocketWinsock.cpp
-@@ -16,79 +16,25 @@
- //	along with this program.  If not, see <https://www.gnu.org/licenses/>.		//
- //////////////////////////////////////////////////////////////////////////////////
+@@ -17,17 +17,29 @@
+ //////////////////////////////////////////////////////////////////////////////
  #include "SocketWinsock.h"
-+#include "MapleStory.h"
-+#include "Net/SockInternal.h"
+ #ifndef JOURNEY_USE_ASIO
++
++#ifdef MS_PLATFORM_WASM
++#include "SockInternal.h"
++#include "../Console.h"
++#else
+ #include <WinSock2.h>
+ #include <ws2tcpip.h>
  
--#ifndef USE_ASIO
--#include <ws2tcpip.h>
-+// #ifndef USE_ASIO
-+// #include <ws2tcpip.h>
+ #pragma comment (lib, "Ws2_32.lib")
+ #pragma comment (lib, "Mswsock.lib")
+ #pragma comment (lib, "AdvApi32.lib")
++#endif
  
--// TODO: Can this be moved?
--#pragma comment (lib, "Ws2_32.lib")
-+// // TODO: Can this be moved?
-+// #pragma comment (lib, "Ws2_32.lib")
- 
- namespace ms
+ namespace jrc
  {
--	bool SocketWinsock::open(const char* iaddr, const char* port)
-+	bool SocketWinsock::open(const char* iaddr, const char* port_char)
- 	{
--		WSADATA wsa_info;
--		sock = INVALID_SOCKET;
-+		LOG(LOG_INFO, "Opening connection: " << iaddr << ":" << port_char);
-+		std::string address = iaddr;
-+		std::string port = port_char;
-+		sock = ws_connect(address, port);
+     bool SocketWinsock::open(const char* iaddr, const char* port)
+     {
++#ifdef MS_PLATFORM_WASM
++        Console::get().print("Opening connection: " + std::string(iaddr) + ":" + std::string(port));
++        sock = ws_connect(std::string(iaddr), std::string(port));
++        int result = ws_recv(sock, (char*)buffer, 32, (size_t)-1);
++        return result == HANDSHAKE_LEN;
++#else
+         WSADATA wsa_info;
+         sock = INVALID_SOCKET;
  
--		struct addrinfo* addr_info = NULL;
--		struct addrinfo* ptr = NULL;
--		struct addrinfo hints;
--
--		int result = WSAStartup(MAKEWORD(2, 2), &wsa_info);
--
--		if (result != 0)
--			return false;
--
--		ZeroMemory(&hints, sizeof(hints));
--
--		hints.ai_family = AF_UNSPEC;
--		hints.ai_socktype = SOCK_STREAM;
--		hints.ai_protocol = IPPROTO_TCP;
--
--		result = getaddrinfo(iaddr, port, &hints, &addr_info);
--
--		if (result != 0)
--		{
--			WSACleanup();
--
--			return false;
--		}
--
--		for (ptr = addr_info; ptr != NULL; ptr = ptr->ai_next)
--		{
--			sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
--
--			if (sock == INVALID_SOCKET)
--			{
--				WSACleanup();
--
--				return false;
--			}
--
--			result = connect(sock, ptr->ai_addr, (int)ptr->ai_addrlen);
--
--			if (result == SOCKET_ERROR)
--			{
--				closesocket(sock);
--
--				sock = INVALID_SOCKET;
--
--				continue;
--			}
--
--			break;
--		}
--
--		freeaddrinfo(addr_info);
--
--		if (sock == INVALID_SOCKET)
--		{
--			WSACleanup();
--
--			return false;
--		}
--
--		result = recv(sock, (char*)buffer, 32, 0);
-+		int result = ws_recv(sock, (char*)buffer, 32, (size_t)-1);
+@@ -89,22 +101,42 @@ namespace jrc
+             WSACleanup();
+             return false;
+         }
++#endif
+     }
  
- 		if (result == HANDSHAKE_LEN)
- 		{
-@@ -96,7 +42,6 @@ namespace ms
- 		}
- 		else
- 		{
--			WSACleanup();
+     bool SocketWinsock::close()
+     {
++#ifdef MS_PLATFORM_WASM
++        Console::get().print("Closing connection");
++        int error = ws_closesocket(sock);
++        return error != WS_SOCK_ERROR;
++#else
+         int error = closesocket(sock);
+         WSACleanup();
+         return error != SOCKET_ERROR;
++#endif
+     }
  
- 			return false;
- 		}
-@@ -104,31 +49,31 @@ namespace ms
+     bool SocketWinsock::dispatch(const int8_t* bytes, size_t length) const
+     {
++#ifdef MS_PLATFORM_WASM
++        return ws_send(sock, (char*)bytes, static_cast<int>(length), 0) != WS_SOCK_ERROR;
++#else
+         return send(sock, (char*)bytes, static_cast<int>(length), 0) != SOCKET_ERROR;
++#endif
+     }
  
- 	bool SocketWinsock::close()
- 	{
--		int error = closesocket(sock);
--
--		WSACleanup();
-+		LOG(LOG_INFO, "Closing connection");
-+		int error = ws_closesocket(sock);
+     size_t SocketWinsock::receive(bool* success)
+     {
++#ifdef MS_PLATFORM_WASM
++        int result = ws_recv(sock, (char*)buffer, MAX_PACKET_LENGTH, 0);
++        if (result == WS_SOCK_ERROR)
++        {
++            *success = false;
++            return 0;
++        }
++        return result;
++#else
+         timeval timeout = { 0, 0 };
+         fd_set sockset = { 0 };
+         FD_SET(sock, &sockset);
+@@ -122,6 +154,7 @@ namespace jrc
+         {
+             return result;
+         }
++#endif
+     }
  
--		return error != SOCKET_ERROR;
-+		return error != WS_SOCK_ERROR;
- 	}
- 
- 	bool SocketWinsock::dispatch(const int8_t* bytes, size_t length) const
- 	{
--		return send(sock, (char*)bytes, static_cast<int>(length), 0) != SOCKET_ERROR;
-+		return ws_send(sock, (char*)bytes, static_cast<int>(length), 0) != WS_SOCK_ERROR;
- 	}
- 
- 	size_t SocketWinsock::receive(bool* success)
- 	{
--		timeval timeout = { 0, 0 };
--		fd_set sockset = { 0 };
-+		// timeval timeout = { 0, 0 };
-+		// fd_set sockset = { 0 };
- 
--		FD_SET(sock, &sockset);
-+		// FD_SET(sock, &sockset);
- 
--		int result = select(0, &sockset, 0, 0, &timeout);
-+		// int result = select(0, &sockset, 0, 0, &timeout);
- 
--		if (result > 0)
--			result = recv(sock, (char*)buffer, MAX_PACKET_LENGTH, 0);
-+		// if (result > 0)
-+		// 	result = recv(sock, (char*)buffer, MAX_PACKET_LENGTH, 0);
-+		int result = ws_recv(sock, (char*)buffer, MAX_PACKET_LENGTH, 0);
- 
--		if (result == SOCKET_ERROR)
-+		if (result == WS_SOCK_ERROR)
- 		{
- 			*success = false;
- 
-@@ -145,4 +90,3 @@ namespace ms
- 		return buffer;
- 	}
- }
--#endif
-\ No newline at end of file
+     const int8_t* SocketWinsock::get_buffer() const

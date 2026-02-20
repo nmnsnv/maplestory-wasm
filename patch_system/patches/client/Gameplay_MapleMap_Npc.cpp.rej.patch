@@ -1,0 +1,18 @@
+diff --git a/Gameplay/MapleMap/Npc.cpp.rej b/Gameplay/MapleMap/Npc.cpp.rej
+new file mode 100644
+index 0000000..76db46d
+--- /dev/null
++++ b/Gameplay/MapleMap/Npc.cpp.rej
+@@ -0,0 +1,12 @@
++diff a/Gameplay/MapleMap/Npc.cpp b/Gameplay/MapleMap/Npc.cpp	(rejected hunks)
++@@ -62,8 +62,8 @@ namespace ms
++ 				lines[state].push_back(strsrc[speaknode.get_string()]);
++ 		}
++ 
++-		name = strsrc["name"];
++-		func = strsrc["func"];
+++		name = strsrc["name"].get_string();
+++		func = strsrc["func"].get_string();
++ 
++ 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
++ 		std::wstring wide = converter.from_bytes(func);

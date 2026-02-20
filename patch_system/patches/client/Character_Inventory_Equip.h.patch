@@ -1,0 +1,12 @@
+diff --git a/Character/Inventory/Equip.h b/Character/Inventory/Equip.h
+index f3ed184..6928a2f 100644
+--- a/Character/Inventory/Equip.h
++++ b/Character/Inventory/Equip.h
+@@ -17,6 +17,7 @@
+ //////////////////////////////////////////////////////////////////////////////
+ #pragma once
+ #include "EquipQuality.h"
++#include <string>
+ 
+ namespace jrc
+ {

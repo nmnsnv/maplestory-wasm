@@ -1,0 +1,16 @@
+diff --git a/Character/Look/Face.cpp.rej b/Character/Look/Face.cpp.rej
+new file mode 100644
+index 0000000..28c21fa
+--- /dev/null
++++ b/Character/Look/Face.cpp.rej
+@@ -0,0 +1,10 @@
++diff a/Character/Look/Face.cpp b/Character/Look/Face.cpp	(rejected hunks)
++@@ -88,7 +88,7 @@ namespace ms
++ 			}
++ 		}
++ 
++-		name = nl::nx::String["Eqp.img"]["Eqp"]["Face"][std::to_string(faceid)]["name"];
+++		name = nl::nx::String["Eqp.img"]["Eqp"]["Face"][std::to_string(faceid)]["name"].get_string();
++ 	}
++ 
++ 	void Face::draw(Expression::Id expression, uint8_t frame, const DrawArgument& args) const

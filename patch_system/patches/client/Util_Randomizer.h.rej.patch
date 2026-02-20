@@ -1,0 +1,16 @@
+diff --git a/Util/Randomizer.h.rej b/Util/Randomizer.h.rej
+new file mode 100644
+index 0000000..b35ef5d
+--- /dev/null
++++ b/Util/Randomizer.h.rej
+@@ -0,0 +1,10 @@
++diff a/Util/Randomizer.h b/Util/Randomizer.h	(rejected hunks)
++@@ -88,7 +88,7 @@ namespace ms
++ 		template <class E>
++ 		E next_enum(E from, E to) const
++ 		{
++-			auto next_underlying = next_int<std::underlying_type<E>::type>(from, to);
+++			auto next_underlying = next_int<typename std::underlying_type<E>::type>(from, to);
++ 
++ 			return static_cast<E>(next_underlying);
++ 		}

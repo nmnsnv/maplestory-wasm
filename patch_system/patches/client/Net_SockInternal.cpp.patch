@@ -1,12 +1,13 @@
 diff --git a/Net/SockInternal.cpp b/Net/SockInternal.cpp
 new file mode 100644
-index 0000000..76532ee
+index 0000000..58b9a0d
 --- /dev/null
 +++ b/Net/SockInternal.cpp
-@@ -0,0 +1,264 @@
+@@ -0,0 +1,299 @@
 +
 +#include "SockInternal.h"
-+#include "MapleStory.h"
++#include "../Console.h"
++#include "../Journey.h"
 +#include "Template/Singleton.h"
 +#include "Util/Misc.h"
 +#include <cstddef>
@@ -16,6 +17,7 @@ index 0000000..76532ee
 +#include <memory>
 +#include <unordered_map>
 +#include <vector>
++#include <sstream>
 +
 +#define MAX_PACKET_LENGTH 4096 * 16
 +
@@ -89,17 +91,13 @@ index 0000000..76532ee
 +			return connected;
 +		}
 +
-+		size_t receive(char* data, size_t len, size_t timeout)
++		bool is_buffer_empty() const
 +		{
-+			size_t sleep_len = std::min((size_t)5, timeout);
-+			size_t time_slept = 0;
++			return buffer.empty();
++		}
 +
-+			while (buffer.empty() && timeout > 0 && time_slept < timeout)
-+			{
-+				emscripten_sleep(sleep_len);
-+				time_slept += sleep_len;
-+			}
-+
++		size_t receive(char* data, size_t len)
++		{
 +			if (buffer.empty())
 +				return 0;
 +
@@ -118,22 +116,22 @@ index 0000000..76532ee
 +		WebSockState connected;
 +	};
 +
-+	class WebSockManager : public ms::Singleton<WebSockManager>
++	class WebSockManager : public jrc::Singleton<WebSockManager>
 +	{
 +	  public:
 +		int connect(const std::string& address, const std::string& port)
 +		{
 +			std::string ws_url = "ws://";
-+			ws_url += ms::getBrowserHostname(); // Dynamic hostname from browser
++			ws_url += jrc::getBrowserHostname(); // Dynamic hostname from browser
 +			ws_url += ":";
 +			ws_url += WEB_SOCK_PORT; // Proxy server port
 +
-+			LOG(LOG_INFO, "Connecting to WebSocket proxy: " << ws_url);
++			jrc::Console::get().print("Connecting to WebSocket proxy: " + ws_url);
 +
 +			// Check if WebSocket is supported
 +			if (!emscripten_websocket_is_supported())
 +			{
-+				LOG(LOG_ERROR, "WebSocket is not supported in this browser");
++				jrc::Console::get().print("WebSocket is not supported in this browser");
 +				return WS_SOCK_ERROR;
 +			}
 +
@@ -148,7 +146,7 @@ index 0000000..76532ee
 +			EMSCRIPTEN_WEBSOCKET_T socket = emscripten_websocket_new(&attrs);
 +			if (socket <= 0)
 +			{
-+				LOG(LOG_ERROR, "Failed to create WebSocket");
++				jrc::Console::get().print("Failed to create WebSocket");
 +				return false;
 +			}
 +
@@ -162,14 +160,30 @@ index 0000000..76532ee
 +			emscripten_websocket_set_onclose_callback(socket, sock_instance, onclose);
 +
 +			// TODO: I think this should be blocking?
-+			while (sock_instance->get_state() == WebSockState::CONNECTING)
++			while (true)
 +			{
++				auto inst = get_instance(socket);
++				if (!inst)
++				{
++					// the instance might be deleted on error/close
++					return WS_SOCK_ERROR;
++				}
++				if (inst->get_state() != WebSockState::CONNECTING)
++				{
++					break;
++				}
 +				emscripten_sleep(5);
++			}
++
++			auto inst = get_instance(socket);
++			if (!inst || inst->get_state() != WebSockState::OPEN)
++			{
++				return WS_SOCK_ERROR;
 +			}
 +
 +			std::ostringstream oss;
 +			oss << address << ":" << port;
-+			sock_instance->send(oss.str());
++			inst->send(oss.str());
 +
 +			return socket;
 +		}
@@ -237,7 +251,7 @@ index 0000000..76532ee
 +	}
 +}
 +
-+size_t ws_connect(const std::string& address, std::string& port)
++size_t ws_connect(const std::string& address, const std::string& port)
 +{
 +	return WebSockManager::get().connect(address, port);
 +}
@@ -255,12 +269,33 @@ index 0000000..76532ee
 +
 +int ws_recv(size_t socket, char* bytes, size_t length, size_t timeout)
 +{
++	size_t sleep_len = std::min((size_t)5, timeout);
++	size_t time_slept = 0;
++
 +	auto instance = WebSockManager::get().get_instance(static_cast<int>(socket));
 +	if (instance == nullptr)
 +	{
 +		return WS_SOCK_ERROR;
 +	}
-+	return instance->receive(bytes, length, timeout);
++
++	while (instance->is_buffer_empty() && timeout > 0 && time_slept < timeout)
++	{
++		emscripten_sleep(sleep_len);
++		time_slept += sleep_len;
++
++		instance = WebSockManager::get().get_instance(static_cast<int>(socket));
++		if (instance == nullptr || (instance->get_state() != WebSockState::OPEN && instance->is_buffer_empty()))
++		{
++			return WS_SOCK_ERROR;
++		}
++	}
++
++	if (instance == nullptr || instance->is_buffer_empty())
++	{
++		return 0;
++	}
++
++	return instance->receive(bytes, length);
 +}
 +
 +int ws_closesocket(size_t socket)

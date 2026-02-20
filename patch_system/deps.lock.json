@@ -1,8 +1,8 @@
 {
     "repos": {
         "client": {
-            "url": "https://github.com/ryantpayton/MapleStory-Client.git",
-            "rev": "4712e2233836fd265fc9ece7e40179ab76704da2",
+            "url": "https://github.com/Libre-Maple/LibreMaple-Client.git",
+            "rev": "526398fbcf8df73d17833d6324f07c23227f0e8a",
             "path": "src/client"
         },
         "server": {

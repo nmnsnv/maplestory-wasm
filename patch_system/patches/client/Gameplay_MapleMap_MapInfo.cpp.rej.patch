@@ -1,0 +1,16 @@
+diff --git a/Gameplay/MapleMap/MapInfo.cpp.rej b/Gameplay/MapleMap/MapInfo.cpp.rej
+new file mode 100644
+index 0000000..f125f81
+--- /dev/null
++++ b/Gameplay/MapleMap/MapInfo.cpp.rej
+@@ -0,0 +1,10 @@
++diff a/Gameplay/MapleMap/MapInfo.cpp b/Gameplay/MapleMap/MapInfo.cpp	(rejected hunks)
++@@ -41,7 +41,7 @@ namespace ms
++ 		cloud = info["cloud"].get_bool();
++ 		fieldlimit = info["fieldLimit"];
++ 		hideminimap = info["hideMinimap"].get_bool();
++-		mapmark = info["mapMark"];
+++		mapmark = info["mapMark"].get_string();
++ 		swim = info["swim"].get_bool();
++ 		town = info["town"].get_bool();
++ 

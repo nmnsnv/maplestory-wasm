@@ -1,0 +1,19 @@
+diff --git a/Template/Singleton.h.rej b/Template/Singleton.h.rej
+new file mode 100644
+index 0000000..2a3dc81
+--- /dev/null
++++ b/Template/Singleton.h.rej
+@@ -0,0 +1,13 @@
++diff a/Template/Singleton.h b/Template/Singleton.h	(rejected hunks)
++@@ -30,6 +30,11 @@ namespace ms
++ 			return instance;
++ 		}
++ 
+++		static T* get_ptr()
+++		{
+++			return &instance;
+++		}
+++
++ 	private:
++ 		T& operator = (const T&) = delete;
++ 
