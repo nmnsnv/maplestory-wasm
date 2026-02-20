@@ -1,5 +1,5 @@
 diff --git a/includes/NoLifeNx/nlnx/node.cpp b/includes/NoLifeNx/nlnx/node.cpp
-index a0a6f97..83259a1 100644
+index a0a6f97..aa3371c 100644
 --- a/includes/NoLifeNx/nlnx/node.cpp
 +++ b/includes/NoLifeNx/nlnx/node.cpp
 @@ -25,39 +25,157 @@
@@ -206,7 +206,7 @@ index a0a6f97..83259a1 100644
          case type::none:
          case type::vector:
          case type::bitmap:
-@@ -210,48 +335,140 @@ namespace nl {
+@@ -210,48 +335,134 @@ namespace nl {
          }
      }
      vector2i node::get_vector(vector2i def) const {
@@ -219,14 +219,8 @@ index a0a6f97..83259a1 100644
      bitmap node::get_bitmap() const {
 +#ifdef MS_PLATFORM_WASM
 +        auto d = DATA_PTR;
-+        // On WASM, m_file->header uses offsets, check header_offset? 
-+        // No, in file_impl.hpp we see file::header const * header is maintained in Native...
-+        // But in WASM struct we replaced pointer with offset header.
-+        // So m_file->header is an offset (uint64_t).
-+        
-+        // We need to resolve header offset to check bitmap_count
 +        auto header_ptr = get_data<file::header>(m_file, m_file->header);
-+        
++
 +        if (d && d->type == type::bitmap && header_ptr && header_ptr->bitmap_count)
 +            return to_bitmap();
 +        return {nullptr, 0, 0, 0};
@@ -358,7 +352,7 @@ index a0a6f97..83259a1 100644
          auto p = m_file->node_table + m_data->children;
          auto n = m_data->num;
          auto const b = reinterpret_cast<const char *>(m_file->base);
-@@ -288,33 +505,69 @@ namespace nl {
+@@ -288,33 +499,69 @@ namespace nl {
              else
                  return {p2, m_file};
          }

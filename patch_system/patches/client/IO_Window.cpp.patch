@@ -1,5 +1,5 @@
 diff --git a/IO/Window.cpp b/IO/Window.cpp
-index d5415df..cafe30d 100644
+index d5415df..b1ff5ed 100644
 --- a/IO/Window.cpp
 +++ b/IO/Window.cpp
 @@ -17,6 +17,10 @@
@@ -13,8 +13,55 @@ index d5415df..cafe30d 100644
  #include "UI.h"
  
  #include "../Console.h"
-@@ -140,17 +144,31 @@ namespace jrc
+@@ -99,12 +103,28 @@ namespace jrc
+             return Error::GLFW;
+         }
+ 
++#ifdef MS_PLATFORM_WASM
++        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
++        glwnd = glfwCreateWindow(
++            Constants::VIEWWIDTH,
++            Constants::VIEWHEIGHT,
++            "Journey",
++            fullscreen ? glfwGetPrimaryMonitor() : nullptr,
++            nullptr
++        );
++        if (!glwnd) {
++            return Error::WINDOW;
++        }
++        glfwMakeContextCurrent(glwnd);
++        glfwSetErrorCallback(error_callback);
++#else
+         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+         context = glfwCreateWindow(1, 1, "", nullptr, nullptr);
+         glfwMakeContextCurrent(context);
+         glfwSetErrorCallback(error_callback);
+         glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
+         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
++#endif
+ 
+         if (Error error = GraphicsGL::get().init())
+         {
+@@ -116,6 +136,7 @@ namespace jrc
+ 
+     Error Window::initwindow()
+     {
++#ifndef MS_PLATFORM_WASM
+         if (glwnd)
+         {
+             glfwDestroyWindow(glwnd);
+@@ -135,22 +156,41 @@ namespace jrc
+         }
+ 
+         glfwMakeContextCurrent(glwnd);
++#endif
++
++
+ 
+         bool vsync = Setting<VSync>::get().load();
++#ifndef MS_PLATFORM_WASM
          glfwSwapInterval(vsync ? 1 : 0);
++#endif
  
          glViewport(0, 0, Constants::VIEWWIDTH, Constants::VIEWHEIGHT);
 +#ifndef MS_PLATFORM_WASM

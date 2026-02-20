@@ -1,8 +1,8 @@
 diff --git a/Util/NxFiles.cpp b/Util/NxFiles.cpp
-index e5544d1..41c8cc5 100644
+index e5544d1..d763195 100644
 --- a/Util/NxFiles.cpp
 +++ b/Util/NxFiles.cpp
-@@ -24,6 +24,10 @@
+@@ -24,14 +24,28 @@
  
  #include <fstream>
  
@@ -13,7 +13,8 @@ index e5544d1..41c8cc5 100644
  #include <unistd.h>
  #include <cstdio>
  
-@@ -32,6 +36,17 @@ namespace jrc
+-
+ namespace jrc
  {
      Error NxFiles::init()
      {
@@ -31,7 +32,7 @@ index e5544d1..41c8cc5 100644
          for (auto filename : NxFiles::filenames)
          {
              if (!std::ifstream{ filename }.good())
-@@ -39,6 +54,7 @@ namespace jrc
+@@ -39,6 +53,7 @@ namespace jrc
                  return { Error::MISSING_FILE, filename };
              }
          }
@@ -39,3 +40,24 @@ index e5544d1..41c8cc5 100644
  
          try
          {
+@@ -53,14 +68,14 @@ namespace jrc
+ 
+         constexpr const char* POSTCHAOS_BITMAP =
+             "Login.img/WorldSelect/BtChannel/layer:bg";
+-        auto postChaosBitmapType =
+-            nl::nx::ui.resolve(POSTCHAOS_BITMAP).data_type();
+-
+-        if (postChaosBitmapType != nl::node::type::bitmap)
++        // Attempt to resolve it to log if this "version" identifier exists
++        auto ui_node = nl::nx::ui.resolve(POSTCHAOS_BITMAP);
++        
++        if (!ui_node || ui_node.data_type() != nl::node::type::bitmap)
+         {
+-            return Error::WRONG_UI_FILE;
++            Console::get().print("[init] UI.nx is missing the post-Chaos 'Login.img/WorldSelect/BtChannel/layer:bg' node.");
++            Console::get().print("[init] Client expected post-Chaos UI.nx version, but continuing anyway.");
+         }
+-
+         return Error::NONE;
+     }
+ }
