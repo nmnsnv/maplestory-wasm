@@ -1,5 +1,5 @@
 diff --git a/includes/NoLifeNx/nlnx/nx.cpp b/includes/NoLifeNx/nlnx/nx.cpp
-index 5c3b123..199fbec 100644
+index 5c3b123..ebd7b49 100644
 --- a/includes/NoLifeNx/nlnx/nx.cpp
 +++ b/includes/NoLifeNx/nlnx/nx.cpp
 @@ -32,7 +32,13 @@ namespace nl
@@ -16,19 +16,3 @@ index 5c3b123..199fbec 100644
  		}
  
  		node add_file(std::string name)
-@@ -40,7 +46,15 @@ namespace nl
- 			if (!exists(name))
- 				return {};
- 
-+#ifdef MS_PLATFORM_WASM
-+			try {
-+				files.emplace_back(new file(name));
-+			} catch (const std::exception& e) {
-+				return {};
-+			}
-+#else
- 			files.emplace_back(new file(name));
-+#endif
- 
- 			return *files.back();
- 		}
