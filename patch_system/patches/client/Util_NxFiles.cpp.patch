@@ -1,0 +1,41 @@
+diff --git a/Util/NxFiles.cpp b/Util/NxFiles.cpp
+index e5544d1..41c8cc5 100644
+--- a/Util/NxFiles.cpp
++++ b/Util/NxFiles.cpp
+@@ -24,6 +24,10 @@
+ 
+ #include <fstream>
+ 
++#ifdef MS_PLATFORM_WASM
++#include "../LazyFS/LazyFS.h"
++#endif
++
+ #include <unistd.h>
+ #include <cstdio>
+ 
+@@ -32,6 +36,17 @@ namespace jrc
+ {
+     Error NxFiles::init()
+     {
++#ifdef MS_PLATFORM_WASM
++        LazyFS::Initialize();
++        for (auto filename : NxFiles::filenames)
++        {
++            std::string url = std::string("/assets/") + filename;
++            if (!LazyFS::RegisterFile(filename, url))
++            {
++                return { Error::MISSING_FILE, filename };
++            }
++        }
++#else
+         for (auto filename : NxFiles::filenames)
+         {
+             if (!std::ifstream{ filename }.good())
+@@ -39,6 +54,7 @@ namespace jrc
+                 return { Error::MISSING_FILE, filename };
+             }
+         }
++#endif
+ 
+         try
+         {

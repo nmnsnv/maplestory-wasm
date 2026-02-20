@@ -1,9 +1,9 @@
 diff --git a/LazyFS/LazyFileBackend.cpp b/LazyFS/LazyFileBackend.cpp
 new file mode 100644
-index 0000000..fc89b8b
+index 0000000..8ac525e
 --- /dev/null
 +++ b/LazyFS/LazyFileBackend.cpp
-@@ -0,0 +1,246 @@
+@@ -0,0 +1,254 @@
 +#include <LazyFS/LazyFileBackend.h>
 +#include <cstring>
 +#include <iostream>
@@ -28,11 +28,19 @@ index 0000000..fc89b8b
 +				if (typeof Module.LazyFS !== 'undefined' && Module.LazyFS.files.has(path))
 +				{
 +					var fileEntry = Module.LazyFS.files.get(path);
-+					// Fetch size if not already known (synchronous for now, will be async later)
++					// Fetch size if not already known
 +					if (fileEntry.size === null)
 +					{
-+						// console.error('[LazyFS] File size not yet fetched for:', path);
-+						return 0.0;
++						return Asyncify.handleSleep(function(wakeUp) {
++							Module.LazyFS.getFileSize(path).then(function(size) {
++								fileEntry.size = size;
++								wakeUp(size);
++							}).catch(function(e) {
++								if (e === 'unwind' || (e && e.message === 'unwind')) return;
++								console.error('[LazyFS] Error fetching file size for', path, ':', e);
++								wakeUp(0);
++							});
++						});
 +					}
 +					return fileEntry.size;
 +				}

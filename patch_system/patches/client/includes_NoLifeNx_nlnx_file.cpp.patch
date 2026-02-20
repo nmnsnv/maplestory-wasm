@@ -1,8 +1,8 @@
 diff --git a/includes/NoLifeNx/nlnx/file.cpp b/includes/NoLifeNx/nlnx/file.cpp
-index 060ca62..6a14e74 100644
+index 060ca62..cffb046 100644
 --- a/includes/NoLifeNx/nlnx/file.cpp
 +++ b/includes/NoLifeNx/nlnx/file.cpp
-@@ -18,6 +18,12 @@
+@@ -18,6 +18,13 @@
  
  #include "file_impl.hpp"
  #include "node_impl.hpp"
@@ -10,12 +10,13 @@ index 060ca62..6a14e74 100644
 +// LazyFS integration for WASM
 +#ifdef MS_PLATFORM_WASM
 +#include <LazyFS/LazyFileLoader.h>
++#include <LazyFS/LazyFS.h>
 +#endif
 +
  #ifdef _WIN32
  #  ifdef _MSC_VER
  #    include <codecvt>
-@@ -38,6 +44,7 @@
+@@ -38,6 +45,7 @@
  #  include <unistd.h>
  #endif
  #include <stdexcept>
@@ -23,13 +24,17 @@ index 060ca62..6a14e74 100644
  
  namespace nl {
      file::file(std::string name) {
-@@ -80,6 +87,15 @@ namespace nl {
+@@ -80,6 +88,19 @@ namespace nl {
  #  endif
          if (!m_data->base)
              throw std::runtime_error("Failed to map view of file " + name);
 +#else
 +#ifdef MS_PLATFORM_WASM
 +        // WASM: Use LazyFS instead of mmap
++        
++        // Ensure the file is registered with LazyFS before loading
++        LazyFS::RegisterFile(name, "/assets/" + name);
++
 +        size_t file_size = 0;
 +        m_data->base = LazyFS::LazyFileLoader::load_file(name, file_size);
 +        if (!m_data->base || file_size == 0)
@@ -39,7 +44,7 @@ index 060ca62..6a14e74 100644
  #else
          m_data->file_handle = ::open(name.c_str(), O_RDONLY);
          if (m_data->file_handle == -1)
-@@ -92,6 +108,35 @@ namespace nl {
+@@ -92,6 +113,35 @@ namespace nl {
          if (reinterpret_cast<intptr_t>(m_data->base) == -1)
              throw std::runtime_error("Failed to create memory mapping of file " + name);
  #endif
@@ -75,7 +80,7 @@ index 060ca62..6a14e74 100644
          m_data->header = reinterpret_cast<header const *>(m_data->base);
          if (m_data->header->magic != 0x34474B50)
              throw std::runtime_error(name + " is not a PKG4 NX file");
-@@ -99,6 +144,7 @@ namespace nl {
+@@ -99,6 +149,7 @@ namespace nl {
          m_data->string_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->string_offset);
          m_data->bitmap_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->bitmap_offset);
          m_data->audio_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->audio_offset);
@@ -83,7 +88,7 @@ index 060ca62..6a14e74 100644
      }
      void file::close() {
          if (!m_data) return;
-@@ -106,33 +152,109 @@ namespace nl {
+@@ -106,33 +157,109 @@ namespace nl {
          ::UnmapViewOfFile(m_data->base);
          ::CloseHandle(m_data->map);
          ::CloseHandle(m_data->file_handle);
