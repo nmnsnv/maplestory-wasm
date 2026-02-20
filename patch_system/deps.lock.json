@@ -4,11 +4,6 @@
             "url": "https://github.com/Libre-Maple/LibreMaple-Client.git",
             "rev": "526398fbcf8df73d17833d6324f07c23227f0e8a",
             "path": "src/client"
-        },
-        "server": {
-            "url": "https://github.com/ryantpayton/MapleStory-Server.git",
-            "rev": "f8bac70d143cb1e91aa2e6f5854c999a3c6d04f1",
-            "path": "src/server"
         }
     }
 }
