@@ -1,9 +1,9 @@
 diff --git a/LazyFS/lazyfs.js b/LazyFS/lazyfs.js
 new file mode 100644
-index 0000000..3903b2e
+index 0000000..9fede9f
 --- /dev/null
 +++ b/LazyFS/lazyfs.js
-@@ -0,0 +1,589 @@
+@@ -0,0 +1,623 @@
 +/**
 + * LazyFS - True Lazy Filesystem for WebAssembly
 + * WebSocket-based asset streaming with IndexedDB persistent caching
@@ -43,7 +43,7 @@ index 0000000..3903b2e
 +	pendingRequests: new Map(),
 +	requestIdCounter: 0,
 +
-+	// In-memory chunk cache: Map<"file:chunk", Uint8Array>
++	// In-memory chunk cache: Map<"file:size:chunk", Uint8Array>
 +	chunkCache: new Map(),
 +
 +	// File registry: Map<filepath, { size }>
@@ -92,6 +92,27 @@ index 0000000..3903b2e
 +	// ========== INDEXEDDB CACHE ==========
 +
 +	/**
++	 * Build a cache key scoped by file version so swapped files with the same
++	 * filename don't reuse stale chunks from older versions.
++	 */
++	getChunkCacheKey: function (filename, versionTag, chunkIndex) {
++		return `${filename}:${versionTag}:${chunkIndex}`;
++	},
++
++	getFileVersionTag: function (fileEntry) {
++		if (!fileEntry) {
++			return 'unknown';
++		}
++		if (fileEntry.version !== null && fileEntry.version !== undefined) {
++			return `v${fileEntry.version}`;
++		}
++		if (fileEntry.size !== null && fileEntry.size !== undefined) {
++			return `s${fileEntry.size}`;
++		}
++		return 'unknown';
++	},
++
++	/**
 +	 * Initialize IndexedDB cache
 +	 */
 +	initDB: function () {
@@ -133,7 +154,7 @@ index 0000000..3903b2e
 +	/**
 +	 * Get chunk from IndexedDB cache
 +	 */
-+	getCachedChunk: function (filename, chunkIndex) {
++	getCachedChunk: function (filename, versionTag, chunkIndex) {
 +		if (!this.dbReady || !this.db) {
 +			return Promise.resolve(null);
 +		}
@@ -142,7 +163,7 @@ index 0000000..3903b2e
 +			try {
 +				const tx = this.db.transaction(this.STORE_NAME, 'readonly');
 +				const store = tx.objectStore(this.STORE_NAME);
-+				const key = `${filename}:${chunkIndex}`;
++				const key = this.getChunkCacheKey(filename, versionTag, chunkIndex);
 +				const request = store.get(key);
 +
 +				request.onsuccess = () => {
@@ -161,7 +182,7 @@ index 0000000..3903b2e
 +	/**
 +	 * Store chunk in IndexedDB cache
 +	 */
-+	setCachedChunk: function (filename, chunkIndex, data) {
++	setCachedChunk: function (filename, versionTag, chunkIndex, data) {
 +		if (!this.dbReady || !this.db) {
 +			return Promise.resolve(false);
 +		}
@@ -170,7 +191,7 @@ index 0000000..3903b2e
 +			try {
 +				const tx = this.db.transaction(this.STORE_NAME, 'readwrite');
 +				const store = tx.objectStore(this.STORE_NAME);
-+				const key = `${filename}:${chunkIndex}`;
++				const key = this.getChunkCacheKey(filename, versionTag, chunkIndex);
 +				store.put(data, key);
 +
 +				tx.oncomplete = () => resolve(true);
@@ -296,6 +317,10 @@ index 0000000..3903b2e
 +			const msg = JSON.parse(data);
 +
 +			if (msg.type === 'size') {
++				if (this.files.has(msg.file)) {
++					const fileEntry = this.files.get(msg.file);
++					fileEntry.version = msg.version;
++				}
 +				// File size response
 +				const key = `size:${msg.file}`;
 +				const pending = this.pendingRequests.get(key);
@@ -337,11 +362,15 @@ index 0000000..3903b2e
 +		const chunkData = new Uint8Array(buffer, dataStart);
 +		
 +		// Store in cache (memory)
-+		const cacheKey = `${filename}:${chunkIndex}`;
++		const fileEntry = this.files.get(filename);
++		const versionTag = this.getFileVersionTag(fileEntry);
++		const cacheKey = this.getChunkCacheKey(filename, versionTag, chunkIndex);
 +		this.chunkCache.set(cacheKey, chunkData);
 +
 +		// Store in cache (persistent)
-+		this.setCachedChunk(filename, chunkIndex, chunkData);
++		if (versionTag !== 'unknown') {
++			this.setCachedChunk(filename, versionTag, chunkIndex, chunkData);
++		}
 +
 +		// Log
 +		this.logFetch(filename, chunkIndex, chunkData.length, false);
@@ -364,6 +393,7 @@ index 0000000..3903b2e
 +		console.log('[LazyFS] Registering file:', filepath);
 +		this.files.set(filepath, {
 +			size: null,
++			version: null,
 +		});
 +	},
 +
@@ -424,7 +454,9 @@ index 0000000..3903b2e
 +	 * Get a chunk from cache or fetch it
 +	 */
 +	getChunk: async function (filepath, chunkIndex) {
-+		const cacheKey = `${filepath}:${chunkIndex}`;
++		const fileEntry = this.files.get(filepath);
++		const versionTag = this.getFileVersionTag(fileEntry);
++		const cacheKey = this.getChunkCacheKey(filepath, versionTag, chunkIndex);
 +		
 +		// Check cache first
 +		if (this.chunkCache.has(cacheKey)) {
@@ -499,7 +531,8 @@ index 0000000..3903b2e
 +		const batches = []; // Array of {start, end}
 +
 +		for (let chunkIdx = startChunk; chunkIdx <= endChunk; chunkIdx++) {
-+			const cacheKey = `${filepath}:${chunkIdx}`;
++			const versionTag = this.getFileVersionTag(fileEntry);
++			const cacheKey = this.getChunkCacheKey(filepath, versionTag, chunkIdx);
 +			
 +			// Check memory cache first
 +			if (this.chunkCache.has(cacheKey)) {
@@ -515,7 +548,7 @@ index 0000000..3903b2e
 +			}
 +
 +			// Check IndexedDB
-+			const cachedData = await this.getCachedChunk(filepath, chunkIdx);
++			const cachedData = await this.getCachedChunk(filepath, versionTag, chunkIdx);
 +			if (cachedData) {
 +				// Success! Load to memory
 +				this.chunkCache.set(cacheKey, cachedData);
@@ -564,7 +597,8 @@ index 0000000..3903b2e
 +
 +		// Assemble from cached chunks
 +		for (let chunkIdx = startChunk; chunkIdx <= endChunk; chunkIdx++) {
-+			const cacheKey = `${filepath}:${chunkIdx}`;
++			const versionTag = this.getFileVersionTag(fileEntry);
++			const cacheKey = this.getChunkCacheKey(filepath, versionTag, chunkIdx);
 +			const chunk = this.chunkCache.get(cacheKey);
 +			
 +			if (!chunk) {
