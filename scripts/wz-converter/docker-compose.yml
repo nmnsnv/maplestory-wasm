@@ -1,0 +1,16 @@
+services:
+  wz-converter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: maplestory-wz-converter:golang-local
+    working_dir: /work
+    volumes:
+      - ../..:/work
+    environment:
+      NO_LIFE_WZ_TO_NX_REPO: https://github.com/ryantpayton/NoLifeWzToNx
+      NO_LIFE_WZ_TO_NX_REF: master
+      MODE: client
+      LZ4HC: "0"
+      SKIP_LIST_WZ: "1"
+    restart: "no"
