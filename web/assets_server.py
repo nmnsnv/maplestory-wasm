@@ -78,6 +78,13 @@ class AssetServer:
         self.file_sizes[filename] = size
         return size
 
+    def get_file_version(self, filename: str) -> int:
+        """Get a stable version token for a file (mtime nanoseconds)."""
+        filepath = self.get_file_path(filename)
+        if not filepath.exists():
+            return -1
+        return filepath.stat().st_mtime_ns
+
     def read_chunk(self, filename: str, chunk_index: int, chunk_size: int) -> bytes:
         """Read a specific chunk from a file."""
         filepath = self.get_file_path(filename)
@@ -104,10 +111,12 @@ class AssetServer:
             if msg_type == "get_size":
                 filename = data.get("file")
                 size = self.get_file_size(filename)
+                version = self.get_file_version(filename)
                 await websocket.send(json.dumps({
                     "type": "size",
                     "file": filename,
-                    "size": size
+                    "size": size,
+                    "version": version
                 }))
 
             elif msg_type == "get_chunks":
