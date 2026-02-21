@@ -1,13 +1,14 @@
 diff --git a/Net/Packets/GameplayPackets.h b/Net/Packets/GameplayPackets.h
-index 8bb670b..767e27b 100644
+index 8bb670b..acb35bc 100644
 --- a/Net/Packets/GameplayPackets.h
 +++ b/Net/Packets/GameplayPackets.h
-@@ -184,7 +184,7 @@ namespace jrc
- 
-     /// Tells the server that we're no longer transitioning between maps,
-     /// including initial login.
--    /// Opcode: PLAYER_UPDATE(0xDF)
-+    /// Opcode: PLAYER_MAP_TRANSFER(0xCF) on Cosmic
-     class PlayerUpdatePacket : public OutPacket
-     {
+@@ -175,7 +175,8 @@ namespace jrc
      public:
+         PickupItemPacket(int32_t oid, Point<int16_t> position) : OutPacket(PICKUP_ITEM)
+         {
+-            write_int(0);
++            // Cosmic-based servers typically validate client tick/time here.
++            write_time();
+             write_byte(0);
+             write_point(position);
+             write_int(oid);

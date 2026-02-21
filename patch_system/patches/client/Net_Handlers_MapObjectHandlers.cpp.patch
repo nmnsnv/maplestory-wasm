@@ -1,25 +1,8 @@
 diff --git a/Net/Handlers/MapObjectHandlers.cpp b/Net/Handlers/MapObjectHandlers.cpp
-index 8bdb626..04697cc 100644
+index 8bdb626..13cd65b 100644
 --- a/Net/Handlers/MapObjectHandlers.cpp
 +++ b/Net/Handlers/MapObjectHandlers.cpp
-@@ -24,6 +24,8 @@
- #include "../../Gameplay/Stage.h"
- #include "../../Gameplay/Spawn.h"
- 
-+#include <iostream>
-+
- namespace jrc
- {
-     void SpawnCharHandler::handle(InPacket& recv) const
-@@ -201,6 +203,7 @@ namespace jrc
- 
-     void SpawnMobHandler::handle(InPacket& recv) const
-     {
-+        size_t packet_len = recv.length() + 2; // include opcode bytes already consumed
-         int32_t oid = recv.read_int();
-         recv.read_byte(); // 5 if controller == null
-         int32_t id = recv.read_int();
-@@ -210,24 +213,42 @@ namespace jrc
+@@ -210,24 +210,31 @@ namespace jrc
          Point<int16_t> position = recv.read_point();
          int8_t stance = recv.read_byte();
  
@@ -55,29 +38,10 @@ index 8bdb626..04697cc 100644
 +        {
 +            recv.skip(4);
 +        }
-+
-+        std::cout << "[MobDebug] SPAWN_MOB packet: oid=" << oid
-+                  << " id=" << id
-+                  << " pos=(" << position.x() << "," << position.y() << ")"
-+                  << " stance=" << static_cast<int>(stance)
-+                  << " fh=" << fh
-+                  << " effect=" << static_cast<int>(effect)
-+                  << " team=" << static_cast<int>(team)
-+                  << " packetLen=" << packet_len
-+                  << " tail=" << recv.length()
-+                  << std::endl;
  
          Stage::get().get_mobs().spawn({
              oid, id, 0, stance, fh, effect == -2, team, position
-@@ -246,6 +267,7 @@ namespace jrc
- 
-     void SpawnMobControllerHandler::handle(InPacket& recv) const
-     {
-+        size_t packet_len = recv.length() + 2; // include opcode bytes already consumed
-         int8_t mode = recv.read_byte();
-         int32_t oid = recv.read_int();
-         if (mode == 0)
-@@ -265,24 +287,43 @@ namespace jrc
+@@ -265,24 +272,31 @@ namespace jrc
                  Point<int16_t> position = recv.read_point();
                  int8_t stance = recv.read_byte();
  
@@ -106,25 +70,13 @@ index 8bdb626..04697cc 100644
  
 -                int8_t team = recv.read_byte();
 +                int8_t team = recv.length() >= 1 ? recv.read_byte() : -1;
-+
+ 
+-                recv.skip(4);
 +                // Some server builds omit 4 trailing bytes here.
 +                if (recv.length() >= 4)
 +                {
 +                    recv.skip(4);
 +                }
- 
--                recv.skip(4);
-+                std::cout << "[MobDebug] SPAWN_MOB_C packet: oid=" << oid
-+                          << " id=" << id
-+                          << " mode=" << static_cast<int>(mode)
-+                          << " pos=(" << position.x() << "," << position.y() << ")"
-+                          << " stance=" << static_cast<int>(stance)
-+                          << " fh=" << fh
-+                          << " effect=" << static_cast<int>(effect)
-+                          << " team=" << static_cast<int>(team)
-+                          << " packetLen=" << packet_len
-+                          << " tail=" << recv.length()
-+                          << std::endl;
  
                  Stage::get().get_mobs().spawn({
                      oid, id, mode, stance, fh, effect == -2, team, position

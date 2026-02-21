@@ -1,0 +1,13 @@
+diff --git a/IO/Keyboard.cpp b/IO/Keyboard.cpp
+index 68492fe..8752557 100644
+--- a/IO/Keyboard.cpp
++++ b/IO/Keyboard.cpp
+@@ -38,6 +38,8 @@ namespace jrc
+         keymap[GLFW_KEY_RIGHT] = { KeyType::ACTION, KeyAction::RIGHT };
+         keymap[GLFW_KEY_UP]    = { KeyType::ACTION, KeyAction::UP    };
+         keymap[GLFW_KEY_DOWN]  = { KeyType::ACTION, KeyAction::DOWN  };
++        // Fallback defaults until keymap packet arrives.
++        keymap[GLFW_KEY_Z]     = { KeyType::ACTION, KeyAction::PICKUP };
+ 
+         textactions[GLFW_KEY_BACKSPACE] = KeyAction::BACK;
+         textactions[GLFW_KEY_ENTER]     = KeyAction::RETURN;
