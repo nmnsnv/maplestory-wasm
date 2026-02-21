@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0d2c264..cf4214a 100644
+index 0d2c264..e4c54a2 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -2,190 +2,85 @@
@@ -218,7 +218,7 @@ index 0d2c264..cf4214a 100644
 +        -sASYNCIFY_STACK_SIZE=16777216
 +        -sSTACK_SIZE=16777216
 +        -sINITIAL_MEMORY=268435456  
-+        -sEXPORTED_RUNTIME_METHODS=FS,ccall,cwrap
++        -sEXPORTED_RUNTIME_METHODS=FS,ccall,cwrap,setCanvasSize
 +        "--embed-file=${CMAKE_CURRENT_SOURCE_DIR}/fonts/Arial/Arial.ttf@fonts/Arial/Arial.ttf"
 +        "--embed-file=${CMAKE_CURRENT_SOURCE_DIR}/fonts/Arial/Arial-Bold.ttf@fonts/Arial/Arial-Bold.ttf"
 +        --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/LazyFS/lazyfs.js

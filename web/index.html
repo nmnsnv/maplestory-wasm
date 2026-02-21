@@ -32,6 +32,8 @@
             background-color: #000;
             display: block;
             outline: none;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
     </style>
 </head>
@@ -41,6 +43,37 @@
     </div>
 
     <script>
+        (function() {
+            function fitCanvas() {
+                const canvas = document.getElementById('canvas');
+                if (!canvas) {
+                    return;
+                }
+
+                const viewW = window.innerWidth;
+                const viewH = window.innerHeight;
+                const width = Math.max(1, Math.floor(viewW));
+                const height = Math.max(1, Math.floor(viewH));
+
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                if (typeof Module !== 'undefined' && typeof Module.setCanvasSize === 'function') {
+                    Module.setCanvasSize(width, height);
+                } else {
+                    canvas.width = width;
+                    canvas.height = height;
+                }
+            }
+
+            window.MapleWasmUI = {
+                applyScale: fitCanvas
+            };
+
+            window.addEventListener('resize', fitCanvas);
+            document.addEventListener('fullscreenchange', fitCanvas);
+            fitCanvas();
+        })();
+
         Module = {
             canvas: (function() {
                 let canvas = document.getElementById('canvas');
@@ -48,6 +81,9 @@
                     alert('WebGL context lost. You will need to reload the page.');
                     e.preventDefault();
                 }, false);
+                canvas.addEventListener("click", function() {
+                    canvas.focus();
+                });
                 return canvas;
             })(),
             
@@ -79,6 +115,9 @@
             
             onRuntimeInitialized: function() {
                 console.log('[runtime] Initialized');
+                if (window.MapleWasmUI && window.MapleWasmUI.applyScale) {
+                    window.MapleWasmUI.applyScale();
+                }
             },
             
             // Function to add C++ logs - now just console

@@ -1,0 +1,12 @@
+diff --git a/IO/Window.h b/IO/Window.h
+index 4a14d82..b39b935 100644
+--- a/IO/Window.h
++++ b/IO/Window.h
+@@ -52,6 +52,7 @@ namespace jrc
+         GLFWwindow* glwnd;
+         GLFWwindow* context;
+         bool fullscreen;
++        bool f11_down;
+         float opacity;
+         float opcstep;
+         std::function<void()> fadeprocedure;
