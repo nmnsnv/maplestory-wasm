@@ -1,0 +1,13 @@
+diff --git a/Net/Packets/GameplayPackets.h b/Net/Packets/GameplayPackets.h
+index 8bb670b..767e27b 100644
+--- a/Net/Packets/GameplayPackets.h
++++ b/Net/Packets/GameplayPackets.h
+@@ -184,7 +184,7 @@ namespace jrc
+ 
+     /// Tells the server that we're no longer transitioning between maps,
+     /// including initial login.
+-    /// Opcode: PLAYER_UPDATE(0xDF)
++    /// Opcode: PLAYER_MAP_TRANSFER(0xCF) on Cosmic
+     class PlayerUpdatePacket : public OutPacket
+     {
+     public:

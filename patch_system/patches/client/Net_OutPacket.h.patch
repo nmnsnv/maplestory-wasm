@@ -1,0 +1,16 @@
+diff --git a/Net/OutPacket.h b/Net/OutPacket.h
+index 23c0398..9bf3e83 100644
+--- a/Net/OutPacket.h
++++ b/Net/OutPacket.h
+@@ -116,10 +116,9 @@ namespace jrc
+         PARTY_OPERATION = 124,
+         MOVE_MONSTER    = 188,
+         PICKUP_ITEM     = 202,
+-        PLAYER_UPDATE   = 0xDF,
++        PLAYER_UPDATE   = 0xCF,
+ 
+         // Custom
+         HASH_CHECK = 30000
+     };
+ }
+-
