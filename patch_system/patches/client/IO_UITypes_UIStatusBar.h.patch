@@ -1,0 +1,12 @@
+diff --git a/IO/UITypes/UIStatusBar.h b/IO/UITypes/UIStatusBar.h
+index fff8b84..5faa794 100644
+--- a/IO/UITypes/UIStatusBar.h
++++ b/IO/UITypes/UIStatusBar.h
+@@ -56,6 +56,7 @@ namespace jrc
+         Button::State button_pressed(uint16_t buttonid) override;
+ 
+     private:
++        void update_layout_position();
+         float getexppercent() const;
+         float gethppercent() const;
+         float getmppercent() const;

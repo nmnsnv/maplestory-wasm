@@ -1,5 +1,5 @@
 diff --git a/IO/UITypes/UIChatBar.cpp b/IO/UITypes/UIChatBar.cpp
-index ab7cad1..b7fdc76 100644
+index ab7cad1..9a60d3e 100644
 --- a/IO/UITypes/UIChatBar.cpp
 +++ b/IO/UITypes/UIChatBar.cpp
 @@ -32,10 +32,12 @@ namespace jrc
@@ -27,3 +27,15 @@ index ab7cad1..b7fdc76 100644
              chatcover.draw(position);
              chatfield.draw(position);
          }
+@@ -155,6 +160,11 @@ namespace jrc
+         chatfield.update(position);
+     }
+ 
++    void UIChatbar::set_position(Point<int16_t> pos)
++    {
++        position = pos;
++    }
++
+     Button::State UIChatbar::button_pressed(uint16_t id)
+     {
+         switch (id)
