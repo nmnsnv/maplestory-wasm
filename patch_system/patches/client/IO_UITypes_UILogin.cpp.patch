@@ -1,5 +1,5 @@
 diff --git a/IO/UITypes/UILogin.cpp b/IO/UITypes/UILogin.cpp
-index ee37224..71e919b 100644
+index ee37224..356a020 100644
 --- a/IO/UITypes/UILogin.cpp
 +++ b/IO/UITypes/UILogin.cpp
 @@ -23,6 +23,7 @@
@@ -10,7 +10,7 @@ index ee37224..71e919b 100644
  #include "../../Graphics/Sprite.h"
  #include "../../Net/Packets/LoginPackets.h"
  
-@@ -34,23 +35,68 @@ namespace jrc
+@@ -34,23 +35,75 @@ namespace jrc
      {
          Music("BgmUI.img/Title").play();
  
@@ -45,11 +45,7 @@ index ee37224..71e919b 100644
 +        {
 +            sprites.emplace_back(title_new["backgrd"], Point<int16_t>(410, 300));
 +        }
- 
--        // I prefer the title without this.
--        /*auto effectpos = Point<int16_t>(420, -50);
--        node effect = title["effect"];
--        for (node sub : effect)
++
 +        if (title["35"])
 +        {
 +            sprites.emplace_back(title["35"], Point<int16_t>(410, 260));
@@ -72,8 +68,19 @@ index ee37224..71e919b 100644
 +        {
 +            sprites.emplace_back(common["frame"], Point<int16_t>(400, 290));
 +        }
+ 
+-        // I prefer the title without this.
+-        /*auto effectpos = Point<int16_t>(420, -50);
+-        node effect = title["effect"];
+-        for (node sub : effect)
++        const bool has_legacy_title_nodes = static_cast<bool>(title["11"]) ||
++            static_cast<bool>(title["35"]) ||
++            static_cast<bool>(title["Logo"]);
++        const bool has_modern_title_nodes = static_cast<bool>(title["MSTitle"]) ||
++            static_cast<bool>(title_new["backgrd"]) ||
++            has_legacy_form;
 +
-+        if (!title["11"] && !title["35"] && !title["Logo"])
++        if (!has_legacy_title_nodes && !has_modern_title_nodes)
 +        {
 +            Console::get().print("[UILogin] Using fallback title/background nodes for this UI.nx variant.");
 +        }
