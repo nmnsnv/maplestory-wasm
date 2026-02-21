@@ -1,0 +1,23 @@
+diff --git a/IO/UITypes/UICharCreation.cpp b/IO/UITypes/UICharCreation.cpp
+index 72895c4..3a4c5e9 100644
+--- a/IO/UITypes/UICharCreation.cpp
++++ b/IO/UITypes/UICharCreation.cpp
+@@ -436,6 +436,9 @@ namespace jrc
+         cloud.draw(Point<int16_t>(cloudx, 300));
+         cloud.draw(Point<int16_t>(cloudx + cloud.width(), 300));
+ 
++        // Keep base scene sprites behind creation UI controls.
++        draw_sprites(alpha);
++
+         if (!named)
+         {
+             nameboard.draw(Point<int16_t>(455, 115 ));
+@@ -449,7 +452,7 @@ namespace jrc
+             }
+         }
+ 
+-        UIElement::draw(alpha);
++        draw_buttons(alpha);
+ 
+         newchar.draw({ 360, 348 }, alpha);
+ 
