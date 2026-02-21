@@ -1,5 +1,5 @@
 diff --git a/IO/UITypes/UICharSelect.cpp b/IO/UITypes/UICharSelect.cpp
-index 81412d6..c662148 100644
+index 81412d6..0bf142f 100644
 --- a/IO/UITypes/UICharSelect.cpp
 +++ b/IO/UITypes/UICharSelect.cpp
 @@ -27,6 +27,7 @@
@@ -49,3 +49,16 @@ index 81412d6..c662148 100644
  
          // Post BB
          /*
+@@ -322,10 +347,8 @@ namespace jrc
+             });
+             break;
+         case 1:
+-            UI::get().emplace<UISoftkey>([cid](const std::string& pic) {
+-                UI::get().disable();
+-                SelectCharPicPacket(pic, cid).dispatch();
+-            });
++            UI::get().disable();
++            SelectCharPicPacket("1010", cid).dispatch();
+             break;
+         case 2:
+             UI::get().disable();
