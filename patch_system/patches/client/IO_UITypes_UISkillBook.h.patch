@@ -1,0 +1,22 @@
+diff --git a/IO/UITypes/UISkillBook.h b/IO/UITypes/UISkillBook.h
+index 974ffb6..ccd1724 100644
+--- a/IO/UITypes/UISkillBook.h
++++ b/IO/UITypes/UISkillBook.h
+@@ -84,6 +84,9 @@ namespace jrc
+     private:
+         void change_job(uint16_t id);
+         void change_sp(int16_t value);
++        void update_sp_label();
++        int16_t get_beginner_sp() const;
++        int16_t get_available_sp() const;
+         void change_tab(uint16_t new_tab);
+         void change_offset(uint16_t new_offset);
+ 
+@@ -130,6 +133,7 @@ namespace jrc
+ 
+         Job job;
+         int16_t sp;
++        int16_t beginner_sp;
+ 
+         uint16_t tab;
+         uint16_t skillcount;

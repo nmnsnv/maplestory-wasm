@@ -1,0 +1,86 @@
+diff --git a/IO/UITypes/UISkillBook.cpp b/IO/UITypes/UISkillBook.cpp
+index b3a99bd..a094cb3 100644
+--- a/IO/UITypes/UISkillBook.cpp
++++ b/IO/UITypes/UISkillBook.cpp
+@@ -138,7 +138,7 @@ namespace jrc
+ 
+     UISkillbook::UISkillbook(const CharStats& in_stats,
+                              const Skillbook& in_skillbook)
+-        : UIDragElement({ 174, 20 }), stats(in_stats), skillbook(in_skillbook)
++        : UIDragElement({ 174, 20 }), stats(in_stats), skillbook(in_skillbook), beginner_sp(0)
+     {
+         nl::node main = nl::nx::ui["UIWindow2.img"]["Skill"]["main"];
+ 
+@@ -337,6 +337,10 @@ namespace jrc
+         case Maplestat::SP:
+             change_sp(value);
+             break;
++        case Maplestat::LEVEL:
++            update_sp_label();
++            change_offset(offset);
++            break;
+         default:
+             return;
+         }
+@@ -366,11 +370,43 @@ namespace jrc
+     void UISkillbook::change_sp(int16_t s)
+     {
+         sp = s;
+-        splabel.change_text(std::to_string(sp));
++        update_sp_label();
+ 
+         change_offset(offset);
+     }
+ 
++    int16_t UISkillbook::get_beginner_sp() const
++    {
++        int16_t level = stats.get_stat(Maplestat::LEVEL);
++        int16_t remaining = level - 1;
++        if (remaining < 0)
++        {
++            remaining = 0;
++        }
++        if (remaining > 6)
++        {
++            remaining = 6;
++        }
++
++        remaining -= skillbook.get_level(SkillId::THREE_SNAILS);
++        remaining -= skillbook.get_level(SkillId::HEAL);
++        remaining -= skillbook.get_level(SkillId::FEATHER);
++
++        return remaining > 0 ? remaining : 0;
++    }
++
++    int16_t UISkillbook::get_available_sp() const
++    {
++        Job::Level joblevel = joblevel_by_tab(tab);
++        return joblevel == Job::BEGINNER ? beginner_sp : sp;
++    }
++
++    void UISkillbook::update_sp_label()
++    {
++        beginner_sp = get_beginner_sp();
++        splabel.change_text(std::to_string(get_available_sp()));
++    }
++
+     void UISkillbook::change_tab(uint16_t new_tab)
+     {
+         buttons[BT_TAB0 + tab    ]->set_state(Button::NORMAL);
+@@ -404,6 +440,7 @@ namespace jrc
+         }
+ 
+         slider.setrows(ROWS, skillcount);
++        update_sp_label();
+         change_offset(0);
+     }
+ 
+@@ -448,7 +485,7 @@ namespace jrc
+ 
+     bool UISkillbook::can_raise(int32_t skill_id) const
+     {
+-        if (sp <= 0)
++        if (get_available_sp() <= 0)
+         {
+             return false;
+         }
