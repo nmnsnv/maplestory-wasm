@@ -1,8 +1,8 @@
-diff --git a/includes/NoLifeNx/nlnx/bitmap.hpp b/includes/NoLifeNx/nlnx/bitmap.hpp
+diff --git a/includes/NoLifeNx/nlnx/audio.hpp b/includes/NoLifeNx/nlnx/audio.hpp
 new file mode 100644
-index 0000000..0e65a11
+index 0000000..b31495e
 --- /dev/null
-+++ b/includes/NoLifeNx/nlnx/bitmap.hpp
++++ b/includes/NoLifeNx/nlnx/audio.hpp
 @@ -0,0 +1,48 @@
 +//////////////////////////////////////////////////////////////////////////////
 +// NoLifeNx - Part of the NoLifeStory project                               //
@@ -24,31 +24,31 @@ index 0000000..0e65a11
 +
 +#pragma once
 +#include "nxfwd.hpp"
-+#include <cstddef>
 +#include <cstdint>
++#include <cstddef>
 +
-+namespace nl
-+{
-+	class bitmap
-+	{
-+	  public:
-+		bitmap() : m_file(nullptr), m_offset(0), m_width(0), m_height(0)
-+		{
-+		}
-+		bitmap(void* f, uint64_t o, uint16_t w, uint16_t h);
-+		bool operator<(bitmap const&) const;
-+		bool operator==(bitmap const&) const;
-+		operator bool() const;
-+		void const* data() const;
-+		uint16_t width() const;
-+		uint16_t height() const;
-+		uint32_t length() const;
-+		size_t id() const;
-+
-+	  private:
-+		void* m_file;
-+		uint64_t m_offset;
-+		uint16_t m_width;
-+		uint16_t m_height;
-+	};
++namespace nl {
++    class audio {
++    public:
++        audio() = default;
++        audio(audio const &) = default;
++        audio & operator=(audio const &) = default;
++        //Comparison operators, useful for containers
++        bool operator==(audio const &) const;
++        bool operator<(audio const &)const;
++        //Returns whether the audio is valid or merely null
++        explicit operator bool() const;
++        //Does not do any sort of decompression
++        //Do not free the pointer returned by this method
++        //The pointer remains valid until the file this audio is part of is destroyed
++        void const * data() const;
++        uint32_t length() const;
++        //Returns a unique id, useful for keeping track of what audio you loaded
++        size_t id() const;
++    private:
++        audio(void const *, uint32_t);
++        void const * m_data = nullptr;
++        uint32_t m_length = 0;
++        friend node;
++    };
 +}

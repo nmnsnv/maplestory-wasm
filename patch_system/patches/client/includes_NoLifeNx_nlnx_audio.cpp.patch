@@ -1,9 +1,9 @@
-diff --git a/includes/NoLifeNx/nlnx/bitmap.hpp b/includes/NoLifeNx/nlnx/bitmap.hpp
+diff --git a/includes/NoLifeNx/nlnx/audio.cpp b/includes/NoLifeNx/nlnx/audio.cpp
 new file mode 100644
-index 0000000..0e65a11
+index 0000000..8d1281f
 --- /dev/null
-+++ b/includes/NoLifeNx/nlnx/bitmap.hpp
-@@ -0,0 +1,48 @@
++++ b/includes/NoLifeNx/nlnx/audio.cpp
+@@ -0,0 +1,42 @@
 +//////////////////////////////////////////////////////////////////////////////
 +// NoLifeNx - Part of the NoLifeStory project                               //
 +// Copyright © 2013 Peter Atashian                                          //
@@ -22,33 +22,27 @@ index 0000000..0e65a11
 +// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 +//////////////////////////////////////////////////////////////////////////////
 +
-+#pragma once
-+#include "nxfwd.hpp"
-+#include <cstddef>
-+#include <cstdint>
++#include "audio.hpp"
 +
-+namespace nl
-+{
-+	class bitmap
-+	{
-+	  public:
-+		bitmap() : m_file(nullptr), m_offset(0), m_width(0), m_height(0)
-+		{
-+		}
-+		bitmap(void* f, uint64_t o, uint16_t w, uint16_t h);
-+		bool operator<(bitmap const&) const;
-+		bool operator==(bitmap const&) const;
-+		operator bool() const;
-+		void const* data() const;
-+		uint16_t width() const;
-+		uint16_t height() const;
-+		uint32_t length() const;
-+		size_t id() const;
-+
-+	  private:
-+		void* m_file;
-+		uint64_t m_offset;
-+		uint16_t m_width;
-+		uint16_t m_height;
-+	};
++namespace nl {
++    audio::audio(void const * d, uint32_t l) :
++        m_data(d), m_length(l) {}
++    bool audio::operator<(audio const & o) const {
++        return m_data < o.m_data;
++    }
++    bool audio::operator==(audio const & o) const {
++        return m_data == o.m_data;
++    }
++    audio::operator bool() const {
++        return m_data ? true : false;
++    }
++    void const * audio::data() const {
++        return m_data;
++    }
++    uint32_t audio::length() const {
++        return m_length;
++    }
++    size_t audio::id() const {
++        return reinterpret_cast<size_t>(m_data);
++    }
 +}

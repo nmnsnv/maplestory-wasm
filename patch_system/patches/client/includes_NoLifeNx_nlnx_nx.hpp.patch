@@ -1,9 +1,9 @@
-diff --git a/includes/NoLifeNx/nlnx/bitmap.hpp b/includes/NoLifeNx/nlnx/bitmap.hpp
+diff --git a/includes/NoLifeNx/nlnx/nx.hpp b/includes/NoLifeNx/nlnx/nx.hpp
 new file mode 100644
-index 0000000..0e65a11
+index 0000000..be7f6bd
 --- /dev/null
-+++ b/includes/NoLifeNx/nlnx/bitmap.hpp
-@@ -0,0 +1,48 @@
++++ b/includes/NoLifeNx/nlnx/nx.hpp
+@@ -0,0 +1,33 @@
 +//////////////////////////////////////////////////////////////////////////////
 +// NoLifeNx - Part of the NoLifeStory project                               //
 +// Copyright © 2013 Peter Atashian                                          //
@@ -21,34 +21,20 @@ index 0000000..0e65a11
 +// You should have received a copy of the GNU Affero General Public License //
 +// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 +//////////////////////////////////////////////////////////////////////////////
-+
 +#pragma once
 +#include "nxfwd.hpp"
-+#include <cstddef>
-+#include <cstdint>
 +
 +namespace nl
 +{
-+	class bitmap
++	namespace nx
 +	{
-+	  public:
-+		bitmap() : m_file(nullptr), m_offset(0), m_width(0), m_height(0)
-+		{
-+		}
-+		bitmap(void* f, uint64_t o, uint16_t w, uint16_t h);
-+		bool operator<(bitmap const&) const;
-+		bool operator==(bitmap const&) const;
-+		operator bool() const;
-+		void const* data() const;
-+		uint16_t width() const;
-+		uint16_t height() const;
-+		uint32_t length() const;
-+		size_t id() const;
++		// Pre-defined nodes to access standard MapleStory style data
++		// Make sure you called load_all first
++		extern node Base, Character, Effect, Etc, Item, Map, Map001, Map002, Map2, Mob, Mob001, Mob002, Mob2, Morph, Npc, Quest, Reactor, Skill, Skill001, Skill002, Skill003, Sound, Sound001, Sound002, Sound2, String, TamingMob, UI;
 +
-+	  private:
-+		void* m_file;
-+		uint64_t m_offset;
-+		uint16_t m_width;
-+		uint16_t m_height;
-+	};
++		// Loads the pre-defined nodes from a standard setup of nx files for MapleStory
++		// Only call this function once
++		void load_all();
++	}
 +}
+\ No newline at end of file
