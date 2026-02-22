@@ -1,9 +1,9 @@
 diff --git a/IO/UITypes/UIKeyConfig.cpp b/IO/UITypes/UIKeyConfig.cpp
 new file mode 100644
-index 0000000..271d81f
+index 0000000..4d05ecf
 --- /dev/null
 +++ b/IO/UITypes/UIKeyConfig.cpp
-@@ -0,0 +1,755 @@
+@@ -0,0 +1,758 @@
 +//////////////////////////////////////////////////////////////////////////////
 +// This file is part of the Journey MMORPG client                           //
 +//////////////////////////////////////////////////////////////////////////////
@@ -110,9 +110,12 @@ index 0000000..271d81f
 +        key = src["key"];
 +        icon = src["icon"];
 +
-+        sprites.emplace_back(src["backgrnd"]);
-+        sprites.emplace_back(src["backgrnd2"]);
-+        sprites.emplace_back(src["backgrnd3"]);
++        Texture bg1 = Texture(src["backgrnd"]);
++        Texture bg2 = Texture(src["backgrnd2"]);
++        Texture bg3 = Texture(src["backgrnd3"]);
++        sprites.emplace_back(src["backgrnd"], DrawArgument(bg1.get_origin()));
++        sprites.emplace_back(src["backgrnd2"], DrawArgument(bg2.get_origin()));
++        sprites.emplace_back(src["backgrnd3"], DrawArgument(bg3.get_origin()));
 +
 +        nl::node close = nl::nx::ui["Basic.img"]["BtClose3"];
 +        Point<int16_t> bgdim = Texture(src["backgrnd"]).get_dimensions();
@@ -479,8 +482,8 @@ index 0000000..271d81f
 +    {
 +        unbound_action_pos.clear();
 +
-+        int16_t row_x = 26;
-+        int16_t row_y = 307;
++        int16_t row_x = 26 - 20;
++        int16_t row_y = 307 - 60;
 +        int16_t slot_width = 36;
 +        int16_t slot_height = 36;
 +
