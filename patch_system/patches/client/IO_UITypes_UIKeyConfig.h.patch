@@ -1,9 +1,9 @@
 diff --git a/IO/UITypes/UIKeyConfig.h b/IO/UITypes/UIKeyConfig.h
 new file mode 100644
-index 0000000..1445112
+index 0000000..cdf7657
 --- /dev/null
 +++ b/IO/UITypes/UIKeyConfig.h
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,107 @@
 +//////////////////////////////////////////////////////////////////////////////
 +// This file is part of the Journey MMORPG client                           //
 +//////////////////////////////////////////////////////////////////////////////
@@ -15,6 +15,7 @@ index 0000000..1445112
 +
 +#include "../../Character/Inventory/Inventory.h"
 +#include "../../Character/SkillBook.h"
++#include "../../Graphics/Text.h"
 +
 +#include <map>
 +#include <memory>
@@ -74,6 +75,7 @@ index 0000000..1445112
 +        Keyboard::Mapping staged_mapping(int32_t key) const;
 +        KeyConfig::Key key_by_position(Point<int16_t> cursorpos) const;
 +        int32_t unbound_action_by_position(Point<int16_t> cursorpos) const;
++        void draw_english_button_labels() const;
 +
 +        bool is_action_mapping(const Keyboard::Mapping& mapping) const;
 +        static KeyType::Id action_type(int32_t action);
@@ -94,6 +96,7 @@ index 0000000..1445112
 +        std::map<int32_t, std::unique_ptr<Icon>> skill_icons;
 +        std::map<int32_t, std::unique_ptr<Icon>> item_icons;
 +        std::set<int32_t> bound_actions;
++        std::map<uint16_t, Text> english_button_labels;
 +
 +        bool dirty;
 +

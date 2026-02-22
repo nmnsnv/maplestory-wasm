@@ -1,9 +1,9 @@
 diff --git a/IO/UITypes/UIKeyConfig.cpp b/IO/UITypes/UIKeyConfig.cpp
 new file mode 100644
-index 0000000..d316273
+index 0000000..f1075a0
 --- /dev/null
 +++ b/IO/UITypes/UIKeyConfig.cpp
-@@ -0,0 +1,759 @@
+@@ -0,0 +1,797 @@
 +//////////////////////////////////////////////////////////////////////////////
 +// This file is part of the Journey MMORPG client                           //
 +//////////////////////////////////////////////////////////////////////////////
@@ -12,6 +12,7 @@ index 0000000..d316273
 +#include "UINotice.h"
 +
 +#include "../UI.h"
++#include "../../Console.h"
 +#include "../Components/MapleButton.h"
 +
 +#include "../../Data/ItemData.h"
@@ -117,15 +118,20 @@ index 0000000..d316273
 +        sprites.emplace_back(src["backgrnd2"], DrawArgument(bg2.get_origin()));
 +        sprites.emplace_back(src["backgrnd3"], DrawArgument(bg3.get_origin()));
 +
-+        nl::node close = nl::nx::ui["Basic.img"]["BtClose3"];
++        nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
 +
 +        Point<int16_t> bgdim = Texture(src["backgrnd"]).get_dimensions();
-+        buttons[CLOSE] = std::make_unique<MapleButton>(close, Point<int16_t>(bgdim.x() - 18, 3));
-+        buttons[CANCEL] = std::make_unique<MapleButton>(src["button:Cancel"]);
-+        buttons[DEFAULT] = std::make_unique<MapleButton>(src["button:Default"]);
-+        buttons[DELETE] = std::make_unique<MapleButton>(src["button:Delete"]);
-+        buttons[KEYSETTING] = std::make_unique<MapleButton>(src["button:keySetting"]);
-+        buttons[OK] = std::make_unique<MapleButton>(src["button:OK"]);
++        buttons[CLOSE] = std::make_unique<MapleButton>(close, Point<int16_t>(bgdim.x() - 12, 9));
++        buttons[CANCEL] = std::make_unique<MapleButton>(src["BtCancel"]);
++        buttons[DEFAULT] = std::make_unique<MapleButton>(src["BtDefault"]);
++        buttons[DELETE] = std::make_unique<MapleButton>(src["BtDelete"]);
++        buttons[KEYSETTING] = std::make_unique<MapleButton>(src["BtQuickSlot"]);
++        buttons[OK] = std::make_unique<MapleButton>(src["BtOK"]);
++        english_button_labels[CANCEL] = Text(Text::A11M, Text::CENTER, Text::WHITE, "Cancel");
++        english_button_labels[DEFAULT] = Text(Text::A11M, Text::CENTER, Text::WHITE, "Default");
++        english_button_labels[DELETE] = Text(Text::A11M, Text::CENTER, Text::WHITE, "Delete");
++        english_button_labels[KEYSETTING] = Text(Text::A11M, Text::CENTER, Text::WHITE, "Quick Slot");
++        english_button_labels[OK] = Text(Text::A11M, Text::CENTER, Text::WHITE, "OK");
 +
 +        dimension = bgdim;
 +        dragarea = { bgdim.x(), 20 };
@@ -140,6 +146,7 @@ index 0000000..d316273
 +    void UIKeyConfig::draw(float alpha) const
 +    {
 +        UIElement::draw(alpha);
++        draw_english_button_labels();
 +
 +        for (const auto& kv : key_textures)
 +        {
@@ -178,6 +185,25 @@ index 0000000..d316273
 +            {
 +                kv.second->draw(position + pit->second);
 +            }
++        }
++    }
++
++    void UIKeyConfig::draw_english_button_labels() const
++    {
++        for (const auto& kv : english_button_labels)
++        {
++            auto bit = buttons.find(kv.first);
++            if (bit == buttons.end() || !bit->second)
++            {
++                continue;
++            }
++
++            Rectangle<int16_t> rect = bit->second->bounds(position);
++            Point<int16_t> center(
++                static_cast<int16_t>((rect.l() + rect.r()) / 2),
++                static_cast<int16_t>((rect.t() + rect.b()) / 2 + 2)
++            );
++            kv.second.draw(center);
 +        }
 +    }
 +
@@ -572,6 +598,18 @@ index 0000000..d316273
 +        if (!updates.empty())
 +        {
 +            ChangeKeyMapPacket(updates).dispatch();
++        }
++
++        Console::get().print(
++            "[keyconfig] apply updates=" + std::to_string(updates.size())
++        );
++        for (size_t i = 0; i < updates.size() && i < 8; ++i)
++        {
++            Console::get().print(
++                "[keyconfig] update[" + std::to_string(i) + "] key=" + std::to_string(std::get<0>(updates[i])) +
++                " type=" + std::to_string(std::get<1>(updates[i])) +
++                " action=" + std::to_string(std::get<2>(updates[i]))
++            );
 +        }
 +
 +        for (const auto& update : updates)
