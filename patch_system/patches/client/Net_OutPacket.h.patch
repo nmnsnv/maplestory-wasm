@@ -1,8 +1,16 @@
 diff --git a/Net/OutPacket.h b/Net/OutPacket.h
-index 23c0398..9bf3e83 100644
+index 23c0398..419e8b7 100644
 --- a/Net/OutPacket.h
 +++ b/Net/OutPacket.h
-@@ -116,10 +116,9 @@ namespace jrc
+@@ -108,6 +108,7 @@ namespace jrc
+         // Player
+         SPEND_AP = 87,
+         SPEND_SP = 90,
++        CHANGE_KEYMAP = 135,
+ 
+         // Skill
+         USE_SKILL = 91,
+@@ -116,10 +117,9 @@ namespace jrc
          PARTY_OPERATION = 124,
          MOVE_MONSTER    = 188,
          PICKUP_ITEM     = 202,

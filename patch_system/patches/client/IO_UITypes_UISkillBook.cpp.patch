@@ -1,8 +1,16 @@
 diff --git a/IO/UITypes/UISkillBook.cpp b/IO/UITypes/UISkillBook.cpp
-index b3a99bd..cfe660e 100644
+index b3a99bd..a5946ab 100644
 --- a/IO/UITypes/UISkillBook.cpp
 +++ b/IO/UITypes/UISkillBook.cpp
-@@ -33,9 +33,27 @@
+@@ -19,6 +19,7 @@
+ 
+ #include "../Components/MapleButton.h"
+ #include "../Components/TwoSpriteButton.h"
++#include "UIKeyConfig.h"
+ 
+ #include "../../Character/SkillId.h"
+ #include "../../Data/JobData.h"
+@@ -33,9 +34,38 @@
  
  namespace jrc
  {
@@ -17,6 +25,17 @@ index b3a99bd..cfe660e 100644
 +            void drop_on_stage() const override {}
 +            void drop_on_equips(Equipslot::Id) const override {}
 +            void drop_on_items(InventoryType::Id, Equipslot::Id, int16_t, bool) const override {}
++            void drop_on_bindings(Point<int16_t> cursorposition, bool remove) const override
++            {
++                if (auto keyconfig = UI::get().get_element<UIKeyConfig>())
++                {
++                    Keyboard::Mapping mapping{ KeyType::SKILL, skill_id };
++                    if (remove)
++                        keyconfig->unstage_mapping(mapping);
++                    else
++                        keyconfig->stage_mapping(cursorposition, mapping);
++                }
++            }
 +
 +        private:
 +            int32_t skill_id;
@@ -30,7 +49,7 @@ index b3a99bd..cfe660e 100644
  
      SkillIcon::SkillIcon(int32_t i, int32_t lv) : id(i)
      {
-@@ -44,6 +62,11 @@ namespace jrc
+@@ -44,6 +74,11 @@ namespace jrc
          normal    = data.get_icon(SkillData::NORMAL);
          mouseover = data.get_icon(SkillData::MOUSEOVER);
          disabled  = data.get_icon(SkillData::DISABLED);
@@ -42,7 +61,7 @@ index b3a99bd..cfe660e 100644
  
          std::string namestr  = data.get_name();
          std::string levelstr = std::to_string(lv);
-@@ -136,9 +159,22 @@ namespace jrc
+@@ -136,9 +171,22 @@ namespace jrc
          return id;
      }
  
@@ -66,7 +85,7 @@ index b3a99bd..cfe660e 100644
      {
          nl::node main = nl::nx::ui["UIWindow2.img"]["Skill"]["main"];
  
-@@ -302,29 +338,55 @@ namespace jrc
+@@ -302,29 +350,55 @@ namespace jrc
          }
  
          Point<int16_t> skill_position = position + SKILL_OFFSET;
@@ -137,7 +156,7 @@ index b3a99bd..cfe660e 100644
      }
  
      void UISkillbook::update_stat(Maplestat::Id stat, int16_t value)
-@@ -337,6 +399,10 @@ namespace jrc
+@@ -337,6 +411,10 @@ namespace jrc
          case Maplestat::SP:
              change_sp(value);
              break;
@@ -148,7 +167,7 @@ index b3a99bd..cfe660e 100644
          default:
              return;
          }
-@@ -366,11 +432,43 @@ namespace jrc
+@@ -366,11 +444,43 @@ namespace jrc
      void UISkillbook::change_sp(int16_t s)
      {
          sp = s;
@@ -193,7 +212,7 @@ index b3a99bd..cfe660e 100644
      void UISkillbook::change_tab(uint16_t new_tab)
      {
          buttons[BT_TAB0 + tab    ]->set_state(Button::NORMAL);
-@@ -404,6 +502,7 @@ namespace jrc
+@@ -404,6 +514,7 @@ namespace jrc
          }
  
          slider.setrows(ROWS, skillcount);
@@ -201,7 +220,7 @@ index b3a99bd..cfe660e 100644
          change_offset(0);
      }
  
-@@ -448,7 +547,7 @@ namespace jrc
+@@ -448,7 +559,7 @@ namespace jrc
  
      bool UISkillbook::can_raise(int32_t skill_id) const
      {

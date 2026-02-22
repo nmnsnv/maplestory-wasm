@@ -1,5 +1,5 @@
 diff --git a/Configuration.h b/Configuration.h
-index fece121..7c09432 100644
+index fece121..bf31522 100644
 --- a/Configuration.h
 +++ b/Configuration.h
 @@ -170,13 +170,13 @@ namespace jrc
@@ -18,3 +18,15 @@ index fece121..7c09432 100644
      };
  
      // Music Volume, a number from 0 to 100.
+@@ -245,6 +245,11 @@ namespace jrc
+         PosSKILL() : PointEntry("PosSKILL", "(50,150)") {}
+     };
+ 
++    struct PosKEYCONFIG : public Configuration::PointEntry
++    {
++        PosKEYCONFIG() : PointEntry("PosKEYCONFIG", "(144,144)") {}
++    };
++
+     // Can be used to access settings.
+     template <typename T>
+     struct Setting
