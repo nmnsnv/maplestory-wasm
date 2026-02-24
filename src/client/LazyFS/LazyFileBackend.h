@@ -26,7 +26,7 @@ namespace LazyFS
 	  public:
 		// 64KB chunks - with WebSocket binary frames, per-chunk overhead is ~15 bytes
 		// Small chunks = less wasted data for small reads (like NX headers)
-		static constexpr size_t CHUNK_SIZE = 64 * 1024;
+		static constexpr size_t CHUNK_SIZE = 2048 * 1024;
 
 		/**
 		 * Open a file for lazy loading
