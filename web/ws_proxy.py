@@ -47,13 +47,13 @@ class MapleStoryProxy:
                 tcp_host, tcp_port = target_str.strip().split(':')
                 tcp_port = int(tcp_port)
 
-                # If target is localhost/127.0.0.1, and we are in docker network, redirect to the game server container
-                # The client (browser) sees 'localhost' as the host machine, but inside the container 'localhost' is itself.
-                # Since we likely want to talk to the sibling 'server-maplestory' container:
+                # If target is localhost/127.0.0.1 and we're in Docker, remap it to a routable host.
+                # Browser "localhost" is the user's machine, but container "localhost" is the container itself.
                 is_docker = os.environ.get("IS_DOCKER", "false").lower() == "true"
                 if is_docker and tcp_host in ["localhost", "127.0.0.1", "0.0.0.0"]:
-                    print(f"[Proxy] Redirecting {tcp_host} -> server-maplestory (Docker Internal Combined Network)")
-                    tcp_host = "server-maplestory"
+                    mapped_host = os.environ.get("WS_PROXY_LOCALHOST_TARGET", "host.docker.internal")
+                    print(f"[Proxy] Redirecting {tcp_host} -> {mapped_host} (Docker localhost mapping)")
+                    tcp_host = mapped_host
 
             except ValueError:
                 print(f"[Error] Invalid target format '{target_str}', expected 'host:port'")
