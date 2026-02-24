@@ -30,5 +30,30 @@ namespace jrc
         constexpr int16_t VIEWHEIGHT = 600;
         // View y offset.
         constexpr int16_t VIEWYOFFSET = 10;
+
+        inline int16_t runtime_view_width = VIEWWIDTH;
+        inline int16_t runtime_view_height = VIEWHEIGHT;
+
+        inline int16_t viewwidth()
+        {
+            return runtime_view_width;
+        }
+
+        inline int16_t viewheight()
+        {
+            return runtime_view_height;
+        }
+
+        inline void set_viewsize(int32_t width, int32_t height)
+        {
+            if (width > 0)
+            {
+                runtime_view_width = static_cast<int16_t>(width);
+            }
+            if (height > 0)
+            {
+                runtime_view_height = static_cast<int16_t>(height);
+            }
+        }
     }
 }

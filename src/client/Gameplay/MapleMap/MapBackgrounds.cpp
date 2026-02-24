@@ -62,17 +62,17 @@ namespace jrc
         {
         case HTILED:
         case HMOVEA:
-            htile = Constants::VIEWWIDTH  / cx + 3;
+            htile = Constants::viewwidth() / cx + 3;
             break;
         case VTILED:
         case VMOVEA:
-            vtile = Constants::VIEWHEIGHT / cy + 3;
+            vtile = Constants::viewheight() / cy + 3;
             break;
         case TILED:
         case HMOVEB:
         case VMOVEB:
-            htile = Constants::VIEWWIDTH  / cx + 3;
-            vtile = Constants::VIEWHEIGHT / cy + 3;
+            htile = Constants::viewwidth() / cx + 3;
+            vtile = Constants::viewheight() / cy + 3;
             break;
         default:
             break;
@@ -95,6 +95,9 @@ namespace jrc
 
     void Background::draw(double viewx, double viewy, float alpha) const
     {
+        int16_t draw_htile = htile > 1 ? static_cast<int16_t>(Constants::viewwidth() / cx + 3) : 1;
+        int16_t draw_vtile = vtile > 1 ? static_cast<int16_t>(Constants::viewheight() / cy + 3) : 1;
+
         double x;
         if (moveobj.hmobile())
         {
@@ -102,7 +105,7 @@ namespace jrc
         }
         else
         {
-            double shift_x = rx * (WOFFSET - viewx) / 100 + WOFFSET;
+            double shift_x = rx * (woffset() - viewx) / 100 + woffset();
             x = moveobj.get_absolute_x(shift_x, alpha);
         }
 
@@ -113,11 +116,11 @@ namespace jrc
         }
         else
         {
-            double shift_y = ry * (HOFFSET - viewy) / 100 + HOFFSET;
+            double shift_y = ry * (hoffset() - viewy) / 100 + hoffset();
             y = moveobj.get_absolute_y(shift_y, alpha);
         }
 
-        if (htile > 1)
+        if (draw_htile > 1)
         {
             while (x > 0)
             {
@@ -129,7 +132,7 @@ namespace jrc
             }
         }
 
-        if (vtile > 1)
+        if (draw_vtile > 1)
         {
             while (y > 0)
             {
@@ -143,8 +146,8 @@ namespace jrc
         auto ix = static_cast<int16_t>(std::round(x));
         auto iy = static_cast<int16_t>(std::round(y));
 
-        int16_t tw = cx * htile;
-        int16_t th = cy * vtile;
+        int16_t tw = cx * draw_htile;
+        int16_t th = cy * draw_vtile;
         for (int16_t tx = 0; tx < tw; tx += cx)
         {
             for (int16_t ty = 0; ty < th; ty += cy)

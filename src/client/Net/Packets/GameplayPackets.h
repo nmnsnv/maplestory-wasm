@@ -175,7 +175,8 @@ namespace jrc
     public:
         PickupItemPacket(int32_t oid, Point<int16_t> position) : OutPacket(PICKUP_ITEM)
         {
-            write_int(0);
+            // Cosmic-based servers typically validate client tick/time here.
+            write_time();
             write_byte(0);
             write_point(position);
             write_int(oid);

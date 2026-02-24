@@ -1,0 +1,29 @@
+//////////////////////////////////////////////////////////////////////////////////
+// LazyFS - Lazy Filesystem for WebAssembly
+// Generic HTTP Range-based file loading system
+//
+// This is a project-agnostic library that provides on-demand file loading
+// capabilities via HTTP Range requests with in-memory chunk caching.
+//////////////////////////////////////////////////////////////////////////////////
+#pragma once
+
+#include <string>
+
+namespace LazyFS
+{
+	/**
+	 * Initialize LazyFS and sync configuration with JavaScript.
+	 * Must be called before RegisterFile.
+	 */
+	void Initialize();
+
+	/**
+	 * Register a file for on-demand lazy loading via HTTP Range requests.
+	 * The file will not be fetched until it's actually read.
+	 * 
+	 * @param filepath Path where file will appear in virtual FS (e.g., "Base.nx")
+	 * @param url URL to fetch from (e.g., "/assets/Base.nx")
+	 * @param true on success, false on failure
+	 */
+	bool RegisterFile(const std::string& filepath, const std::string& url);
+}

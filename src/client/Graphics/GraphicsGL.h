@@ -47,6 +47,8 @@ namespace jrc
         Error init();
         // Re-initialise after changing screen modes.
         void reinit();
+        // Update runtime viewport-dependent uniforms and clipping.
+        void set_screensize(int16_t width, int16_t height);
 
         // Clear all bitmaps if most of the space is used up.
         void clear();
@@ -251,12 +253,7 @@ namespace jrc
             int16_t endy;
         };
 
-        static constexpr Rectangle<int16_t> SCREEN = {
-            0,
-            Constants::VIEWWIDTH,
-            -Constants::VIEWYOFFSET,
-            -Constants::VIEWYOFFSET + Constants::VIEWHEIGHT
-        };
+        static Rectangle<int16_t> screen();
 
         static const GLshort ATLASW = 8192;
         static const GLshort ATLASH = 8192;
@@ -266,6 +263,7 @@ namespace jrc
 
         std::vector<Quad> quads;
         GLuint vbo;
+        GLuint ibo;
         GLuint atlas;
 
         GLint program;

@@ -40,14 +40,20 @@ namespace jrc
     {
         if (active)
         {
-            textures[state].draw(position + parentpos);
+            // Anchor all states to the NORMAL state's origin to avoid visual
+            // "teleporting" when state textures have different origins.
+            Point<int16_t> normal_origin = textures[NORMAL].get_origin();
+            Point<int16_t> state_origin = textures[state].get_origin();
+            textures[state].draw(position + parentpos + state_origin - normal_origin);
         }
     }
 
     Rectangle<int16_t> MapleButton::bounds(Point<int16_t> parentpos) const
     {
-        auto lt = parentpos + position - textures[state].get_origin();
-        auto rb = lt + textures[state].get_dimensions();
+        // Keep hit-testing stable across states to prevent hover/click flicker
+        // when state textures differ in origin/dimensions.
+        auto lt = parentpos + position - textures[NORMAL].get_origin();
+        auto rb = lt + textures[NORMAL].get_dimensions();
         return Rectangle<int16_t>(lt, rb);
     }
 }

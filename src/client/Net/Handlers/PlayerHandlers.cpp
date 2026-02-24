@@ -18,6 +18,7 @@
 #include "PlayerHandlers.h"
 
 #include "../../Character/Buff.h"
+#include "../../Console.h"
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
 #include "../../IO/UITypes/UIBuffList.h"
@@ -30,12 +31,37 @@ namespace jrc
     {
         recv.skip(1);
 
+        bool has_keyconfig_binding = false;
+        int32_t keyconfig_key = -1;
+        uint8_t keyconfig_type = 0;
+
         for (uint8_t i = 0; i < 90; ++i)
         {
             auto type = static_cast<uint8_t>(recv.read_byte());
             int32_t action = recv.read_int();
 
             UI::get().add_keymapping(i, type, action);
+
+            if (action == KeyAction::KEYCONFIG)
+            {
+                has_keyconfig_binding = true;
+                keyconfig_key = i;
+                keyconfig_type = type;
+            }
+        }
+
+        if (has_keyconfig_binding)
+        {
+            Console::get().print(
+                "[keymap] KEYCONFIG action=9 bound to key index=" +
+                std::to_string(keyconfig_key) +
+                " type=" +
+                std::to_string(keyconfig_type)
+            );
+        }
+        else
+        {
+            Console::get().print("[keymap] KEYCONFIG action=9 is NOT present in server keymap");
         }
     }
 

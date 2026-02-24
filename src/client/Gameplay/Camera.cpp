@@ -30,36 +30,39 @@ namespace jrc
 
     void Camera::update(Point<int16_t> position)
     {
+        int16_t view_width = Constants::viewwidth();
+        int16_t view_height = Constants::viewheight();
+
         double next_x = x.get();
-        double hdelta = Constants::VIEWWIDTH / 2 - position.x() - next_x;
+        double hdelta = view_width / 2 - position.x() - next_x;
         if (std::abs(hdelta) >= 5.0)
         {
-            next_x += hdelta * (12.0 / Constants::VIEWWIDTH);
+            next_x += hdelta * (12.0 / view_width);
         }
 
         double next_y = y.get();
-        double vdelta = Constants::VIEWHEIGHT / 2 - position.y() - next_y;
+        double vdelta = view_height / 2 - position.y() - next_y;
         if (std::abs(vdelta) >= 5.0)
         {
-            next_y += vdelta * (12.0 / Constants::VIEWHEIGHT);
+            next_y += vdelta * (12.0 / view_height);
         }
 
-        if (next_x > hbounds.first() || hbounds.length() < Constants::VIEWWIDTH)
+        if (next_x > hbounds.first() || hbounds.length() < view_width)
         {
             next_x = hbounds.first();
         }
-        else if (next_x < hbounds.second() + Constants::VIEWWIDTH)
+        else if (next_x < hbounds.second() + view_width)
         {
-            next_x = hbounds.second() + Constants::VIEWWIDTH;
+            next_x = hbounds.second() + view_width;
         }
 
-        if (next_y > vbounds.first() || vbounds.length() < Constants::VIEWHEIGHT)
+        if (next_y > vbounds.first() || vbounds.length() < view_height)
         {
             next_y = vbounds.first();
         }
-        else if (next_y < vbounds.second() + Constants::VIEWHEIGHT)
+        else if (next_y < vbounds.second() + view_height)
         {
-            next_y = vbounds.second() + Constants::VIEWHEIGHT;
+            next_y = vbounds.second() + view_height;
         }
 
         x = next_x;
@@ -68,8 +71,8 @@ namespace jrc
 
     void Camera::set_position(Point<int16_t> position)
     {
-        x.set(Constants::VIEWWIDTH / 2 - position.x());
-        y.set(Constants::VIEWHEIGHT / 2 - position.y());
+        x.set(Constants::viewwidth() / 2 - position.x());
+        y.set(Constants::viewheight() / 2 - position.y());
     }
 
     void Camera::set_view(Range<int16_t> mapwalls, Range<int16_t> mapborders)

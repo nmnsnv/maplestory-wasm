@@ -19,8 +19,15 @@
 
 #include "../Configuration.h"
 
+#ifndef MS_PLATFORM_WASM
 #define WIN32_LEAN_AND_MEAN
 #include "bass/bass.h"
+#else
+using HSTREAM = uint64_t;
+using HCHANNEL = uint64_t;
+using HSAMPLE = uint64_t;
+using DWORD = uint32_t;
+#endif
 
 #include "nlnx/nx.hpp"
 #include "nlnx/audio.hpp"
@@ -43,12 +50,16 @@ namespace jrc
         }
     }
 
+#include <cstdint>
 
     Error Sound::init() {
+        if (!set_sfxvolume(100)) return Error::AUDIO; // Provide default to avoid warning
+#ifndef MS_PLATFORM_WASM
         if (!BASS_Init(1, 44100, 0, nullptr, nullptr))
         {
             return Error::AUDIO;
         }
+#endif
 
         nl::node uisrc = nl::nx::sound["UI.img"];
 
@@ -77,12 +88,18 @@ namespace jrc
 
     void Sound::close()
     {
+#ifndef MS_PLATFORM_WASM
         BASS_Free();
+#endif
     }
 
     bool Sound::set_sfxvolume(uint8_t vol)
     {
+#ifndef MS_PLATFORM_WASM
         return BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, vol * 100u) == TRUE;
+#else
+        return true;
+#endif
     }
 
     void Sound::play(size_t id)
@@ -92,11 +109,13 @@ namespace jrc
             return;
         }
 
+#ifndef MS_PLATFORM_WASM
         HCHANNEL channel = BASS_SampleGetChannel(
             static_cast<HSAMPLE>(samples.at(id)),
             false
         );
         BASS_ChannelPlay(channel, true);
+#endif
     }
 
     size_t Sound::add_sound(nl::node src)
@@ -109,6 +128,7 @@ namespace jrc
         {
             size_t id = ad.id();
 
+#ifndef MS_PLATFORM_WASM
             samples[id] = BASS_SampleLoad(
                 true,
                 data,
@@ -117,6 +137,9 @@ namespace jrc
                 4,
                 BASS_SAMPLE_OVER_POS
             );
+#else
+            samples[id] = 0;
+#endif
 
             return id;
         }
@@ -157,6 +180,7 @@ namespace jrc
 
         if (data)
         {
+#ifndef MS_PLATFORM_WASM
             if (stream)
             {
                 BASS_ChannelStop(stream);
@@ -171,6 +195,7 @@ namespace jrc
                 BASS_SAMPLE_FLOAT | BASS_SAMPLE_LOOP
             );
             BASS_ChannelPlay(stream, true);
+#endif
 
             bgmpath = path;
         }
@@ -191,6 +216,10 @@ namespace jrc
 
     bool Music::set_bgmvolume(uint8_t vol)
     {
+#ifndef MS_PLATFORM_WASM
         return BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, vol * 100u) == TRUE;
+#else
+        return true;
+#endif
     }
 }

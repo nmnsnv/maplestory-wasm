@@ -60,8 +60,15 @@ namespace jrc
 
         void settype(Type type);
 
-        static const int16_t WOFFSET = Constants::VIEWWIDTH / 2;
-        static const int16_t HOFFSET = Constants::VIEWHEIGHT / 2 - Constants::VIEWYOFFSET;
+        static int16_t woffset()
+        {
+            return Constants::viewwidth() / 2;
+        }
+
+        static int16_t hoffset()
+        {
+            return Constants::viewheight() / 2 - Constants::VIEWYOFFSET;
+        }
 
         Animation animation;
         bool animated;

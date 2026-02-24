@@ -37,11 +37,24 @@ namespace jrc
 
             Mapping(KeyType::Id in_type, int32_t in_action)
                 : type(in_type), action(in_action) {}
+
+            bool operator==(const Mapping& other) const
+            {
+                return type == other.type && action == other.action;
+            }
+
+            bool operator!=(const Mapping& other) const
+            {
+                return !(*this == other);
+            }
         };
 
         Keyboard();
 
         void assign(uint8_t key, uint8_t type, int32_t action);
+        void remove(uint8_t key);
+        std::map<int32_t, Mapping> get_maplekeys() const;
+        Mapping get_maple_mapping(int32_t keycode) const;
 
         int32_t shiftcode() const;
         int32_t ctrlcode() const;

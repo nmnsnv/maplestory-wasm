@@ -23,7 +23,7 @@ namespace jrc
 {
     ScrollingNotice::ScrollingNotice()
     {
-        background = ColorBox(800, 20, ColorBox::BLACK, 0.6f);
+        background = ColorBox(Constants::viewwidth(), 20, ColorBox::BLACK, 0.6f);
         backposition = Point<int16_t>(0, -Constants::VIEWYOFFSET);
         notice = Text(Text::A12M, Text::LEFT, Text::YELLOW);
         xpos.set(0.0);
@@ -33,7 +33,7 @@ namespace jrc
     void ScrollingNotice::setnotice(std::string n)
     {
         notice.change_text(n);
-        xpos.set(800.0);
+        xpos.set(Constants::viewwidth());
         active = n.size() > 0;
     }
 
@@ -50,6 +50,8 @@ namespace jrc
 
     void ScrollingNotice::update()
     {
+        background.setwidth(Constants::viewwidth());
+
         if (active)
         {
             xpos -= 0.5;
@@ -57,7 +59,7 @@ namespace jrc
             auto xmin = static_cast<double>(-notice.width());
             if (xpos.last() < xmin)
             {
-                xpos.set(800.0);
+                xpos.set(Constants::viewwidth());
             }
         }
     }

@@ -21,6 +21,7 @@
 #include "../Components/MapleButton.h"
 
 #include "../../Character/ExpTable.h"
+#include "../../Constants.h"
 
 #include "nlnx/nx.hpp"
 
@@ -80,6 +81,8 @@ namespace jrc
         buttons[BT_INVENTORY] = std::make_unique<MapleButton>(mainbar["BtInven"]);
         buttons[BT_EQUIPS]    = std::make_unique<MapleButton>(mainbar["BtEquip"]);
         buttons[BT_SKILL]     = std::make_unique<MapleButton>(mainbar["BtSkill"]);
+
+        update_layout_position();
     }
 
     void UIStatusbar::draw(float alpha) const
@@ -123,6 +126,7 @@ namespace jrc
 
     void UIStatusbar::update()
     {
+        update_layout_position();
         UIElement::update();
 
         chatbar.update();
@@ -138,6 +142,15 @@ namespace jrc
         {
             iter.second -= Constants::TIMESTEP;
         }
+    }
+
+    void UIStatusbar::update_layout_position()
+    {
+        position = {
+            POSITION.x(),
+            static_cast<int16_t>(Constants::viewheight() - Constants::VIEWYOFFSET)
+        };
+        chatbar.set_position(position);
     }
 
     Button::State UIStatusbar::button_pressed(uint16_t id)

@@ -56,6 +56,7 @@ namespace jrc
         Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        void update_layout_position();
         float getexppercent() const;
         float gethppercent() const;
         float getmppercent() const;

@@ -18,6 +18,10 @@
 #pragma once
 #include "../Console.h"
 
+#ifdef MS_PLATFORM_WASM
+#include <emscripten.h>
+#endif
+
 #include <cstdint>
 #include <string>
 
@@ -62,4 +66,30 @@ namespace jrc
         // Check if a bit mask contains the specified value.
         bool compare(int32_t mask, int32_t value);
     }
+
+#ifdef MS_PLATFORM_WASM
+    inline std::string getBrowserHostname()
+    {
+        char* hostname = (char*)EM_ASM_PTR({
+            var hostname = window.location.hostname;
+            var len = lengthBytesUTF8(hostname) + 1;
+            var ptr = _malloc(len);
+            stringToUTF8(hostname, ptr, len);
+            return ptr;
+        });
+        std::string result;
+        if (hostname && strlen(hostname) > 0) {
+            result = hostname;
+        } else {
+            result = "127.0.0.1";
+        }
+        if (hostname) free(hostname);
+        return result;
+    }
+#else
+    inline std::string getBrowserHostname()
+    {
+        return "127.0.0.1";
+    }
+#endif
 }

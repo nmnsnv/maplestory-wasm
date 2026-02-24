@@ -210,24 +210,31 @@ namespace jrc
         Point<int16_t> position = recv.read_point();
         int8_t stance = recv.read_byte();
 
-        recv.skip(2);
+        if (recv.length() >= 2)
+        {
+            recv.skip(2);
+        }
 
-        uint16_t fh = recv.read_short();
-        int8_t effect = recv.read_byte();
+        uint16_t fh = recv.length() >= 2 ? recv.read_short() : 0;
+        int8_t effect = recv.length() >= 1 ? recv.read_byte() : 0;
 
-        if (effect > 0)
+        if (effect > 0 && recv.length() >= 3)
         {
             recv.read_byte();
             recv.read_short();
-            if (effect == 15)
+            if (effect == 15 && recv.length() >= 1)
             {
                 recv.read_byte();
             }
         }
 
-        int8_t team = recv.read_byte();
+        int8_t team = recv.length() >= 1 ? recv.read_byte() : -1;
 
-        recv.skip(4);
+        // Some server builds omit 4 trailing bytes here.
+        if (recv.length() >= 4)
+        {
+            recv.skip(4);
+        }
 
         Stage::get().get_mobs().spawn({
             oid, id, 0, stance, fh, effect == -2, team, position
@@ -265,24 +272,31 @@ namespace jrc
                 Point<int16_t> position = recv.read_point();
                 int8_t stance = recv.read_byte();
 
-                recv.skip(2);
+                if (recv.length() >= 2)
+                {
+                    recv.skip(2);
+                }
 
-                uint16_t fh = recv.read_short();
-                int8_t effect = recv.read_byte();
+                uint16_t fh = recv.length() >= 2 ? recv.read_short() : 0;
+                int8_t effect = recv.length() >= 1 ? recv.read_byte() : 0;
 
-                if (effect > 0)
+                if (effect > 0 && recv.length() >= 3)
                 {
                     recv.read_byte();
                     recv.read_short();
-                    if (effect == 15)
+                    if (effect == 15 && recv.length() >= 1)
                     {
                         recv.read_byte();
                     }
                 }
 
-                int8_t team = recv.read_byte();
+                int8_t team = recv.length() >= 1 ? recv.read_byte() : -1;
 
-                recv.skip(4);
+                // Some server builds omit 4 trailing bytes here.
+                if (recv.length() >= 4)
+                {
+                    recv.skip(4);
+                }
 
                 Stage::get().get_mobs().spawn({
                     oid, id, mode, stance, fh, effect == -2, team, position

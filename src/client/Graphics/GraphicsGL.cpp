@@ -21,11 +21,10 @@
 #include "../Console.h"
 
 #include <algorithm>
+#include <vector>
 
 namespace jrc
 {
-    constexpr Rectangle<int16_t> GraphicsGL::SCREEN;
-
     GraphicsGL::GraphicsGL()
     {
         locked = false;
@@ -47,7 +46,7 @@ namespace jrc
 
         GLuint vs = glCreateShader(GL_VERTEX_SHADER);
         const char *vs_source =
-            "#version 120\n"
+            "precision highp float;\n"
             "attribute vec4 coord;"
             "attribute vec4 color;"
             "varying vec2 texpos;"
@@ -57,7 +56,7 @@ namespace jrc
 
             "void main(void) {"
             "    float x = -1.0 + coord.x * 2.0 / screensize.x;"
-            "    float y = 1.0 - (coord.y + yoffset) * 2.0 / screensize.y;"
+            "    float y = 1.0 - (coord.y + float(yoffset)) * 2.0 / screensize.y;"
             "    gl_Position = vec4(x, y, 0.0, 1.0);"
             "    texpos = coord.zw;"
             "    colormod = color;"
@@ -67,12 +66,15 @@ namespace jrc
         glGetShaderiv(vs, GL_COMPILE_STATUS, &result);
         if (!result)
         {
+            char infoLog[512];
+            glGetShaderInfoLog(vs, 512, NULL, infoLog);
+            Console::get().print("Vertex shader compilation failed: " + std::string(infoLog));
             return Error::VERTEX_SHADER;
         }
 
         GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
         const char *fs_source =
-            "#version 120\n"
+            "precision mediump float;\n"
             "varying vec2 texpos;"
             "varying vec4 colormod;"
             "uniform sampler2D texture;"
@@ -80,10 +82,10 @@ namespace jrc
             "uniform int fontregion;"
 
             "void main(void) {"
-            "    if (texpos.y == 0) {"
+            "    if (texpos.y == 0.0) {"
             "        gl_FragColor = colormod;"
-            "    } else if (texpos.y <= fontregion) {"
-            "        gl_FragColor = vec4(1, 1, 1, texture2D(texture, texpos / atlassize).r) * colormod;"
+            "    } else if (texpos.y <= float(fontregion)) {"
+            "        gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(texture, texpos / atlassize).r) * colormod;"
             "    } else {"
             "        gl_FragColor = texture2D(texture, texpos / atlassize) * colormod;"
             "    }"
@@ -93,6 +95,9 @@ namespace jrc
         glGetShaderiv(fs, GL_COMPILE_STATUS, &result);
         if (!result)
         {
+            char infoLog[512];
+            glGetShaderInfoLog(fs, 512, NULL, infoLog);
+            Console::get().print("Fragment shader compilation failed: " + std::string(infoLog));
             return Error::FRAGMENT_SHADER;
         }
 
@@ -125,6 +130,7 @@ namespace jrc
         }
 
         glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ibo);
 
         glGenTextures(1, &atlas);
         glBindTexture(GL_TEXTURE_2D, atlas);
@@ -138,26 +144,61 @@ namespace jrc
 
         fontborder.set_y(1);
 
-        const std::string FONT_NORMAL = Setting<FontPathNormal>().get().load();
-        const std::string FONT_BOLD = Setting<FontPathBold>().get().load();
-        if (FONT_NORMAL.empty() || FONT_BOLD.empty())
+        std::string font_normal = Setting<FontPathNormal>().get().load();
+        std::string font_bold = Setting<FontPathBold>().get().load();
+        if (font_normal.empty() || font_bold.empty())
         {
             Console::get().print(
                 "Warning: A font path is empty, check your settings file."
             );
         }
 
-        const char* FONT_NORMAL_STR = FONT_NORMAL.c_str();
-        const char* FONT_BOLD_STR = FONT_BOLD.c_str();
+        constexpr const char* FALLBACK_FONT_NORMAL = "/fonts/Arial/Arial.ttf";
+        constexpr const char* FALLBACK_FONT_BOLD = "/fonts/Arial/Arial-Bold.ttf";
 
-        addfont(FONT_NORMAL_STR, Text::A11L, 0, 11);
-        addfont(FONT_NORMAL_STR, Text::A11M, 0, 11);
-        addfont(FONT_BOLD_STR,   Text::A11B, 0, 11);
-        addfont(FONT_NORMAL_STR, Text::A12M, 0, 12);
-        addfont(FONT_BOLD_STR,   Text::A12B, 0, 12);
-        addfont(FONT_NORMAL_STR, Text::A13M, 0, 13);
-        addfont(FONT_BOLD_STR,   Text::A13B, 0, 13);
-        addfont(FONT_NORMAL_STR, Text::A18M, 0, 18);
+        if (font_normal.empty())
+        {
+            font_normal = FALLBACK_FONT_NORMAL;
+        }
+        if (font_bold.empty())
+        {
+            font_bold = FALLBACK_FONT_BOLD;
+        }
+
+        auto load_font = [&](const std::string& configured_path,
+                             const char* fallback_path,
+                             Text::Font id,
+                             FT_UInt pixelw,
+                             FT_UInt pixelh) {
+            if (addfont(configured_path.c_str(), id, pixelw, pixelh))
+            {
+                return;
+            }
+
+            if (configured_path != fallback_path &&
+                addfont(fallback_path, id, pixelw, pixelh))
+            {
+                Console::get().print(
+                    "Failed to load font '" + configured_path +
+                    "', using fallback '" + std::string(fallback_path) + "'."
+                );
+                return;
+            }
+
+            Console::get().print(
+                "Failed to load font '" + configured_path +
+                "' and fallback '" + std::string(fallback_path) + "'."
+            );
+        };
+
+        load_font(font_normal, FALLBACK_FONT_NORMAL, Text::A11L, 0, 11);
+        load_font(font_normal, FALLBACK_FONT_NORMAL, Text::A11M, 0, 11);
+        load_font(font_bold,   FALLBACK_FONT_BOLD,   Text::A11B, 0, 11);
+        load_font(font_normal, FALLBACK_FONT_NORMAL, Text::A12M, 0, 12);
+        load_font(font_bold,   FALLBACK_FONT_BOLD,   Text::A12B, 0, 12);
+        load_font(font_normal, FALLBACK_FONT_NORMAL, Text::A13M, 0, 13);
+        load_font(font_bold,   FALLBACK_FONT_BOLD,   Text::A13B, 0, 13);
+        load_font(font_normal, FALLBACK_FONT_NORMAL, Text::A18M, 0, 18);
 
         fontymax += fontborder.y();
 
@@ -251,10 +292,30 @@ namespace jrc
             GLshort w  = static_cast<GLshort>(g->bitmap.width);
             GLshort h  = static_cast<GLshort>(g->bitmap.rows);
 
-            glTexSubImage2D(
-                GL_TEXTURE_2D, 0, ox, oy, w, h,
-                GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer
-            );
+            if (w > 0 && h > 0)
+            {
+#ifdef MS_PLATFORM_WASM
+                // WebGL path: expand single-channel glyph bitmap to RGBA.
+                std::vector<uint8_t> rgba_buffer(static_cast<size_t>(w) * h * 4);
+                for (int32_t i = 0; i < static_cast<int32_t>(w) * h; ++i)
+                {
+                    uint8_t val = g->bitmap.buffer[i];
+                    rgba_buffer[static_cast<size_t>(i) * 4 + 0] = val;
+                    rgba_buffer[static_cast<size_t>(i) * 4 + 1] = val;
+                    rgba_buffer[static_cast<size_t>(i) * 4 + 2] = val;
+                    rgba_buffer[static_cast<size_t>(i) * 4 + 3] = val;
+                }
+                glTexSubImage2D(
+                    GL_TEXTURE_2D, 0, ox, oy, w, h,
+                    GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data()
+                );
+#else
+                glTexSubImage2D(
+                    GL_TEXTURE_2D, 0, ox, oy, w, h,
+                    GL_RED, GL_UNSIGNED_BYTE, g->bitmap.buffer
+                );
+#endif
+            }
 
             Offset offset = Offset(ox, oy, w, h);
             fonts[id].chars[c] = { ax, ay, w, h, l, t, offset };
@@ -272,7 +333,7 @@ namespace jrc
         glUniform1i(uniform_yoffset, Constants::VIEWYOFFSET);
         glUniform1i(uniform_fontregion, fontymax);
         glUniform2f(uniform_atlassize, ATLASW, ATLASH);
-        glUniform2f(uniform_screensize, Constants::VIEWWIDTH, Constants::VIEWHEIGHT);
+        glUniform2f(uniform_screensize, Constants::viewwidth(), Constants::viewheight());
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glVertexAttribPointer(attribute_coord, 4, GL_SHORT, GL_FALSE, sizeof(Quad::Vertex), 0);
@@ -287,6 +348,22 @@ namespace jrc
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         clearinternal();
+    }
+
+    void GraphicsGL::set_screensize(int16_t width, int16_t height)
+    {
+        glUseProgram(program);
+        glUniform2f(uniform_screensize, width, height);
+    }
+
+    Rectangle<int16_t> GraphicsGL::screen()
+    {
+        return {
+            0,
+            Constants::viewwidth(),
+            -Constants::VIEWYOFFSET,
+            static_cast<int16_t>(-Constants::VIEWYOFFSET + Constants::viewheight())
+        };
     }
 
     void GraphicsGL::clearinternal()
@@ -330,6 +407,11 @@ namespace jrc
         GLshort h = bmp.height();
 
         if (w <= 0 || h <= 0)
+        {
+            return nulloffset;
+        }
+
+        if (!bmp.data())
         {
             return nulloffset;
         }
@@ -432,7 +514,23 @@ namespace jrc
         Console::get().print("Used: " + std::to_string(usedpercent) + ", wasted: " + std::to_string(wastedpercent));
         */
 
+#ifdef MS_PLATFORM_WASM
+        // WebGL 2 does not support GL_BGRA, so we need to manually swap the channels
+        // from BGRA (what the game uses) to RGBA (what WebGL expects).
+        int32_t len = w * h * 4;
+        std::vector<uint8_t> rgba_buffer(len);
+        const uint8_t* src = (const uint8_t*)bmp.data();
+        for (int i = 0; i < len; i += 4)
+        {
+            rgba_buffer[i] = src[i + 2];     // R = B
+            rgba_buffer[i + 1] = src[i + 1]; // G = G
+            rgba_buffer[i + 2] = src[i];     // B = R
+            rgba_buffer[i + 3] = src[i + 3]; // A = A
+        }
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba_buffer.data());
+#else
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bmp.data());
+#endif
         return offsets.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(id),
@@ -453,7 +551,7 @@ namespace jrc
             return;
         }
 
-        if (!rect.overlaps(SCREEN))
+        if (!rect.overlaps(screen()))
         {
             return;
         }
@@ -784,7 +882,7 @@ namespace jrc
 
     void GraphicsGL::drawscreenfill(float r, float g, float b, float a)
     {
-        drawrectangle(0, -Constants::VIEWYOFFSET, Constants::VIEWWIDTH, Constants::VIEWHEIGHT, r, g, b, a);
+        drawrectangle(0, -Constants::VIEWYOFFSET, Constants::viewwidth(), Constants::viewheight(), r, g, b, a);
     }
 
     void GraphicsGL::lock()
@@ -804,8 +902,8 @@ namespace jrc
         {
             float complement = 1.0f - opacity;
             Color color{ 0.0f, 0.0f, 0.0f, complement };
-
-            quads.emplace_back(SCREEN.l(), SCREEN.r(), SCREEN.t(), SCREEN.b(), nulloffset, color, 0.0f);
+            Rectangle<int16_t> screen_rect = screen();
+            quads.emplace_back(screen_rect.l(), screen_rect.r(), screen_rect.t(), screen_rect.b(), nulloffset, color, 0.0f);
         }
 
         glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -817,7 +915,30 @@ namespace jrc
         glEnableVertexAttribArray(attribute_color);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, csize, quads.data(), GL_STREAM_DRAW);
+        glVertexAttribPointer(attribute_coord, 4, GL_SHORT, GL_FALSE, sizeof(Quad::Vertex), 0);
+        glVertexAttribPointer(attribute_color, 4, GL_FLOAT, GL_FALSE, sizeof(Quad::Vertex), (const void*)8);
+#ifdef MS_PLATFORM_WASM
+        // Initialize indices for GL_TRIANGLES (2 triangles per quad, 6 indices per quad)
+        std::vector<GLushort> indices;
+        indices.reserve(quads.size() * 6);
+        for (size_t i = 0; i < quads.size(); ++i)
+        {
+            GLushort base = static_cast<GLushort>(i * 4);
+            indices.push_back(base + 0);
+            indices.push_back(base + 1);
+            indices.push_back(base + 2);
+            indices.push_back(base + 0);
+            indices.push_back(base + 2);
+            indices.push_back(base + 3);
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STREAM_DRAW);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_SHORT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+#else
         glDrawArrays(GL_QUADS, 0, fsize);
+#endif
 
         glDisableVertexAttribArray(attribute_coord);
         glDisableVertexAttribArray(attribute_color);
@@ -827,6 +948,7 @@ namespace jrc
         {
             quads.pop_back();
         }
+
     }
 
     void GraphicsGL::clearscene()

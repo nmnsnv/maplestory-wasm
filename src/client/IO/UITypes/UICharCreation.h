@@ -94,7 +94,7 @@ namespace jrc
         BoolPair<std::vector<int32_t>> shoes;
         BoolPair<std::vector<int32_t>> weapons;
 
-        bool named;
+        bool named = false;
         bool female;
         size_t skin;
         size_t haircolor;
@@ -115,4 +115,3 @@ namespace jrc
         Text gendername;
     };
 }
-

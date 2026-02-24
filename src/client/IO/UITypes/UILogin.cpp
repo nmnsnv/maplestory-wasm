@@ -23,6 +23,7 @@
 
 #include "../../Configuration.h"
 #include "../../Audio/Audio.h"
+#include "../../Console.h"
 #include "../../Graphics/Sprite.h"
 #include "../../Net/Packets/LoginPackets.h"
 
@@ -34,23 +35,75 @@ namespace jrc
     {
         Music("BgmUI.img/Title").play();
 
+        nl::node back   = nl::nx::map["Back"]["login.img"]["back"];
         nl::node title  = nl::nx::ui["Login.img"]["Title"];
         nl::node common = nl::nx::ui["Login.img"]["Common"];
+        nl::node title_new = nl::nx::ui["Login.img"]["Title_new"];
 
-        sprites.emplace_back(title["11"],        Point<int16_t>(410, 300));
-        sprites.emplace_back(title["35"],        Point<int16_t>(410, 260));
-        sprites.emplace_back(title["Logo"],      Point<int16_t>(410, 130));
-        sprites.emplace_back(title["signboard"], Point<int16_t>(410, 300));
-        sprites.emplace_back(common["frame"],    Point<int16_t>(400, 290));
+        // Compatibility: some UI.nx variants do not have Title/11, Title/35, Title/Logo.
+        if (back["11"])
+        {
+            sprites.emplace_back(back["11"], Point<int16_t>(370, 300));
+        }
+        else if (back["0"])
+        {
+            sprites.emplace_back(back["0"], Point<int16_t>(370, 300));
+        }
 
-        // I prefer the title without this.
-        /*auto effectpos = Point<int16_t>(420, -50);
-        node effect = title["effect"];
-        for (node sub : effect)
+        const bool has_legacy_form = static_cast<bool>(title["signboard"]) &&
+            static_cast<bool>(common["frame"]);
+
+        if (title["11"])
+        {
+            sprites.emplace_back(title["11"], Point<int16_t>(410, 300));
+        }
+        else if (title_new["backgrd"] && !has_legacy_form)
+        {
+            sprites.emplace_back(title_new["backgrd"], Point<int16_t>(410, 300));
+        }
+
+        if (title["35"])
+        {
+            sprites.emplace_back(title["35"], Point<int16_t>(410, 260));
+        }
+
+        if (title["Logo"])
+        {
+            sprites.emplace_back(title["Logo"], Point<int16_t>(410, 130));
+        }
+        else if (title["MSTitle"])
+        {
+            sprites.emplace_back(title["MSTitle"], Point<int16_t>(410, 130));
+        }
+
+        if (title["signboard"])
+        {
+            sprites.emplace_back(title["signboard"], Point<int16_t>(410, 300));
+        }
+        if (common["frame"])
+        {
+            sprites.emplace_back(common["frame"], Point<int16_t>(400, 290));
+        }
+
+        const bool has_legacy_title_nodes = static_cast<bool>(title["11"]) ||
+            static_cast<bool>(title["35"]) ||
+            static_cast<bool>(title["Logo"]);
+        const bool has_modern_title_nodes = static_cast<bool>(title["MSTitle"]) ||
+            static_cast<bool>(title_new["backgrd"]) ||
+            has_legacy_form;
+
+        if (!has_legacy_title_nodes && !has_modern_title_nodes)
+        {
+            Console::get().print("[UILogin] Using fallback title/background nodes for this UI.nx variant.");
+        }
+
+        auto effectpos = Point<int16_t>(420, -50);
+        nl::node effect = title["effect"];
+        for (nl::node sub : effect)
         {
             auto sprite = Sprite(sub, DrawArgument(effectpos, true, 0.5f));
             sprites.push_back(sprite);
-        }*/
+        }
 
         buttons[BT_LOGIN]    = std::make_unique<MapleButton>(title["BtLogin"],       Point<int16_t>(475, 248));
         buttons[BT_REGISTER] = std::make_unique<MapleButton>(title["BtNew"],         Point<int16_t>(309, 320));

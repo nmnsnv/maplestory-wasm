@@ -86,7 +86,7 @@ namespace jrc
         case BT_7:
         case BT_8:
         case BT_9:
-            if (entered.size() <= MAX_SIZE)
+            if (entered.size() < MAX_SIZE)
             {
                 entered.append(std::to_string(id));
                 shufflekeys();

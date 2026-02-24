@@ -52,6 +52,7 @@ namespace jrc
         GLFWwindow* glwnd;
         GLFWwindow* context;
         bool fullscreen;
+        bool f11_down;
         float opacity;
         float opcstep;
         std::function<void()> fadeprocedure;

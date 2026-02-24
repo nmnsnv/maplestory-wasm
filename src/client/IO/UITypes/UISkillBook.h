@@ -39,6 +39,7 @@ namespace jrc
         Cursor::State send_cursor(Point<int16_t> cursorpos, bool clicked);
 
         int32_t get_id() const;
+        Icon* get_drag_icon() const;
 
     private:
         enum State
@@ -54,6 +55,7 @@ namespace jrc
         Text name;
         Text level;
         int32_t id;
+        std::unique_ptr<Icon> drag_icon;
 
         State state;
         bool enabled;
@@ -84,6 +86,9 @@ namespace jrc
     private:
         void change_job(uint16_t id);
         void change_sp(int16_t value);
+        void update_sp_label();
+        int16_t get_beginner_sp() const;
+        int16_t get_available_sp() const;
         void change_tab(uint16_t new_tab);
         void change_offset(uint16_t new_offset);
 
@@ -130,11 +135,13 @@ namespace jrc
 
         Job job;
         int16_t sp;
+        int16_t beginner_sp;
 
         uint16_t tab;
         uint16_t skillcount;
         uint16_t offset;
 
         std::vector<SkillIcon> icons;
+        bool grabbing;
     };
 }

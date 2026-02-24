@@ -108,6 +108,7 @@ namespace jrc
         // Player
         SPEND_AP = 87,
         SPEND_SP = 90,
+        CHANGE_KEYMAP = 135,
 
         // Skill
         USE_SKILL = 91,
@@ -116,10 +117,9 @@ namespace jrc
         PARTY_OPERATION = 124,
         MOVE_MONSTER    = 188,
         PICKUP_ITEM     = 202,
-        PLAYER_UPDATE   = 0xDF,
+        PLAYER_UPDATE   = 0xCF,
 
         // Custom
         HASH_CHECK = 30000
     };
 }
-

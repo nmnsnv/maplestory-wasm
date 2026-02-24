@@ -20,6 +20,8 @@
 
 #include "../../Graphics/Text.h"
 #include "../../Graphics/Texture.h"
+#include <string>
+#include <vector>
 
 namespace jrc
 {
@@ -33,6 +35,7 @@ namespace jrc
         UINpcTalk();
 
         void draw(float inter) const override;
+        bool is_in_range(Point<int16_t> cursorpos) const override;
 
         void change_text(int32_t npcid, int8_t msgtype, int16_t style, int8_t speaker, const std::string& text);
 
@@ -40,6 +43,10 @@ namespace jrc
         Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        void parse_selections(const std::string& text, std::string& rendered_text);
+        std::string format_selectable_text() const;
+        static std::string strip_npc_tokens(const std::string& text);
+
         enum Buttons
         {
             OK,
@@ -63,5 +70,9 @@ namespace jrc
         bool slider;
 
         int8_t type;
+        std::string prompttext;
+        std::vector<std::string> selection_texts;
+        std::vector<int32_t> selections;
+        int32_t selected;
     };
 }

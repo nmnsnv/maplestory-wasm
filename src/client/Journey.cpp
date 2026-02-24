@@ -16,6 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "Configuration.h"
+#ifdef MS_PLATFORM_WASM
+#include <emscripten.h>
+#endif
 #include "Constants.h"
 #include "Error.h"
 #include "Timer.h"
@@ -94,9 +97,56 @@ namespace jrc
             && Window::get().not_closed();
     }
 
+#ifdef MS_PLATFORM_WASM
+    static int64_t timestep = Constants::TIMESTEP * 1000;
+    static int64_t accumulator = timestep;
+    static int64_t period = 0;
+    static int32_t samples = 0;
+
+    void main_tick()
+    {
+        if (!running())
+        {
+            emscripten_cancel_main_loop();
+            Sound::close();
+            return;
+        }
+
+        int64_t elapsed = Timer::get().stop();
+
+        for (accumulator += elapsed; accumulator >= timestep; accumulator -= timestep)
+            update();
+
+        float alpha = static_cast<float>(accumulator) / timestep;
+        draw(alpha);
+
+        bool show_fps = true; // Hardcoded or from config
+        if (show_fps)
+        {
+            if (samples < 100)
+            {
+                period += elapsed;
+                samples++;
+            }
+            else if (period)
+            {
+                int64_t fps = (samples * 1000000) / period;
+                // std::cout << "FPS: " << fps << std::endl;
+                period = 0;
+                samples = 0;
+            }
+        }
+    }
+#endif
+
     void loop()
     {
         Timer::get().start();
+
+#ifdef MS_PLATFORM_WASM
+        accumulator = timestep;
+        emscripten_set_main_loop(main_tick, 0, 1);
+#else
         int64_t timestep    = Constants::TIMESTEP * 1000;
         int64_t accumulator = timestep;
 
@@ -133,6 +183,7 @@ namespace jrc
         }
 
         Sound::close();
+#endif
     }
 
     void start()

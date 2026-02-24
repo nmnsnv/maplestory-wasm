@@ -34,6 +34,7 @@ namespace jrc
             virtual void drop_on_stage() const = 0;
             virtual void drop_on_equips(Equipslot::Id eqslot) const = 0;
             virtual void drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const = 0;
+            virtual void drop_on_bindings(Point<int16_t>, bool) const {}
         };
 
 
@@ -52,6 +53,7 @@ namespace jrc
         void drop_on_stage() const;
         void drop_on_equips(Equipslot::Id eqslot) const;
         void drop_on_items(InventoryType::Id tab, Equipslot::Id eqslot, int16_t slot, bool equip) const;
+        void drop_on_bindings(Point<int16_t> cursorpos, bool remove) const;
         void start_drag(Point<int16_t> offset);
         void reset();
         void set_count(int16_t count);

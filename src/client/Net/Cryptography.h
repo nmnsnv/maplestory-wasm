@@ -21,6 +21,7 @@
 #include "../Journey.h"
 
 #include <cstdint>
+#include <cstddef>
 
 namespace jrc
 {

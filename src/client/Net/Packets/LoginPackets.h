@@ -40,6 +40,14 @@ namespace jrc
         {
             write_string(acc);
             write_string(pass);
+            // Legacy v83 login packet tail:
+            // 6 reserved bytes + 4 bytes commonly derived from volume serial.
+            // In WASM/non-Windows environments we send zeroes for compatibility.
+            skip(6);
+            write_byte(0);
+            write_byte(0);
+            write_byte(0);
+            write_byte(0);
         }
     };
 

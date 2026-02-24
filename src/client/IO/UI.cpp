@@ -20,6 +20,7 @@
 #include "UIStateLogin.h"
 #include "UIStateGame.h"
 #include "Window.h"
+#include "../Console.h"
 
 namespace jrc
 {
@@ -153,6 +154,14 @@ namespace jrc
         else
         {
             Keyboard::Mapping mapping = keyboard.get_mapping(keycode);
+            if (pressed && (mapping.action == KeyAction::KEYCONFIG || keycode == 92))
+            {
+                Console::get().print(
+                    "[input] keycode=" + std::to_string(keycode) +
+                    " -> type=" + std::to_string(static_cast<int32_t>(mapping.type)) +
+                    " action=" + std::to_string(mapping.action)
+                );
+            }
             if (mapping.type)
             {
                 state->send_key(mapping.type, mapping.action, pressed);
@@ -185,6 +194,11 @@ namespace jrc
     void UI::drag_icon(Icon* icon)
     {
         state->drag_icon(icon);
+    }
+
+    Keyboard& UI::get_keyboard()
+    {
+        return keyboard;
     }
 
     void UI::add_keymapping(uint8_t no, uint8_t type, int32_t action)

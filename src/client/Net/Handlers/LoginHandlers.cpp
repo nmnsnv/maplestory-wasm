@@ -41,6 +41,7 @@ namespace jrc
         // The packet should contain a 'reason' integer which can signify various things.
         if (int32_t reason = recv.read_int())
         {
+            printf("Login failed. reason=%d\n", reason);
             // Login unsuccessful. The LoginNotice displayed will contain the specific information.
             switch (reason)
             {

@@ -19,6 +19,10 @@
 #include "../OutPacket.h"
 
 #include "../../Character/MapleStat.h"
+#include "../../IO/KeyType.h"
+
+#include <tuple>
+#include <vector>
 
 namespace jrc
 {
@@ -44,6 +48,26 @@ namespace jrc
         {
             write_time();
             write_int(skill_id);
+        }
+    };
+
+    // Requests the server to change key mappings.
+    // Opcode: CHANGE_KEYMAP(135)
+    class ChangeKeyMapPacket : public OutPacket
+    {
+    public:
+        explicit ChangeKeyMapPacket(const std::vector<std::tuple<int32_t, uint8_t, int32_t>>& updates)
+            : OutPacket(CHANGE_KEYMAP)
+        {
+            write_int(0); // mode
+            write_int(static_cast<int32_t>(updates.size()));
+
+            for (const auto& entry : updates)
+            {
+                write_int(std::get<0>(entry)); // key
+                write_byte(static_cast<int8_t>(std::get<1>(entry))); // type
+                write_int(std::get<2>(entry)); // action
+            }
         }
     };
 }

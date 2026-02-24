@@ -18,8 +18,9 @@
 
 //Define things here.
 
-// JOURNEY_USE_ASIO : Use asio for networking, if not defined use Winsock.
+#ifndef MS_PLATFORM_WASM
 #define JOURNEY_USE_ASIO
+#endif
 
 // JOURNEY_USE_XXHASH : Use xxhash for file check (additional dependency)
 //#define JOURNEY_USE_XXHASH

@@ -20,6 +20,7 @@
 #include "../UI.h"
 #include "../Components/MapleButton.h"
 #include "../Components/TwoSpriteButton.h"
+#include "UIKeyConfig.h"
 
 #include "../../Data/ItemData.h"
 #include "../../Net/Packets/InventoryPackets.h"
@@ -160,7 +161,7 @@ namespace jrc
             const Texture& texture = ItemData::get(item_id).get_icon(false);
             Equipslot::Id eqslot = inventory.find_equipslot(item_id);
             icons[slot] = std::make_unique<Icon>(
-                std::make_unique<ItemIcon>(tab, eqslot, slot),
+                std::make_unique<ItemIcon>(tab, eqslot, slot, item_id),
                 texture,
                 count
                 );
@@ -499,11 +500,12 @@ namespace jrc
     }
 
 
-    UIItemInventory::ItemIcon::ItemIcon(InventoryType::Id st, Equipslot::Id eqs, int16_t s)
+    UIItemInventory::ItemIcon::ItemIcon(InventoryType::Id st, Equipslot::Id eqs, int16_t s, int32_t id)
     {
         sourcetab = st;
         eqsource = eqs;
         source = s;
+        item_id = id;
     }
 
     void UIItemInventory::ItemIcon::drop_on_stage() const
@@ -533,5 +535,20 @@ namespace jrc
             return;
 
         MoveItemPacket(tab, source, slot, 1).dispatch();
+    }
+
+    void UIItemInventory::ItemIcon::drop_on_bindings(Point<int16_t> cursorposition, bool remove) const
+    {
+        if (sourcetab != InventoryType::USE && sourcetab != InventoryType::SETUP)
+            return;
+
+        if (auto keyconfig = UI::get().get_element<UIKeyConfig>())
+        {
+            Keyboard::Mapping mapping{ KeyType::ITEM, item_id };
+            if (remove)
+                keyconfig->unstage_mapping(mapping);
+            else
+                keyconfig->stage_mapping(cursorposition, mapping);
+        }
     }
 }

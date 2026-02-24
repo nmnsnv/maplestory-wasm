@@ -64,7 +64,7 @@ namespace jrc
             BT_OK
         };
 
-        static constexpr size_t MIN_SIZE = 6;
+        static constexpr size_t MIN_SIZE = 4;
         static constexpr size_t MAX_SIZE = 12;
         static constexpr uint8_t NUM_KEYS = 10;
 
@@ -73,4 +73,3 @@ namespace jrc
         Randomizer random;
     };
 }
-

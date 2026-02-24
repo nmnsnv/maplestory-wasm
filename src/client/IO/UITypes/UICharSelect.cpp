@@ -27,6 +27,7 @@
 #include "../../Constants.h"
 #include "../../Configuration.h"
 #include "../../Audio/Audio.h"
+#include "../../Console.h"
 #include "../../Character/Job.h"
 #include "../../Net/Packets/SelectCharPackets.h"
 
@@ -46,12 +47,36 @@ namespace jrc
         selected_relative = selected_absolute % PAGESIZE;
         page              = selected_absolute / PAGESIZE;
 
+        nl::node back       = nl::nx::map["Back"]["login.img"]["back"];
         nl::node title      = nl::nx::ui["Login.img"]["Title"];
         nl::node common     = nl::nx::ui["Login.img"]["Common"];
         nl::node charselect = nl::nx::ui["Login.img"]["CharSelect"];
 
-        sprites.emplace_back(title["worldsel"]);
-        sprites.emplace_back(common["frame"], Point<int16_t>(400, 290));
+        // Compatibility: base login background exists across more UI.nx variants
+        // than Title/worldsel.
+        if (back["11"])
+        {
+            sprites.emplace_back(back["11"], Point<int16_t>(370, 300));
+        }
+        else if (back["0"])
+        {
+            sprites.emplace_back(back["0"], Point<int16_t>(370, 300));
+        }
+
+        // Keep legacy world-select art as an optional overlay when available.
+        if (title["worldsel"])
+        {
+            sprites.emplace_back(title["worldsel"]);
+        }
+
+        if (common["frame"])
+        {
+            sprites.emplace_back(common["frame"], Point<int16_t>(400, 290));
+        }
+        else
+        {
+            Console::get().print("[UICharSelect] Missing Login.img/Common/frame for this UI.nx variant.");
+        }
 
         // Post BB
         /*
@@ -322,10 +347,12 @@ namespace jrc
             });
             break;
         case 1:
-            UI::get().emplace<UISoftkey>([cid](const std::string& pic) {
+            {
                 UI::get().disable();
+                std::string pic = "1010";
+                Console::get().print("Setting PIC to " + pic);
                 SelectCharPicPacket(pic, cid).dispatch();
-            });
+            }
             break;
         case 2:
             UI::get().disable();

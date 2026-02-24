@@ -81,6 +81,7 @@ namespace jrc
         WEEK_EVENT_MESSAGE = 77,
 
         FIELD_SET_VARIABLE      = 92,
+        FAMILY_INFO_RESULT      = 95,
         FAMILY_PRIV_LIST        = 100,
         CANCEL_RENAME_BY_OTHER  = 120,
         SCRIPT_PROGRESS_MESSAGE = 122,
@@ -89,6 +90,7 @@ namespace jrc
         SET_FIELD               = 125,
         FIELD_EFFECT            = 138,
         CLOCK                   = 147,
+        LEGACY_FIELD_OBJECT     = 159,
 
         // Mapobject
         SPAWN_CHAR  = 160,
@@ -137,7 +139,9 @@ namespace jrc
         NPC_DIALOGUE  = 304,
         OPEN_NPC_SHOP = 305,
 
-        KEYMAP = 335
+        KEYMAP      = 335,
+        AUTO_HP_POT = 336,
+        AUTO_MP_POT = 337
     };
 
     PacketSwitch::PacketSwitch()
@@ -212,12 +216,19 @@ namespace jrc
         emplace<MOVE_MOB_RESPONSE, NullHandler>();
         emplace<MEMO_RESULT, NullHandler>();
         emplace<ENABLE_REPORT, NullHandler>();
+        emplace<FAMILY_INFO_RESULT, NullHandler>();
         emplace<BUDDY_LIST, NullHandler>();
         emplace<GUILD_OPERATION, NullHandler>();
         emplace<FAMILY_PRIV_LIST, NullHandler>();
         emplace<SCRIPT_PROGRESS_MESSAGE, NullHandler>();
         emplace<RECEIVE_POLICE, NullHandler>();
+        emplace<FIELD_EFFECT, NullHandler>();
+        emplace<LEGACY_FIELD_OBJECT, NullHandler>();
+        emplace<LOCK_UI, NullHandler>();
+        emplace<TOGGLE_UI, NullHandler>();
         emplace<MAKE_NPC_SCRIPTED, NullHandler>();
+        emplace<AUTO_HP_POT, NullHandler>();
+        emplace<AUTO_MP_POT, NullHandler>();
 
         // Ignored
         emplace<SELECT_WORLD, NullHandler>();

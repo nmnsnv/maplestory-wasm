@@ -18,7 +18,9 @@
 #include "Session.h"
 
 #include "../Configuration.h"
-
+#ifdef MS_PLATFORM_WASM
+#include "../Util/Misc.h"
+#endif
 
 namespace jrc
 {
@@ -39,14 +41,31 @@ namespace jrc
 
     bool Session::init(const char* host, const char* port)
     {
+#ifdef MS_PLATFORM_WASM
+        std::string final_host = host;
+        if (final_host == "0.0.0.0")
+        {
+            final_host = getBrowserHostname();
+            Console::get().print("Host is 0.0.0.0, resolving to: " + final_host);
+        }
+        Console::get().print("Connecting to " + final_host + ":" + port);
+        connected = socket.open(final_host.c_str(), port);
+#else
         // Connect to the server.
         connected = socket.open(host, port);
+#endif
 
         if (connected)
         {
             // Read keys neccessary for communicating with the server.
             cryptography = { socket.get_buffer() };
         }
+#ifdef MS_PLATFORM_WASM
+        else
+        {
+            Console::get().print("Failed to connect");
+        }
+#endif
 
         return connected;
     }

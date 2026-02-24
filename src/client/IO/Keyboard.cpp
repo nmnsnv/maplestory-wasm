@@ -24,12 +24,22 @@ namespace jrc
 {
     constexpr int32_t Keytable[90] =
     {
-        0, 0, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, // number keys, up to key 0
-        0, 0, 0, 0, 'Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P', 0, 0, 0, //first letter row, up to key 28
-        GLFW_KEY_LEFT_CONTROL, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0,  //second row, up to 41
-        GLFW_KEY_LEFT_SHIFT, 0, 'Y', 'X', 'C', 'V', 'B', 'N', 'M', 0, 0, 0, 0, 0, GLFW_KEY_LEFT_ALT, GLFW_KEY_SPACE, 0, //third row, up to 58
-        GLFW_KEY_F1, GLFW_KEY_F2, GLFW_KEY_F3, GLFW_KEY_F4, GLFW_KEY_F5, GLFW_KEY_F6, GLFW_KEY_F7, GLFW_KEY_F8, GLFW_KEY_F9, GLFW_KEY_F10, GLFW_KEY_F11, GLFW_KEY_F12, //up to 70
-        GLFW_KEY_HOME, 0, GLFW_KEY_PAGE_UP, 0, 0, 0, 0, 0, GLFW_KEY_END, 0, GLFW_KEY_PAGE_DOWN, GLFW_KEY_INSERT, GLFW_KEY_DELETE, 0, 0, 0, 0, 0, 0
+        0, 0,
+        GLFW_KEY_1, GLFW_KEY_2, GLFW_KEY_3, GLFW_KEY_4, GLFW_KEY_5, GLFW_KEY_6, GLFW_KEY_7, GLFW_KEY_8, GLFW_KEY_9, GLFW_KEY_0, GLFW_KEY_MINUS, GLFW_KEY_EQUAL,
+        0, 0,
+        GLFW_KEY_Q, GLFW_KEY_W, GLFW_KEY_E, GLFW_KEY_R, GLFW_KEY_T, GLFW_KEY_Y, GLFW_KEY_U, GLFW_KEY_I, GLFW_KEY_O, GLFW_KEY_P, GLFW_KEY_LEFT_BRACKET, GLFW_KEY_RIGHT_BRACKET,
+        0,
+        GLFW_KEY_LEFT_CONTROL, GLFW_KEY_A, GLFW_KEY_S, GLFW_KEY_D, GLFW_KEY_F, GLFW_KEY_G, GLFW_KEY_H, GLFW_KEY_J, GLFW_KEY_K, GLFW_KEY_L, GLFW_KEY_SEMICOLON, GLFW_KEY_APOSTROPHE, GLFW_KEY_GRAVE_ACCENT, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_BACKSLASH, GLFW_KEY_Z, GLFW_KEY_X, GLFW_KEY_C, GLFW_KEY_V, GLFW_KEY_B, GLFW_KEY_N, GLFW_KEY_M, GLFW_KEY_COMMA, GLFW_KEY_PERIOD,
+        0, 0, 0,
+        GLFW_KEY_LEFT_ALT, GLFW_KEY_SPACE,
+        0,
+        GLFW_KEY_F1, GLFW_KEY_F2, GLFW_KEY_F3, GLFW_KEY_F4, GLFW_KEY_F5, GLFW_KEY_F6, GLFW_KEY_F7, GLFW_KEY_F8, GLFW_KEY_F9, GLFW_KEY_F10, GLFW_KEY_F11, GLFW_KEY_F12, GLFW_KEY_HOME,
+        0,
+        GLFW_KEY_PAGE_UP,
+        0, 0, 0, 0, 0,
+        GLFW_KEY_END,
+        0,
+        GLFW_KEY_PAGE_DOWN, GLFW_KEY_INSERT, GLFW_KEY_DELETE, GLFW_KEY_ESCAPE, GLFW_KEY_RIGHT_CONTROL, GLFW_KEY_RIGHT_SHIFT, GLFW_KEY_RIGHT_ALT, GLFW_KEY_SCROLL_LOCK
     };
 
     Keyboard::Keyboard()
@@ -38,6 +48,8 @@ namespace jrc
         keymap[GLFW_KEY_RIGHT] = { KeyType::ACTION, KeyAction::RIGHT };
         keymap[GLFW_KEY_UP]    = { KeyType::ACTION, KeyAction::UP    };
         keymap[GLFW_KEY_DOWN]  = { KeyType::ACTION, KeyAction::DOWN  };
+        // Fallback defaults until keymap packet arrives.
+        keymap[GLFW_KEY_Z]     = { KeyType::ACTION, KeyAction::PICKUP };
 
         textactions[GLFW_KEY_BACKSPACE] = KeyAction::BACK;
         textactions[GLFW_KEY_ENTER]     = KeyAction::RETURN;
@@ -76,6 +88,29 @@ namespace jrc
             keymap[Keytable[key]] = mapping;
             maplekeys[key] = mapping;
         }
+    }
+
+    void Keyboard::remove(uint8_t key)
+    {
+        Mapping mapping{};
+        keymap[Keytable[key]] = mapping;
+        maplekeys[key] = mapping;
+    }
+
+    std::map<int32_t, Keyboard::Mapping> Keyboard::get_maplekeys() const
+    {
+        return maplekeys;
+    }
+
+    Keyboard::Mapping Keyboard::get_maple_mapping(int32_t keycode) const
+    {
+        auto iter = maplekeys.find(keycode);
+        if (iter == maplekeys.end())
+        {
+            return {};
+        }
+
+        return iter->second;
     }
 
     Keyboard::Mapping Keyboard::get_text_mapping(int32_t keycode, bool shift) const

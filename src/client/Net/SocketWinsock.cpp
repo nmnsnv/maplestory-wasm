@@ -17,17 +17,29 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "SocketWinsock.h"
 #ifndef JOURNEY_USE_ASIO
+
+#ifdef MS_PLATFORM_WASM
+#include "SockInternal.h"
+#include "../Console.h"
+#else
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
+#endif
 
 namespace jrc
 {
     bool SocketWinsock::open(const char* iaddr, const char* port)
     {
+#ifdef MS_PLATFORM_WASM
+        Console::get().print("Opening connection: " + std::string(iaddr) + ":" + std::string(port));
+        sock = ws_connect(std::string(iaddr), std::string(port));
+        int result = ws_recv(sock, (char*)buffer, 32, (size_t)-1);
+        return result == HANDSHAKE_LEN;
+#else
         WSADATA wsa_info;
         sock = INVALID_SOCKET;
 
@@ -89,22 +101,42 @@ namespace jrc
             WSACleanup();
             return false;
         }
+#endif
     }
 
     bool SocketWinsock::close()
     {
+#ifdef MS_PLATFORM_WASM
+        Console::get().print("Closing connection");
+        int error = ws_closesocket(sock);
+        return error != WS_SOCK_ERROR;
+#else
         int error = closesocket(sock);
         WSACleanup();
         return error != SOCKET_ERROR;
+#endif
     }
 
     bool SocketWinsock::dispatch(const int8_t* bytes, size_t length) const
     {
+#ifdef MS_PLATFORM_WASM
+        return ws_send(sock, (char*)bytes, static_cast<int>(length), 0) != WS_SOCK_ERROR;
+#else
         return send(sock, (char*)bytes, static_cast<int>(length), 0) != SOCKET_ERROR;
+#endif
     }
 
     size_t SocketWinsock::receive(bool* success)
     {
+#ifdef MS_PLATFORM_WASM
+        int result = ws_recv(sock, (char*)buffer, MAX_PACKET_LENGTH, 0);
+        if (result == WS_SOCK_ERROR)
+        {
+            *success = false;
+            return 0;
+        }
+        return result;
+#else
         timeval timeout = { 0, 0 };
         fd_set sockset = { 0 };
         FD_SET(sock, &sockset);
@@ -122,6 +154,7 @@ namespace jrc
         {
             return result;
         }
+#endif
     }
 
     const int8_t* SocketWinsock::get_buffer() const

@@ -68,16 +68,18 @@ namespace jrc
         class ItemIcon : public Icon::Type
         {
         public:
-            ItemIcon(InventoryType::Id sourcetab, Equipslot::Id eqsource, int16_t source);
+            ItemIcon(InventoryType::Id sourcetab, Equipslot::Id eqsource, int16_t source, int32_t itemid);
 
             void drop_on_stage() const override;
             void drop_on_equips(Equipslot::Id eqslot) const override;
             void drop_on_items(InventoryType::Id tab, Equipslot::Id, int16_t slot, bool) const override;
+            void drop_on_bindings(Point<int16_t> cursorposition, bool remove) const override;
 
         private:
             InventoryType::Id sourcetab;
             Equipslot::Id eqsource;
             int16_t source;
+            int32_t item_id;
         };
 
         enum Buttons

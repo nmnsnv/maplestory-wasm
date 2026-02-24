@@ -27,7 +27,9 @@
 #include "UITypes/UIItemInventory.h"
 #include "UITypes/UIEquipInventory.h"
 #include "UITypes/UISkillBook.h"
+#include "UITypes/UIKeyConfig.h"
 
+#include "../Console.h"
 #include "../Gameplay/Stage.h"
 
 
@@ -130,6 +132,13 @@ namespace jrc
                 case KeyAction::SKILLBOOK:
                     emplace<UISkillbook>(
                         Stage::get().get_player().get_stats(),
+                        Stage::get().get_player().get_skills()
+                    );
+                    break;
+                case KeyAction::KEYCONFIG:
+                    Console::get().print("[ui] dispatching KEYCONFIG window open");
+                    emplace<UIKeyConfig>(
+                        Stage::get().get_player().get_inventory(),
                         Stage::get().get_player().get_skills()
                     );
                     break;

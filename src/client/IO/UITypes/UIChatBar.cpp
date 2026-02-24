@@ -32,10 +32,12 @@ namespace jrc
         position = pos;
         dimension = { 500, 60 };
         chatopen = true;
+        chattarget = CHT_ALL;
         chatrows = 4;
         rowpos = 0;
         rowmax = -1;
         lastpos = 0;
+        dragchattop = false;
 
         nl::node mainbar = nl::nx::ui["StatusBar2.img"]["mainBar"];
 
@@ -138,7 +140,10 @@ namespace jrc
 
             slider.draw({ position.x(), getchattop() + 5 });
 
-            chattargets[chattarget].draw(position + Point<int16_t>(0, 2));
+            if (chattarget >= CHT_ALL && chattarget < NUM_TARGETS)
+            {
+                chattargets[chattarget].draw(position + Point<int16_t>(0, 2));
+            }
             chatcover.draw(position);
             chatfield.draw(position);
         }
@@ -153,6 +158,11 @@ namespace jrc
         UIElement::update();
 
         chatfield.update(position);
+    }
+
+    void UIChatbar::set_position(Point<int16_t> pos)
+    {
+        position = pos;
     }
 
     Button::State UIChatbar::button_pressed(uint16_t id)

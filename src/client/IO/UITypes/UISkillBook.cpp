@@ -19,6 +19,7 @@
 
 #include "../Components/MapleButton.h"
 #include "../Components/TwoSpriteButton.h"
+#include "UIKeyConfig.h"
 
 #include "../../Character/SkillId.h"
 #include "../../Data/JobData.h"
@@ -33,9 +34,38 @@
 
 namespace jrc
 {
+    namespace
+    {
+        class SkillDragType : public Icon::Type
+        {
+        public:
+            explicit SkillDragType(int32_t in_skill_id)
+                : skill_id(in_skill_id) {}
+
+            void drop_on_stage() const override {}
+            void drop_on_equips(Equipslot::Id) const override {}
+            void drop_on_items(InventoryType::Id, Equipslot::Id, int16_t, bool) const override {}
+            void drop_on_bindings(Point<int16_t> cursorposition, bool remove) const override
+            {
+                if (auto keyconfig = UI::get().get_element<UIKeyConfig>())
+                {
+                    Keyboard::Mapping mapping{ KeyType::SKILL, skill_id };
+                    if (remove)
+                        keyconfig->unstage_mapping(mapping);
+                    else
+                        keyconfig->stage_mapping(cursorposition, mapping);
+                }
+            }
+
+        private:
+            int32_t skill_id;
+        };
+    }
+
     constexpr Point<int16_t> UISkillbook::SKILL_OFFSET;
     constexpr Point<int16_t> UISkillbook::ICON_OFFSET;
     constexpr Point<int16_t> UISkillbook::LINE_OFFSET;
+    constexpr Point<int16_t> SKILL_ICON_HIT_ADJUST = { 0, -32 };
 
     SkillIcon::SkillIcon(int32_t i, int32_t lv) : id(i)
     {
@@ -44,6 +74,11 @@ namespace jrc
         normal    = data.get_icon(SkillData::NORMAL);
         mouseover = data.get_icon(SkillData::MOUSEOVER);
         disabled  = data.get_icon(SkillData::DISABLED);
+        drag_icon = std::make_unique<Icon>(
+            std::make_unique<SkillDragType>(id),
+            normal,
+            -1
+        );
 
         std::string namestr  = data.get_name();
         std::string levelstr = std::to_string(lv);
@@ -136,9 +171,22 @@ namespace jrc
         return id;
     }
 
+    Icon* SkillIcon::get_drag_icon() const
+    {
+        return drag_icon.get();
+    }
+
     UISkillbook::UISkillbook(const CharStats& in_stats,
                              const Skillbook& in_skillbook)
-        : UIDragElement({ 174, 20 }), stats(in_stats), skillbook(in_skillbook)
+        : UIDragElement({ 174, 20 }),
+          stats(in_stats),
+          skillbook(in_skillbook),
+          sp(0),
+          beginner_sp(0),
+          tab(0),
+          skillcount(0),
+          offset(0),
+          grabbing(false)
     {
         nl::node main = nl::nx::ui["UIWindow2.img"]["Skill"]["main"];
 
@@ -302,29 +350,55 @@ namespace jrc
         }
 
         Point<int16_t> skill_position = position + SKILL_OFFSET;
-        for (auto iter = begin; iter != end; ++iter)
+        if (!grabbing)
         {
-            if (Cursor::State state = iter->send_cursor(cursorpos - skill_position, clicked))
+            for (auto iter = begin; iter != end; ++iter)
             {
-                switch (state)
+                Point<int16_t> icon_position = skill_position + ICON_OFFSET;
+                Point<int16_t> icon_hit_position = icon_position + SKILL_ICON_HIT_ADJUST;
+                if (Cursor::State state = iter->send_cursor(cursorpos - icon_hit_position, clicked))
                 {
-                case Cursor::GRABBING:
-                    clear_tooltip();
-                    break;
-                case Cursor::CANGRAB:
-                    show_skill(iter->get_id());
-                    break;
-                default:
-                    break;
+                    switch (state)
+                    {
+                    case Cursor::GRABBING:
+                    {
+                        clear_tooltip();
+                        grabbing = true;
+
+                        int32_t skill_id = iter->get_id();
+                        int32_t skill_level = skillbook.get_level(skill_id);
+                        if (skill_level > 0 && !SkillData::get(skill_id).is_passive())
+                        {
+                            if (Icon* icon = iter->get_drag_icon())
+                            {
+                                icon->start_drag(cursorpos - icon_hit_position);
+                                UI::get().drag_icon(icon);
+                            }
+
+                            return Cursor::GRABBING;
+                        }
+
+                        return Cursor::IDLE;
+                    }
+                    case Cursor::CANGRAB:
+                        show_skill(iter->get_id());
+                        return Cursor::IDLE;
+                    default:
+                        break;
+                    }
                 }
-                return state;
+
+                skill_position.shift_y(ROW_HEIGHT);
             }
 
-            skill_position.shift_y(ROW_HEIGHT);
+            clear_tooltip();
+        }
+        else
+        {
+            grabbing = false;
         }
 
-        clear_tooltip();
-        return Cursor::IDLE;
+        return UIElement::send_cursor(clicked, cursorpos);
     }
 
     void UISkillbook::update_stat(Maplestat::Id stat, int16_t value)
@@ -336,6 +410,10 @@ namespace jrc
             break;
         case Maplestat::SP:
             change_sp(value);
+            break;
+        case Maplestat::LEVEL:
+            update_sp_label();
+            change_offset(offset);
             break;
         default:
             return;
@@ -366,9 +444,41 @@ namespace jrc
     void UISkillbook::change_sp(int16_t s)
     {
         sp = s;
-        splabel.change_text(std::to_string(sp));
+        update_sp_label();
 
         change_offset(offset);
+    }
+
+    int16_t UISkillbook::get_beginner_sp() const
+    {
+        int16_t level = stats.get_stat(Maplestat::LEVEL);
+        int16_t remaining = level - 1;
+        if (remaining < 0)
+        {
+            remaining = 0;
+        }
+        if (remaining > 6)
+        {
+            remaining = 6;
+        }
+
+        remaining -= skillbook.get_level(SkillId::THREE_SNAILS);
+        remaining -= skillbook.get_level(SkillId::HEAL);
+        remaining -= skillbook.get_level(SkillId::FEATHER);
+
+        return remaining > 0 ? remaining : 0;
+    }
+
+    int16_t UISkillbook::get_available_sp() const
+    {
+        Job::Level joblevel = joblevel_by_tab(tab);
+        return joblevel == Job::BEGINNER ? beginner_sp : sp;
+    }
+
+    void UISkillbook::update_sp_label()
+    {
+        beginner_sp = get_beginner_sp();
+        splabel.change_text(std::to_string(get_available_sp()));
     }
 
     void UISkillbook::change_tab(uint16_t new_tab)
@@ -404,6 +514,7 @@ namespace jrc
         }
 
         slider.setrows(ROWS, skillcount);
+        update_sp_label();
         change_offset(0);
     }
 
@@ -448,7 +559,7 @@ namespace jrc
 
     bool UISkillbook::can_raise(int32_t skill_id) const
     {
-        if (sp <= 0)
+        if (get_available_sp() <= 0)
         {
             return false;
         }

@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <iostream>
 
 
 namespace jrc
@@ -61,32 +62,37 @@ namespace jrc
         undead      = info["undead"].get_bool();
         noflip      = info["noFlip"].get_bool();
         notattack   = info["notAttack"].get_bool();
-        canjump     =  src["jump"].size() > 0;
-        canfly      =  src["fly"].size()  > 0;
-        canmove     =  src["move"].size() > 0 || canfly;
+        // Some mob entries only provide stats and link animations to another mob id.
+        std::string linkid = info["link"];
+        nl::node linksrc = linkid.empty() ? nl::node() : nl::nx::mob[linkid + ".img"];
+        nl::node animsrc = linksrc ? linksrc : src;
+
+        canjump     =  animsrc["jump"].size() > 0;
+        canfly      =  animsrc["fly"].size()  > 0;
+        canmove     =  animsrc["move"].size() > 0 || canfly;
 
         if (canfly)
         {
-            animations[STAND] = src["fly"];
-            animations[MOVE]  = src["fly"];
+            animations[STAND] = animsrc["fly"];
+            animations[MOVE]  = animsrc["fly"];
         }
         else
         {
-            animations[STAND] = src["stand"];
-            animations[MOVE]  = src["move"];
+            animations[STAND] = animsrc["stand"];
+            animations[MOVE]  = animsrc["move"];
         }
-        animations[JUMP] = src["jump"];
-        animations[HIT]  = src["hit1"];
-        animations[DIE]  = src["die1"];
+        animations[JUMP] = animsrc["jump"];
+        animations[HIT]  = animsrc["hit1"];
+        animations[DIE]  = animsrc["die1"];
 
         name = nl::nx::string["Mob.img"][std::to_string(mid)]["name"].get_string();
-
-        std::cout << "Mob::Mob: \"" << name << "\"\n  ";
-        for (const auto& child : src)
-        {
-            std::cout << child.name() << ' ';
-        }
-        std::cout << "\n\n";
+        int haslinksrc = linksrc.size() > 0 ? 1 : 0;
+        std::cout << "[MobDebug] Mob ctor: oid=" << oid
+                  << " mobid=" << mid
+                  << " name=\"" << name << "\""
+                  << " link=\"" << linkid << "\""
+                  << " hasLinkSrc=" << haslinksrc
+                  << std::endl;
 
         nl::node sndsrc = nl::nx::sound["Mob.img"][strid];
 
@@ -116,6 +122,7 @@ namespace jrc
         dead         = false;
         fading       = false;
         awaitdeath   = false;
+        stance       = MOVE;
         set_stance(stance);
         flydirection = STRAIGHT;
         counter      = 0;
@@ -142,12 +149,12 @@ namespace jrc
     void Mob::set_stance(uint8_t stancebyte)
     {
         flip = (stancebyte % 2) == 0;
-        if (!flip)
+        if (!flip && stancebyte > 0)
         {
             stancebyte -= 1;
         }
 
-        if (stancebyte < MOVE)
+        if (stancebyte < MOVE || stancebyte > DIE || (stancebyte % 2) != 0)
         {
             stancebyte = MOVE;
         }
@@ -157,11 +164,22 @@ namespace jrc
 
     void Mob::set_stance(Stance newstance)
     {
+        auto anim = animations.find(newstance);
+        if (anim == animations.end())
+        {
+            newstance = MOVE;
+            anim = animations.find(newstance);
+            if (anim == animations.end())
+            {
+                return;
+            }
+        }
+
         if (stance != newstance)
         {
             stance = newstance;
 
-            animations.at(stance).reset();
+            anim->second.reset();
         }
     }
 

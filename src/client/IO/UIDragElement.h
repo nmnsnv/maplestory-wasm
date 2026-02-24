@@ -78,7 +78,7 @@ namespace jrc
             position = Setting<T>::get().load();
         }
 
-        bool dragged;
+        bool dragged = false;
         Point<int16_t> dragarea;
         Point<int16_t> cursoroffset;
 

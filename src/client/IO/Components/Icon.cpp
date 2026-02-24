@@ -71,6 +71,11 @@ namespace jrc
         type->drop_on_items(tab, eqslot, slot, equip);
     }
 
+    void Icon::drop_on_bindings(Point<int16_t> cursorpos, bool remove) const
+    {
+        type->drop_on_bindings(cursorpos, remove);
+    }
+
     void Icon::start_drag(Point<int16_t> offset)
     {
         cursoroffset = offset;

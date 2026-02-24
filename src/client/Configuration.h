@@ -170,13 +170,13 @@ namespace jrc
     // The normal font which will be used.
     struct FontPathNormal : public Configuration::StringEntry
     {
-        FontPathNormal() : StringEntry("FontPathNormal", "Noto Serif Regular") {}
+        FontPathNormal() : StringEntry("FontPathNormal", "/fonts/Arial/Arial.ttf") {}
     };
 
     // The bold font which will be used.
     struct FontPathBold : public Configuration::StringEntry
     {
-        FontPathBold() : StringEntry("FontPathBold", "Noto Serif Bold") {}
+        FontPathBold() : StringEntry("FontPathBold", "/fonts/Arial/Arial-Bold.ttf") {}
     };
 
     // Music Volume, a number from 0 to 100.
@@ -243,6 +243,11 @@ namespace jrc
     struct PosSKILL : public Configuration::PointEntry
     {
         PosSKILL() : PointEntry("PosSKILL", "(50,150)") {}
+    };
+
+    struct PosKEYCONFIG : public Configuration::PointEntry
+    {
+        PosKEYCONFIG() : PointEntry("PosKEYCONFIG", "(144,144)") {}
     };
 
     // Can be used to access settings.
