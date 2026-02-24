@@ -1,0 +1,901 @@
+diff --git a/bitmap.cpp b/bitmap.cpp
+index a2850db..e7de766 100644
+--- a/bitmap.cpp
++++ b/bitmap.cpp
+@@ -17,42 +17,64 @@
+ //////////////////////////////////////////////////////////////////////////////
+ 
+ #include "bitmap.hpp"
++#include "file_impl.hpp"
+ #include <lz4.h>
++#include <unistd.h>
+ #include <vector>
+ 
+-namespace nl {
+-    bitmap::bitmap(void const * d, uint16_t w, uint16_t h) :
+-        m_data(d), m_width(w), m_height(h) {}
+-    bool bitmap::operator<(bitmap const & o) const {
+-        return m_data < o.m_data;
+-    }
+-    bool bitmap::operator==(bitmap const & o) const {
+-        return m_data == o.m_data;
+-    }
+-    bitmap::operator bool() const {
+-        return m_data ? true : false;
+-    }
+-    std::vector<char> bitmap_buf;
+-    void const * bitmap::data() const {
+-        if (!m_data)
+-            return nullptr;
+-        auto const l = length();
+-        if (l + 0x20 > bitmap_buf.size())
+-            bitmap_buf.resize(l + 0x20);
+-        ::LZ4_decompress_fast(4 + reinterpret_cast<char const *>(m_data),
+-            bitmap_buf.data(), static_cast<int>(l));
+-        return bitmap_buf.data();
+-    }
+-    uint16_t bitmap::width() const {
+-        return m_width;
+-    }
+-    uint16_t bitmap::height() const {
+-        return m_height;
+-    }
+-    uint32_t bitmap::length() const {
+-        return 4u * m_width * m_height;
+-    }
+-    size_t bitmap::id() const {
+-        return reinterpret_cast<size_t>(m_data);
+-    }
+-}
++namespace nl
++{
++	bitmap::bitmap(void* f, uint64_t o, uint16_t w, uint16_t h) : m_file(f), m_offset(o), m_width(w), m_height(h)
++	{
++	}
++	bool bitmap::operator<(bitmap const& o) const
++	{
++		return m_offset < o.m_offset;
++	}
++	bool bitmap::operator==(bitmap const& o) const
++	{
++		return m_offset == o.m_offset;
++	}
++	bitmap::operator bool() const
++	{
++		return m_file != nullptr;
++	}
++	std::vector<char> bitmap_buf;
++	void const* bitmap::data() const
++	{
++		if (!m_file)
++			return nullptr;
++		_file_data* fd = static_cast<_file_data*>(m_file);
++
++		auto const l = length();
++		if (l + 0x20 > bitmap_buf.size())
++			bitmap_buf.resize(l + 0x20);
++
++		uint64_t data_offset = m_offset + 4;
++
++		uint32_t read_len = l;
++		std::vector<char> src_buf(read_len);
++
++		if (!io_read(fd, src_buf.data(), read_len, data_offset))
++			return nullptr;
++
++		::LZ4_decompress_fast(src_buf.data(), bitmap_buf.data(), static_cast<int>(l));
++		return bitmap_buf.data();
++	}
++	uint16_t bitmap::width() const
++	{
++		return m_width;
++	}
++	uint16_t bitmap::height() const
++	{
++		return m_height;
++	}
++	uint32_t bitmap::length() const
++	{
++		return 4u * m_width * m_height;
++	}
++	size_t bitmap::id() const
++	{
++		return static_cast<size_t>(m_offset);
++	}
++} // namespace nl
+diff --git a/bitmap.hpp b/bitmap.hpp
+index d53939c..0e65a11 100644
+--- a/bitmap.hpp
++++ b/bitmap.hpp
+@@ -18,35 +18,31 @@
+ 
+ #pragma once
+ #include "nxfwd.hpp"
+-#include <cstdint>
+ #include <cstddef>
++#include <cstdint>
++
++namespace nl
++{
++	class bitmap
++	{
++	  public:
++		bitmap() : m_file(nullptr), m_offset(0), m_width(0), m_height(0)
++		{
++		}
++		bitmap(void* f, uint64_t o, uint16_t w, uint16_t h);
++		bool operator<(bitmap const&) const;
++		bool operator==(bitmap const&) const;
++		operator bool() const;
++		void const* data() const;
++		uint16_t width() const;
++		uint16_t height() const;
++		uint32_t length() const;
++		size_t id() const;
+ 
+-namespace nl {
+-    class bitmap {
+-    public:
+-        bitmap() = default;
+-        bitmap(bitmap const &) = default;
+-        bitmap & operator=(bitmap const &) = default;
+-        //Comparison operators, useful for containers
+-        bool operator==(bitmap const &) const;
+-        bool operator<(bitmap const &) const;
+-        //Returns whether the bitmap is valid or merely null
+-        explicit operator bool() const;
+-        //This function decompresses the data on the fly
+-        //Do not free the pointer returned by this method
+-        //Every time this function is called
+-        //any previous pointers returned by this method become invalid
+-        void const * data() const;
+-        uint16_t width() const;
+-        uint16_t height() const;
+-        uint32_t length() const;
+-        //Returns a unique id, useful for keeping track of what bitmaps you loaded
+-        size_t id() const;
+-    private:
+-        bitmap(void const *, uint16_t, uint16_t);
+-        void const * m_data = nullptr;
+-        uint16_t m_width = 0;
+-        uint16_t m_height = 0;
+-        friend node;
+-    };
++	  private:
++		void* m_file;
++		uint64_t m_offset;
++		uint16_t m_width;
++		uint16_t m_height;
++	};
+ }
+diff --git a/file.cpp b/file.cpp
+index 060ca62..6aa266c 100644
+--- a/file.cpp
++++ b/file.cpp
+@@ -18,6 +18,13 @@
+ 
+ #include "file_impl.hpp"
+ #include "node_impl.hpp"
++
++// LazyFS integration for WASM
++#ifdef MS_PLATFORM_WASM
++#include <LazyFS/LazyFileLoader.h>
++#include <LazyFS/LazyFS.h>
++#endif
++
+ #ifdef _WIN32
+ #  ifdef _MSC_VER
+ #    include <codecvt>
+@@ -38,6 +45,7 @@
+ #  include <unistd.h>
+ #endif
+ #include <stdexcept>
++#include <iostream>
+ 
+ namespace nl {
+     file::file(std::string name) {
+@@ -80,6 +88,19 @@ namespace nl {
+ #  endif
+         if (!m_data->base)
+             throw std::runtime_error("Failed to map view of file " + name);
++#else
++#ifdef MS_PLATFORM_WASM
++        // WASM: Use LazyFS instead of mmap
++        
++        // Ensure the file is registered with LazyFS before loading
++        LazyFS::RegisterFile(name, "/assets/" + name);
++
++        size_t file_size = 0;
++        m_data->base = LazyFS::LazyFileLoader::load_file(name, file_size);
++        if (!m_data->base || file_size == 0)
++            throw std::runtime_error("Failed to load file via LazyFS: " + name);
++        m_data->size = file_size;
++        m_data->file_handle = -1; // No file handle for LazyFS
+ #else
+         m_data->file_handle = ::open(name.c_str(), O_RDONLY);
+         if (m_data->file_handle == -1)
+@@ -92,6 +113,50 @@ namespace nl {
+         if (reinterpret_cast<intptr_t>(m_data->base) == -1)
+             throw std::runtime_error("Failed to create memory mapping of file " + name);
+ #endif
++#endif
++
++        // Initialize tables
++#ifdef MS_PLATFORM_WASM
++        // WASM: Store offsets directly
++        m_data->header = 0; // Header is at start of file
++        
++        // We need to read the header to get offsets
++        // LazyFileLoader handles this read
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto header_ptr = loader->get_data_at<header>(0);
++        if (!header_ptr) throw std::runtime_error("Failed to read header for " + name);
++        
++        if (header_ptr->magic != 0x34474B50) {
++            std::cout << "[NoLifeNx] Invalid Magic for " << name << ": 0x" << std::hex << header_ptr->magic << std::dec << std::endl;
++            // Print first few chars to check for HTML/Text
++            std::cout << "[NoLifeNx] First 4 chars: " << 
++                (char)(header_ptr->magic & 0xFF) << 
++                (char)((header_ptr->magic >> 8) & 0xFF) << 
++                (char)((header_ptr->magic >> 16) & 0xFF) << 
++                (char)((header_ptr->magic >> 24) & 0xFF) << std::endl;
++            throw std::runtime_error(name + " is not a PKG4 NX file");
++        }
++            
++        m_data->node_table = header_ptr->node_offset;
++        m_data->string_table = header_ptr->string_offset;
++        m_data->bitmap_table = header_ptr->bitmap_offset;
++        m_data->audio_table = header_ptr->audio_offset;
++        
++        // Debug: check if struct packing is correct
++        auto raw_bytes = static_cast<const uint8_t*>(static_cast<const void*>(header_ptr));
++        uint32_t raw_bitmap_count = 0;
++        memcpy(&raw_bitmap_count, raw_bytes + 28, sizeof(uint32_t));
++        uint64_t raw_bitmap_offset = 0;
++        memcpy(&raw_bitmap_offset, raw_bytes + 32, sizeof(uint64_t));
++        
++        std::cout << "[file::open] " << name
++                  << " sizeof(header)=" << sizeof(header)
++                  << " struct_bitmap_count=" << header_ptr->bitmap_count
++                  << " raw_bitmap_count@28=" << raw_bitmap_count
++                  << " struct_bitmap_offset=" << header_ptr->bitmap_offset
++                  << " raw_bitmap_offset@32=" << raw_bitmap_offset
++                  << std::endl;
++#else
+         m_data->header = reinterpret_cast<header const *>(m_data->base);
+         if (m_data->header->magic != 0x34474B50)
+             throw std::runtime_error(name + " is not a PKG4 NX file");
+@@ -99,6 +164,7 @@ namespace nl {
+         m_data->string_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->string_offset);
+         m_data->bitmap_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->bitmap_offset);
+         m_data->audio_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->audio_offset);
++#endif
+     }
+     void file::close() {
+         if (!m_data) return;
+@@ -106,33 +172,109 @@ namespace nl {
+         ::UnmapViewOfFile(m_data->base);
+         ::CloseHandle(m_data->map);
+         ::CloseHandle(m_data->file_handle);
++#else
++#ifdef MS_PLATFORM_WASM
++        // WASM: Free LazyFS-loaded file
++        if (m_data->base) {
++            LazyFS::LazyFileLoader::free_file(const_cast<void *>(m_data->base));
++        }
+ #else
+         ::munmap(const_cast<void *>(m_data->base), m_data->size);
+         ::close(m_data->file_handle);
++#endif
+ #endif
+         delete m_data;
+         m_data = nullptr;
+     }
+     node file::root() const {
++#ifdef MS_PLATFORM_WASM
++        // Root node is at node_table offset
++        return {reinterpret_cast<node::data const*>(static_cast<uintptr_t>(m_data->node_table)), m_data};
++#else
+         return {m_data->node_table, m_data};
++#endif
+     }
+     file::operator node() const {
+         return root();
+     }
+     uint32_t file::string_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->string_count : 0;
++#else
+         return m_data->header->string_count;
++#endif
+     }
+     uint32_t file::bitmap_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->bitmap_count : 0;
++#else
+         return m_data->header->bitmap_count;
++#endif
+     }
+     uint32_t file::audio_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->audio_count : 0;
++#else
+         return m_data->header->audio_count;
++#endif
+     }
+     uint32_t file::node_count() const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        auto h = loader->get_data_at<header>(m_data->header);
++        return h ? h->node_count : 0;
++#else
+         return m_data->header->node_count;
++#endif
+     }
+     std::string file::get_string(uint32_t i) const {
++#ifdef MS_PLATFORM_WASM
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(m_data->base));
++        
++        // Resolve string table entry
++        size_t table_entry_offset = m_data->string_table + i * sizeof(uint64_t);
++        auto offset_ptr = loader->get_data_at<uint64_t>(table_entry_offset);
++        if (!offset_ptr) return {};
++        uint64_t string_offset = *offset_ptr;
++        
++        // Read string length and content (similar logic to node.cpp)
++        auto len_ptr = loader->get_data_at<uint16_t>(string_offset);
++        if (!len_ptr) return {};
++        uint16_t len = *len_ptr;
++        
++        auto char_ptr = static_cast<const char*>(loader->get_contiguous_data(string_offset + 2, len));
++        if (!char_ptr) return {};
++        
++        return {char_ptr, len};
++#else
+         auto const s = reinterpret_cast<char const *>(m_data->base) + m_data->string_table[i];
+         return {s + 2, *reinterpret_cast<uint16_t const *>(s)};
++#endif
++    }
++
++    bool io_read(const _file_data *fd, void *buf, size_t size, uint64_t offset) {
++        if (!fd || !buf || size == 0)
++            return false;
++#ifdef MS_PLATFORM_WASM
++        // Use LazyFS to fetch the data
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(fd->base));
++        if (!loader)
++            return false;
++        const void* data = loader->get_contiguous_data(offset, size);
++        if (!data)
++            return false;
++        memcpy(buf, data, size);
++        return true;
++#else
++        // Use pread for native builds
++        ssize_t result = pread(fd->file_handle, buf, size, offset);
++        return result == static_cast<ssize_t>(size);
++#endif
+     }
+ }
+diff --git a/file_impl.hpp b/file_impl.hpp
+index 84b7e84..ec9c3ff 100644
+--- a/file_impl.hpp
++++ b/file_impl.hpp
+@@ -1,6 +1,6 @@
+ //////////////////////////////////////////////////////////////////////////////
+ // NoLifeNx - Part of the NoLifeStory project                               //
+-// Copyright © 2013 Peter Atashian                                          //
++// Copyright Â© 2013 Peter Atashian                                          //
+ //                                                                          //
+ // This program is free software: you can redistribute it and/or modify     //
+ // it under the terms of the GNU Affero General Public License as           //
+@@ -36,11 +36,22 @@ namespace nl {
+ #pragma pack(pop)
+     struct _file_data {
+         void const * base = nullptr;
++#ifdef MS_PLATFORM_WASM
++        // On WASM, we use offsets into the file instead of pointers
++        // because we can't map the whole file into contiguous memory.
++        // We resolve these offsets on-demand via LazyFileLoader.
++        uint64_t node_table = 0;
++        uint64_t string_table = 0;
++        uint64_t bitmap_table = 0;
++        uint64_t audio_table = 0;
++        uint64_t header = 0; // Usually 0
++#else
+         node::data const * node_table = nullptr;
+         uint64_t const * string_table = nullptr;
+         uint64_t const * bitmap_table = nullptr;
+         uint64_t const * audio_table = nullptr;
+         file::header const * header = nullptr;
++#endif
+ #ifdef _WIN32
+         void * file_handle = nullptr;
+         void * map = nullptr;
+@@ -49,4 +60,7 @@ namespace nl {
+         size_t size = 0;
+ #endif
+     };
++
++// I/O read function - reads data from file at specified offset
++bool io_read(const _file_data *fd, void *buf, size_t size, uint64_t offset);
+ }
+diff --git a/node.cpp b/node.cpp
+index a0a6f97..d474d06 100644
+--- a/node.cpp
++++ b/node.cpp
+@@ -24,40 +24,159 @@
+ #include <stdexcept>
+ #include <vector>
+ #include <sstream>
++#include <iostream>
++
++#ifdef MS_PLATFORM_WASM
++#include <LazyFS/LazyFileLoader.h>
++#endif
+ 
+ namespace nl {
++    // Helper accessors for LazyFS on WASM
++#ifdef MS_PLATFORM_WASM
++    
++    // Access primitive type at offset
++    template<typename T>
++    inline const T* get_data(const _file_data* file_data, size_t offset) {
++        if (!file_data || !file_data->base) return nullptr;
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(file_data->base));
++        return loader->get_data_at<T>(offset);
++    }
++
++    // Access contiguous array of T at offset
++    template<typename T>
++    inline const T* get_data_array(const _file_data* file_data, size_t offset, size_t count) {
++        if (!file_data || !file_data->base) return nullptr;
++        auto loader = static_cast<LazyFS::LazyFileLoader*>(const_cast<void*>(file_data->base));
++        return static_cast<const T*>(loader->get_contiguous_data(offset, count * sizeof(T)));
++    }
++
++    // Access node::data using m_offset
++    #define DATA_PTR (m_offset ? get_data<nl::node::data>(m_file, m_offset) : nullptr)
++    
++    // Helper to get string from string table index
++    inline std::string get_string_from_table(const _file_data* file_data, uint32_t string_index) {
++        if (!file_data) return {};
++        // Get offset from string table
++        size_t table_entry_offset = file_data->string_table + string_index * sizeof(uint64_t);
++        auto offset_ptr = get_data<uint64_t>(file_data, table_entry_offset);
++        if (!offset_ptr) return {};
++        uint64_t string_offset = *offset_ptr;
++        
++        // Read string length (uint16_t)
++        auto len_ptr = get_data<uint16_t>(file_data, string_offset);
++        if (!len_ptr) return {};
++        uint16_t len = *len_ptr;
++        
++        // Read string content (utf8 chars)
++        auto char_ptr = get_data_array<char>(file_data, string_offset + 2, len);
++        if (!char_ptr) return {};
++        
++        return {char_ptr, len};
++    }
++#else
++    #define DATA_PTR m_data
++#endif
++
+     node::node(node const & o) :
++#ifdef MS_PLATFORM_WASM
++        m_offset(o.m_offset), m_file(o.m_file) {}
++#else
+         m_data(o.m_data), m_file(o.m_file) {}
++#endif
++
++#ifdef MS_PLATFORM_WASM
++    // Constructor matching node.hpp signature but using offset internally? 
++    // Wait, signature in node.hpp says (data const *, ...). 
++    // We should change the constructor signature in node.hpp or assume 'd' is reused as offset on WASM?
++    // Let's assume on WASM we pass offset masquerading as pointer, or change impl.
++    // Actually, createLazyFile returns 'node' which calls this ctor.
++    // Let's fix node::begin/end first.
++    
++    // NOTE: This constructor is used by node::begin() / node::end()
++    // We need to ensure we pass something that makes sense.
++    // Let's overload or change signature in .hpp if possible.
++    // But modifying .hpp header signature breaks ABI/other files?
++    // No, we already modified m_data/m_offset.
++    
++    // Let's pretend 'd' is actually the offset casted to pointer for now to minimize changes signature changes
++    // But 'd' is 'data const *'.
++    node::node(data const * d, file::data const * f) :
++        m_offset(reinterpret_cast<uintptr_t>(d)), m_file(f) {} 
++#else
+     node::node(data const * d, file::data const * f) :
+         m_data(d), m_file(f) {}
++#endif
++
+     node node::begin() const {
++#ifdef MS_PLATFORM_WASM
++        if (!m_offset)
++            return {reinterpret_cast<data const*>(0), m_file};
++        auto d = DATA_PTR;
++        if (!d) return {reinterpret_cast<data const*>(0), m_file};
++        
++        uint64_t child_offset = m_file->node_table + d->children * sizeof(data);
++        return {reinterpret_cast<data const*>(static_cast<uintptr_t>(child_offset)), m_file};
++#else
+         if (!m_data)
+             return {nullptr, m_file};
+         return {m_file->node_table + m_data->children, m_file};
++#endif
+     }
+     node node::end() const {
++#ifdef MS_PLATFORM_WASM
++        if (!m_offset)
++            return {reinterpret_cast<data const*>(0), m_file};
++        auto d = DATA_PTR;
++        if (!d) return {reinterpret_cast<data const*>(0), m_file};
++        
++        uint64_t end_offset = m_file->node_table + (d->children + d->num) * sizeof(data);
++        return {reinterpret_cast<data const*>(static_cast<uintptr_t>(end_offset)), m_file};
++#else
+         if (!m_data)
+             return {nullptr, m_file};
+         return {m_file->node_table + m_data->children + m_data->num, m_file};
++#endif
+     }
+     node node::operator*() const {
+         return *this;
+     }
+     node & node::operator++() {
++#ifdef MS_PLATFORM_WASM
++        m_offset += sizeof(data);
++#else
+         ++m_data;
++#endif
+         return *this;
+     }
+     node node::operator++(int) {
++#ifdef MS_PLATFORM_WASM
++        auto temp = *this;
++        m_offset += sizeof(data);
++        return temp;
++#else
+         return {m_data++, m_file};
++#endif
+     }
+     bool node::operator==(node const & o) const {
++#ifdef MS_PLATFORM_WASM
++        return m_offset == o.m_offset;
++#else
+         return m_data == o.m_data;
++#endif
+     }
+     bool node::operator!=(node const & o) const {
++#ifdef MS_PLATFORM_WASM
++        return m_offset != o.m_offset;
++#else
+         return m_data != o.m_data;
++#endif
+     }
+     bool node::operator<(node const & o) const {
++#ifdef MS_PLATFORM_WASM
++        return m_offset < o.m_offset;
++#else
+         return m_data < o.m_data;
++#endif
+     }
+     std::string operator+(std::string s, node n) {
+         return s + n.get_string();
+@@ -150,12 +269,17 @@ namespace nl {
+         return get_audio();
+     }
+     node::operator bool() const {
++#ifdef MS_PLATFORM_WASM
++        return m_offset != 0;
++#else
+         return m_data ? true : false;
++#endif
+     }
+     int64_t node::get_integer(int64_t def) const {
+-        if (!m_data)
++        auto d = DATA_PTR;
++        if (!d)
+             return def;
+-        switch (m_data->type) {
++        switch (d->type) {
+         case type::none:
+         case type::vector:
+         case type::bitmap:
+@@ -172,9 +296,10 @@ namespace nl {
+         }
+     }
+     double node::get_real(double def) const {
+-        if (!m_data)
++        auto d = DATA_PTR;
++        if (!d)
+             return def;
+-        switch (m_data->type) {
++        switch (d->type) {
+         case type::none:
+         case type::vector:
+         case type::bitmap:
+@@ -191,9 +316,10 @@ namespace nl {
+         }
+     }
+     std::string node::get_string(std::string def) const {
+-        if (!m_data)
++        auto d = DATA_PTR;
++        if (!d)
+             return def;
+-        switch (m_data->type) {
++        switch (d->type) {
+         case type::none:
+         case type::vector:
+         case type::bitmap:
+@@ -210,48 +336,135 @@ namespace nl {
+         }
+     }
+     vector2i node::get_vector(vector2i def) const {
+-        if (m_data && m_data->type == type::vector)
++        auto d = DATA_PTR;
++        if (d && d->type == type::vector)
+             return to_vector();
+         return def;
+     }
+     bitmap node::get_bitmap() const {
++#ifdef MS_PLATFORM_WASM
++        auto d = DATA_PTR;
++        // Note: Some NX files report bitmap_count=0 in their header but still
++        // have valid bitmap nodes. On WASM we skip the bitmap_count check and
++        // trust the node type, since to_bitmap() resolves data via LazyFS.
++        if (d && d->type == type::bitmap)
++            return to_bitmap();
++        return {nullptr, 0, 0, 0};
++#else
+         if (m_data && m_data->type == type::bitmap && m_file->header->bitmap_count)
+             return to_bitmap();
+-        return {nullptr, 0, 0};
++        return {nullptr, 0, 0, 0};
++#endif
+     }
+     audio node::get_audio() const {
++#ifdef MS_PLATFORM_WASM
++        auto d = DATA_PTR;
++        auto header_ptr = get_data<file::header>(m_file, m_file->header);
++        if (d && d->type == type::audio && header_ptr && header_ptr->audio_count)
++            return to_audio();
++        return {nullptr, 0};
++#else
+         if (m_data && m_data->type == type::audio && m_file->header->audio_count)
+             return to_audio();
+         return {nullptr, 0};
++#endif
+     }
+     bool node::get_bool() const {
+-        return m_data && m_data->type == type::integer && to_integer() ? true : false;
++        auto d = DATA_PTR;
++        return d && d->type == type::integer && to_integer() ? true : false;
+     }
+     bool node::get_bool(bool def) const {
+-        return m_data && m_data->type == type::integer ? to_integer() ? true : false : def;
++        auto d = DATA_PTR;
++        return d && d->type == type::integer ? to_integer() ? true : false : def;
+     }
+     int32_t node::x() const {
+-        return m_data && m_data->type == type::vector ? m_data->vector[0] : 0;
++        auto d = DATA_PTR;
++        return d && d->type == type::vector ? d->vector[0] : 0;
+     }
+     int32_t node::y() const {
+-        return m_data && m_data->type == type::vector ? m_data->vector[1] : 0;
++        auto d = DATA_PTR;
++        return d && d->type == type::vector ? d->vector[1] : 0;
+     }
+     std::string node::name() const {
+-        if (!m_data)
++        auto d = DATA_PTR;
++        if (!d)
+             return {};
++#ifdef MS_PLATFORM_WASM
++        return get_string_from_table(m_file, d->name);
++#else
+         auto const s = reinterpret_cast<char const *>(m_file->base)
+             + m_file->string_table[m_data->name];
+         return {s + 2, *reinterpret_cast<uint16_t const *>(s)};
++#endif
+     }
+     size_t node::size() const {
+-        return m_data ? m_data->num : 0u;
++        auto d = DATA_PTR;
++        return d ? d->num : 0u;
+     }
+     node::type node::data_type() const {
+-        return m_data ? m_data->type : type::none;
++        auto d = DATA_PTR;
++        return d ? d->type : type::none;
+     }
+     node node::get_child(char const * const o, uint16_t const l) const {
+-        if (!m_data)
+-            return {nullptr, m_file};
++        auto d = DATA_PTR;
++        if (!d)
++            return {reinterpret_cast<data const*>(0), m_file};
++
++#ifdef MS_PLATFORM_WASM
++        // WASM Implementation using offsets
++        auto n = d->num;
++        // Start offset of child nodes
++        auto p_offset = m_file->node_table + d->children * sizeof(data);
++        
++        for (;;) {
++            if (!n)
++                return {reinterpret_cast<data const*>(0), m_file};
++            
++            auto const n2 = static_cast<decltype(n)>(n >> 1);
++            auto const p2_offset = p_offset + n2 * sizeof(data);
++            
++            auto p2 = get_data<data>(m_file, p2_offset);
++            if (!p2) return {reinterpret_cast<data const*>(0), m_file};
++
++            // Resolve name from string table
++            // Read string table offset
++            size_t string_table_entry = m_file->string_table + p2->name * sizeof(uint64_t);
++            auto str_offset_ptr = get_data<uint64_t>(m_file, string_table_entry);
++            
++            // Read string length and content
++            uint64_t name_offset = *str_offset_ptr;
++            auto name_len_ptr = get_data<uint16_t>(m_file, name_offset);
++            
++            auto const l1 = *name_len_ptr;
++            // Use get_data_array because valid length check is needed
++            auto name_chars_ptr = get_data_array<uint8_t>(m_file, name_offset + 2, l1);
++            auto const s = name_chars_ptr;
++            auto const os = reinterpret_cast<uint8_t const *>(o);
++
++            bool z = false;
++            auto const len = l1 < l ? l1 : l;
++            for (auto i = 0U; i < len; ++i) {
++                if (s[i] > os[i]) {
++                    n = n2;
++                    z = true;
++                    break;
++                } else if (s[i] < os[i]) {
++                    p_offset = p2_offset + sizeof(data);
++                    n -= n2 + 1;
++                    z = true;
++                    break;
++                }
++            }
++            if (z)
++                continue;
++            else if (l1 < l)
++                p_offset = p2_offset + sizeof(data), n -= n2 + 1;
++            else if (l1 > l)
++                n = n2;
++            else
++                return {reinterpret_cast<data const*>(static_cast<uintptr_t>(p2_offset)), m_file};
++        }
++#else
+         auto p = m_file->node_table + m_data->children;
+         auto n = m_data->num;
+         auto const b = reinterpret_cast<const char *>(m_file->base);
+@@ -288,33 +501,69 @@ namespace nl {
+             else
+                 return {p2, m_file};
+         }
++#endif
+     }
+     int64_t node::to_integer() const {
+-        return m_data->ireal;
++        auto d = DATA_PTR;
++        return d ? d->ireal : 0;
+     }
+     double node::to_real() const {
+-        return m_data->dreal;
++        auto d = DATA_PTR;
++        return d ? d->dreal : 0.0;
+     }
+     std::string node::to_string() const {
++        auto d = DATA_PTR;
++        if (!d) return {};
++#ifdef MS_PLATFORM_WASM
++        return get_string_from_table(m_file, d->string);
++#else
+         auto const s = reinterpret_cast<char const *>(m_file->base)
+             + m_file->string_table[m_data->string];
+         return {s + 2, *reinterpret_cast<uint16_t const *>(s)};
++#endif
+     }
+     vector2i node::to_vector() const {
+-        return {m_data->vector[0], m_data->vector[1]};
++        auto d = DATA_PTR;
++        return d ? vector2i{d->vector[0], d->vector[1]} : vector2i{0,0};
+     }
+     bitmap node::to_bitmap() const {
+-        return {reinterpret_cast<char const *>(m_file->base)
+-            + m_file->bitmap_table[m_data->bitmap.index],
++        auto d = DATA_PTR;
++        if (!d) return {nullptr, 0, 0, 0};
++#ifdef MS_PLATFORM_WASM
++        size_t bm_table_entry = m_file->bitmap_table + d->bitmap.index * sizeof(uint64_t);
++        auto offset_ptr = get_data<uint64_t>(m_file, bm_table_entry);
++        uint64_t bitmap_offset = offset_ptr ? *offset_ptr : 0;
++        
++        // Pass file handle and offset to bitmap - it will use io_read to fetch data
++        return {const_cast<file::data*>(m_file), bitmap_offset, d->bitmap.width, d->bitmap.height};
++#else
++        return {const_cast<file::data*>(m_file), m_file->bitmap_table[m_data->bitmap.index],
+             m_data->bitmap.width, m_data->bitmap.height};
++#endif
+     }
+     audio node::to_audio() const {
++        auto d = DATA_PTR;
++        if (!d) return {nullptr, 0};
++#ifdef MS_PLATFORM_WASM
++        size_t au_table_entry = m_file->audio_table + d->audio.index * sizeof(uint64_t);
++        auto offset_ptr = get_data<uint64_t>(m_file, au_table_entry);
++        uint64_t audio_offset = offset_ptr ? *offset_ptr : 0;
++        
++        auto data_ptr = get_data_array<char>(m_file, audio_offset, d->audio.length);
++        return {data_ptr, d->audio.length};
++#else
+         return {reinterpret_cast<char const *>(m_file->base)
+             + m_file->audio_table[m_data->audio.index],
+             m_data->audio.length};
++#endif
+     }
+     node node::root() const {
++#ifdef MS_PLATFORM_WASM
++        // m_file->node_table is offset of root node
++         return {reinterpret_cast<data const*>(static_cast<uintptr_t>(m_file->node_table)), m_file};
++#else
+         return {m_file->node_table, m_file};
++#endif
+     }
+     node node::resolve(std::string path) const {
+         std::istringstream stream(path);
+diff --git a/node.hpp b/node.hpp
+index ac8d107..4d0a548 100644
+--- a/node.hpp
++++ b/node.hpp
+@@ -132,7 +132,11 @@ namespace nl {
+         bitmap to_bitmap() const;
+         audio to_audio() const;
+         //Internal variables
++#ifdef MS_PLATFORM_WASM
++        uint32_t m_offset = 0;
++#else
+         data const * m_data = nullptr;
++#endif
+         _file_data const * m_file = nullptr;
+         friend file;
+     };
+diff --git a/nx.cpp b/nx.cpp
+index 77a30d1..366e7ca 100644
+--- a/nx.cpp
++++ b/nx.cpp
+@@ -26,12 +26,20 @@ namespace nl {
+     namespace nx {
+         std::vector<std::unique_ptr<file>> files;
+         bool exists(std::string name) {
++#ifdef MS_PLATFORM_WASM
++            return true;
++#else
+             return std::ifstream(name).is_open();
++#endif
+         }
+         node add_file(std::string name) {
+             if (!exists(name))
+                 return {};
++#ifdef MS_PLATFORM_WASM
+             files.emplace_back(new file(name));
++#else
++            files.emplace_back(new file(name));
++#endif
+             return *files.back();
+         }
+         node base, character, effect, etc, item, map, mob, morph, npc, quest, reactor, skill, sound, string, tamingmob, ui;
