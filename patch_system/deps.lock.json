@@ -1,9 +1,0 @@
-{
-    "repos": {
-        "client": {
-            "url": "https://github.com/Libre-Maple/LibreMaple-Client.git",
-            "rev": "526398fbcf8df73d17833d6324f07c23227f0e8a",
-            "path": "src/client"
-        }
-    }
-}
