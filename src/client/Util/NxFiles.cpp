@@ -35,8 +35,16 @@ namespace jrc
 {
     Error NxFiles::init()
     {
+        constexpr const char* REQUIRED_ROOT_NX = "Base.nx";
 #ifdef MS_PLATFORM_WASM
         LazyFS::Initialize();
+        {
+            std::string base_url = std::string("/assets/") + REQUIRED_ROOT_NX;
+            if (!LazyFS::RegisterFile(REQUIRED_ROOT_NX, base_url))
+            {
+                return { Error::MISSING_FILE, REQUIRED_ROOT_NX };
+            }
+        }
         for (auto filename : NxFiles::filenames)
         {
             std::string url = std::string("/assets/") + filename;
@@ -46,6 +54,10 @@ namespace jrc
             }
         }
 #else
+        if (!std::ifstream{ REQUIRED_ROOT_NX }.good())
+        {
+            return { Error::MISSING_FILE, REQUIRED_ROOT_NX };
+        }
         for (auto filename : NxFiles::filenames)
         {
             if (!std::ifstream{ filename }.good())
