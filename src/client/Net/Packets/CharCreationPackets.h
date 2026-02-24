@@ -39,11 +39,9 @@ namespace jrc
         CreateCharPacket(const std::string& name, uint16_t job, int32_t face, int32_t hair,
             uint8_t hairc, uint8_t skin, int32_t top, int32_t bot, int32_t shoes,
             int32_t weapon, bool female) : OutPacket(CREATE_CHAR) {
-
             write_string(name);
             write_int(job);
             write_int(face);
-            // Older server handlers expect a single hair id (with color already applied).
             write_int(hair + hairc);
             write_int(skin);
             write_int(top);

@@ -16,11 +16,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "Session.h"
+#include "OutPacket.h"
 
 #include "../Configuration.h"
+#include "../Console.h"
 #ifdef MS_PLATFORM_WASM
 #include "../Util/Misc.h"
 #endif
+#include <iomanip>
+#include <sstream>
 
 namespace jrc
 {
@@ -155,6 +159,29 @@ namespace jrc
         if (!connected)
         {
             return;
+        }
+
+        if (packet_length >= 2)
+        {
+            uint16_t opcode =
+                static_cast<uint16_t>(static_cast<uint8_t>(packet_bytes[0])) |
+                (static_cast<uint16_t>(static_cast<uint8_t>(packet_bytes[1])) << 8);
+
+            if (opcode == OutPacket::CREATE_CHAR)
+            {
+                std::ostringstream hex;
+                hex << std::uppercase << std::hex << std::setfill('0');
+                for (size_t i = 0; i < packet_length; ++i)
+                {
+                    hex << std::setw(2)
+                        << static_cast<unsigned int>(static_cast<uint8_t>(packet_bytes[i]));
+                }
+
+                Console::get().print(
+                    "[NET] CREATE_CHAR len=" + std::to_string(packet_length) +
+                    " payload=" + hex.str()
+                );
+            }
         }
 
         int8_t header[HEADER_LENGTH];
