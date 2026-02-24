@@ -4,9 +4,3 @@
 /serverAssets/
 /src/
 __pycache__
-
-# Track client source tree
-!/src/
-/src/*
-!/src/client/
-!/src/client/**
