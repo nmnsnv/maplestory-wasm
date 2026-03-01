@@ -79,6 +79,7 @@ namespace jrc
         virtual bool is_in_range(Point<int16_t> cursorpos) const;
         virtual bool remove_cursor(bool clicked, Point<int16_t> cursorpos);
         virtual Cursor::State send_cursor(bool clicked, Point<int16_t> cursorpos);
+        virtual void send_scroll(double yoffset);
 
     protected:
         UIElement(Point<int16_t> position, Point<int16_t> dimension, bool active);

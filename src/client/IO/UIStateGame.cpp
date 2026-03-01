@@ -72,6 +72,7 @@ namespace jrc
 
         emplace<UIStatusMessenger>();
         emplace<UIStatusbar>(stats);
+        emplace<UIMiniMap>(stats);
         emplace<UIBuffList>();
         emplace<UINpcTalk>();
         emplace<UIShop>(look, inventory);
@@ -169,7 +170,14 @@ namespace jrc
                     );
                     break;
                 case KeyAction::MINIMAP:
-                    emplace<UIMiniMap>(Stage::get().get_player().get_stats());
+                    if (auto minimap = UI::get().get_element<UIMiniMap>(); minimap && minimap->is_active())
+                    {
+                        minimap->send_key(0, pressed, false);
+                    }
+                    else
+                    {
+                        emplace<UIMiniMap>(Stage::get().get_player().get_stats());
+                    }
                     break;
                 case KeyAction::WORLDMAP:
                     emplace<UIWorldMap>();

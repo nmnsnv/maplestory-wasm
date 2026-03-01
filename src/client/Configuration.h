@@ -262,7 +262,7 @@ namespace jrc
 
     struct MiniMapType : public Configuration::ByteEntry
     {
-        MiniMapType() : ByteEntry("MiniMapType", "1") {}
+        MiniMapType() : ByteEntry("MiniMapType", "2") {}
     };
 
     struct MiniMapSimpleMode : public Configuration::BoolEntry

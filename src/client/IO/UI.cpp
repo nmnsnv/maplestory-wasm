@@ -19,8 +19,11 @@
 
 #include "UIStateLogin.h"
 #include "UIStateGame.h"
+#include "UITypes/UIWorldMap.h"
 #include "Window.h"
 #include "../Console.h"
+
+#include <GLFW/glfw3.h>
 
 namespace jrc
 {
@@ -123,8 +126,31 @@ namespace jrc
         state->doubleclick(pos);
     }
 
+    void UI::send_scroll(double yoffset)
+    {
+        if (!enabled)
+        {
+            return;
+        }
+
+        if (UIElement* front = state->get_front(cursor.get_position()))
+        {
+            front->send_scroll(yoffset);
+        }
+    }
+
     void UI::send_key(int32_t keycode, bool pressed)
     {
+        if (pressed && keycode == GLFW_KEY_ESCAPE)
+        {
+            if (auto worldmap = get_element<UIWorldMap>(); worldmap && worldmap->is_active())
+            {
+                worldmap->send_key(keycode, pressed, true);
+                is_key_down[keycode] = pressed;
+                return;
+            }
+        }
+
         if (focusedtextfield)
         {
             bool ctrl = is_key_down[keyboard.ctrlcode()];

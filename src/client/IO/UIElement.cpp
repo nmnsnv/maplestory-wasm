@@ -150,4 +150,8 @@ namespace jrc
 
         return ret;
     }
+
+    void UIElement::send_scroll(double)
+    {
+    }
 }

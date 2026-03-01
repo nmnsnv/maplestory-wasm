@@ -275,4 +275,24 @@ namespace jrc
 
         return Cursor::IDLE;
     }
+
+    void Slider::send_scroll(double yoffset)
+    {
+        if (!enabled || rowmax <= 0)
+        {
+            return;
+        }
+
+        if (yoffset < 0 && row < rowmax)
+        {
+            row++;
+            onmoved(false);
+        }
+
+        if (yoffset > 0 && row > 0)
+        {
+            row--;
+            onmoved(true);
+        }
+    }
 }

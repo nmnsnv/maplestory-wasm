@@ -95,6 +95,11 @@ namespace jrc
         UI::get().send_cursor(pos);
     }
 
+    void scroll_callback(GLFWwindow*, double, double yoffset)
+    {
+        UI::get().send_scroll(yoffset);
+    }
+
     void framebuffer_size_callback(GLFWwindow*, int width, int height)
     {
         if (width > 0 && height > 0)
@@ -190,6 +195,7 @@ namespace jrc
         glfwSetKeyCallback(glwnd, key_callback);
         glfwSetMouseButtonCallback(glwnd, mousekey_callback);
         glfwSetCursorPosCallback(glwnd, cursor_callback);
+        glfwSetScrollCallback(glwnd, scroll_callback);
         glfwSetFramebufferSizeCallback(glwnd, framebuffer_size_callback);
 
         int32_t framebuffer_width = 0;

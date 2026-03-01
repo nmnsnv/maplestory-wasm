@@ -162,7 +162,13 @@ namespace jrc
 
     void UIWorldMap::toggle_active()
     {
+        bool was_active = active;
         UIElement::toggle_active();
+
+        if (was_active && !active && search_text.get_state() == Textfield::FOCUSED)
+        {
+            UI::get().focus_textfield(nullptr);
+        }
 
         if (!active)
         {
@@ -220,6 +226,27 @@ namespace jrc
         return UIDragElement::send_cursor(clicked, cursorpos);
     }
 
+    void UIWorldMap::send_key(int32_t, bool pressed, bool escape)
+    {
+        if (!pressed || !escape)
+        {
+            return;
+        }
+
+        if (search)
+        {
+            set_search(false);
+        }
+        else if (parent_map.empty())
+        {
+            toggle_active();
+        }
+        else
+        {
+            update_world(parent_map);
+        }
+    }
+
     Button::State UIWorldMap::button_pressed(uint16_t buttonid)
     {
         if (buttonid >= BT_LINK0)
@@ -235,7 +262,7 @@ namespace jrc
         switch (buttonid)
         {
         case BT_CLOSE:
-            deactivate();
+            toggle_active();
             return Button::NORMAL;
         case BT_SEARCH:
             set_search(!search);
@@ -250,6 +277,11 @@ namespace jrc
 
     void UIWorldMap::set_search(bool enable)
     {
+        if (!enable && search_text.get_state() == Textfield::FOCUSED)
+        {
+            UI::get().focus_textfield(nullptr);
+        }
+
         search = enable;
         buttons[BT_SEARCH_CLOSE]->set_active(enable);
         buttons[BT_ALLSEARCH]->set_active(enable);

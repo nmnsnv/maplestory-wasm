@@ -355,6 +355,27 @@ namespace jrc
         return UIElement::send_cursor(clicked, cursorpos);
     }
 
+    void UIMiniMap::send_scroll(double yoffset)
+    {
+        if (list_npc_enabled && list_npc_slider.isenabled())
+        {
+            list_npc_slider.send_scroll(yoffset);
+        }
+    }
+
+    void UIMiniMap::send_key(int32_t, bool pressed, bool)
+    {
+        if (!pressed || !has_map)
+        {
+            return;
+        }
+
+        type = type < MAX ? type + 1 : MIN;
+        user_type = type;
+        Setting<MiniMapType>::get().save(static_cast<uint8_t>(user_type));
+        toggle_buttons();
+    }
+
     Button::State UIMiniMap::button_pressed(uint16_t buttonid)
     {
         switch (buttonid)
@@ -364,6 +385,7 @@ namespace jrc
             {
                 type -= 1;
                 user_type = type;
+                Setting<MiniMapType>::get().save(static_cast<uint8_t>(user_type));
                 toggle_buttons();
             }
             return type == MIN ? Button::DISABLED : Button::NORMAL;
@@ -372,6 +394,7 @@ namespace jrc
             {
                 type += 1;
                 user_type = type;
+                Setting<MiniMapType>::get().save(static_cast<uint8_t>(user_type));
                 toggle_buttons();
             }
             return type == MAX ? Button::DISABLED : Button::NORMAL;

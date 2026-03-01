@@ -1,6 +1,6 @@
 # Task: Minimap And World Map
 
-Status: In progress
+Status: Ready for runtime verification
 
 ## Goal
 
@@ -34,6 +34,12 @@ Reach parity with MapleStory-Client minimap and world map behavior while keeping
 
 - Base minimap and world map windows are ported.
 - Tooltip routing and v83 NX path translation are in place.
+- Shared map-window interaction plumbing is restored:
+  - minimap hotkey cycles window size again
+  - minimap NPC list responds to mouse-wheel scrolling
+  - minimap size changes persist through `MiniMapType`
+  - world map `escape` closes search, traverses parent maps, and closes at the root map
+  - world map search focus is cleared correctly when the search pane or window closes
 - The build is clean with `./scripts/build_wasm.sh -g`.
 
 ## Remaining Subtasks
@@ -45,10 +51,11 @@ Reach parity with MapleStory-Client minimap and world map behavior while keeping
 - [ ] Runtime-test world map navigation, parent map traversal, hover state, and close/escape behavior.
 - [ ] Verify minimap NPC list scrolling, selection, and tooltip behavior on maps with many NPCs.
 - [ ] Verify map marker alignment against v83 canvases and center offsets.
-- [ ] Audit saved settings for startup type, position, and toggled state.
-- [ ] Compare remaining shared-file behavior against upstream for `UIStateGame`, `Stage`, `Slider`, and `Textfield`.
+- [x] Audit saved settings for startup type and position handling used by the map windows.
+- [x] Compare and restore remaining shared-file behavior required by the map windows in `UI`, `Window`, `UIStateGame`, `Slider`, and world-map search focus handling.
 
 ## Notes
 
 - All asset lookups must continue to be discovered through `scripts/nxdump/nxdump`.
 - Do not reintroduce MapleStory-Client WZ path assumptions such as non-v83 map roots.
+- Runtime verification is still required before closing this task fully; this session only verified a clean wasm build.

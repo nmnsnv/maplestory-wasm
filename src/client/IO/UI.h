@@ -56,6 +56,7 @@ namespace jrc
         void send_cursor(Point<int16_t> pos);
         void send_cursor(bool pressed);
         void send_cursor(Point<int16_t> cursorpos, Cursor::State cursorstate);
+        void send_scroll(double yoffset);
         void doubleclick();
         void send_key(int32_t keycode, bool pressed);
         void send_menu(KeyAction::Id action);
