@@ -257,7 +257,7 @@ namespace jrc
 
     struct PosMINIMAP : public Configuration::PointEntry
     {
-        PosMINIMAP() : PointEntry("PosMINIMAP", "(632,7)") {}
+        PosMINIMAP() : PointEntry("PosMINIMAP", "(0,0)") {}
     };
 
     struct MiniMapType : public Configuration::ByteEntry

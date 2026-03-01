@@ -21,6 +21,7 @@
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
+#include "../Components/ScrollingNotice.h"
 
 #include "../../Gameplay/MapleMap/Npc.h"
 
@@ -66,6 +67,11 @@ namespace jrc
           selected(-1),
           stats(stats)
     {
+        if (position.y() < ScrollingNotice::HEIGHT)
+        {
+            position.set_y(ScrollingNotice::HEIGHT);
+        }
+
         nl::node ui_window = nl::nx::ui["UIWindow2.img"];
 
         minimap_node = ui_window["MiniMap"];

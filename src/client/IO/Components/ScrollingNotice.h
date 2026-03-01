@@ -26,6 +26,8 @@ namespace jrc
     class ScrollingNotice
     {
     public:
+        static constexpr int16_t HEIGHT = 20;
+
         ScrollingNotice();
 
         void setnotice(std::string notice);

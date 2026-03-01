@@ -23,7 +23,7 @@ namespace jrc
 {
     ScrollingNotice::ScrollingNotice()
     {
-        background = ColorBox(Constants::viewwidth(), 20, ColorBox::BLACK, 0.6f);
+        background = ColorBox(Constants::viewwidth(), HEIGHT, ColorBox::BLACK, 0.6f);
         backposition = Point<int16_t>(0, -Constants::VIEWYOFFSET);
         notice = Text(Text::A12M, Text::LEFT, Text::YELLOW);
         xpos.set(0.0);
