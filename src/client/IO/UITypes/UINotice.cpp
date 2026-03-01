@@ -169,14 +169,14 @@ namespace jrc
         numfield.update(position);
     }
 
-    Cursor::State UIEnterNumber::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIEnterNumber::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (numfield.get_state() == Textfield::NORMAL)
         {
             Cursor::State nstate = numfield.send_cursor(cursorpos, clicked);
             if (nstate != Cursor::IDLE)
             {
-                return nstate;
+                return { nstate, true };
             }
         }
         return UIElement::send_cursor(clicked, cursorpos);

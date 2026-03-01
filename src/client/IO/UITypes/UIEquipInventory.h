@@ -41,7 +41,7 @@ namespace jrc
         void toggle_active() override;
         void doubleclick(Point<int16_t> position) override;
         void send_icon(const Icon& icon, Point<int16_t> position) override;
-        Cursor::State send_cursor(bool pressed, Point<int16_t> position) override;
+        CursorResult send_cursor(bool pressed, Point<int16_t> position) override;
         void send_key(int32_t keycode, bool pressed, bool escape) override;
 
         void modify(int16_t pos, int8_t mode, int16_t arg);

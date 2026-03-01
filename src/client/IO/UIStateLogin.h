@@ -63,6 +63,7 @@ namespace jrc
 
         EnumMap<UIElement::Type, UIElement::UPtr, UIElement::NUM_TYPES> elements;
         UIElement::Type focused;
+        UIElement::Type cursor_captured;
         int16_t view_width;
         int16_t view_height;
     };

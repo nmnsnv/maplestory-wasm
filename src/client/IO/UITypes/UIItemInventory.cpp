@@ -277,13 +277,12 @@ namespace jrc
         }
     }
 
-    Cursor::State UIItemInventory::send_cursor(bool pressed, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIItemInventory::send_cursor(bool pressed, Point<int16_t> cursorpos)
     {
-        Cursor::State dstate = UIDragElement::send_cursor(pressed, cursorpos);
         if (dragged)
         {
             clear_tooltip();
-            return dstate;
+            return UIDragElement::send_cursor(pressed, cursorpos);
         }
 
         Point<int16_t> cursor_relative = cursorpos - position;
@@ -293,7 +292,7 @@ namespace jrc
             if (sstate != Cursor::IDLE)
             {
                 clear_tooltip();
-                return sstate;
+                return { sstate, true };
             }
         }
 
@@ -308,19 +307,17 @@ namespace jrc
                 UI::get().drag_icon(icon);
 
                 clear_tooltip();
-                return Cursor::GRABBING;
+                return { Cursor::GRABBING, true };
             }
             else
             {
                 show_item(slot);
-                return Cursor::CANGRAB;
+                return { Cursor::CANGRAB, true };
             }
         }
-        else
-        {
-            clear_tooltip();
-            return Cursor::IDLE;
-        }
+
+        clear_tooltip();
+        return UIDragElement::send_cursor(pressed, cursorpos);
     }
 
     void UIItemInventory::modify(InventoryType::Id type, int16_t slot, int8_t mode, int16_t arg)

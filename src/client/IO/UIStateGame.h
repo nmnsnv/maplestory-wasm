@@ -72,6 +72,7 @@ namespace jrc
         EnumMap<UIElement::Type, UIElement::UPtr, UIElement::NUM_TYPES> elements;
         std::list<UIElement::Type> elementorder;
         UIElement::Type focused;
+        UIElement::Type cursor_captured;
 
         EquipTooltip eqtooltip;
         ItemTooltip ittooltip;

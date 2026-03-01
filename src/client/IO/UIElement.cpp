@@ -16,14 +16,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "UIElement.h"
+#include "UI.h"
 
 #include "../Constants.h"
+#include "../Console.h"
 #include "../Audio/Audio.h"
 
 namespace jrc
 {
     UIElement::UIElement(Point<int16_t> p, Point<int16_t> d, bool a)
-        : position(p), dimension(d), active(a), type(NONE) {}
+        : position(p), dimension(d), active(a), type(NONE), handled_button_press_id(0) {}
 
     UIElement::UIElement(Point<int16_t> p, Point<int16_t> d)
         : UIElement(p, d, true) {}
@@ -117,36 +119,49 @@ namespace jrc
         return false;
     }
 
-    Cursor::State UIElement::send_cursor(bool down, Point<int16_t> pos)
+    UIElement::CursorResult UIElement::send_cursor(bool down, Point<int16_t> pos)
     {
-        Cursor::State ret = down ? Cursor::CLICKING : Cursor::IDLE;
+        uint64_t current_press_id = UI::get().get_cursor_press_id();
+
+        if (down && handled_button_press_id == current_press_id)
+        {
+            return { Cursor::CLICKING, true };
+        }
 
         for (auto& btit : buttons)
         {
             if (btit.second->is_active() && btit.second->bounds(position).contains(pos))
             {
+                if (down)
+                {
+                    handled_button_press_id = current_press_id;
+
+                    if (btit.second->get_state() == Button::NORMAL)
+                    {
+                        Sound(Sound::BUTTONOVER).play();
+                    }
+
+                    Sound(Sound::BUTTONCLICK).play();
+
+                    Console::get().print(
+                        "[ui-debug] button dispatch: type=" +
+                        std::to_string(static_cast<int32_t>(get_type())) +
+                        " button=" + std::to_string(btit.first) +
+                        " cursor=(" + std::to_string(pos.x()) +
+                        "," + std::to_string(pos.y()) + ")"
+                    );
+
+                    btit.second->set_state(button_pressed(btit.first));
+                    return { Cursor::CLICKING, true };
+                }
+
                 if (btit.second->get_state() == Button::NORMAL)
                 {
                     Sound(Sound::BUTTONOVER).play();
-
                     btit.second->set_state(Button::MOUSEOVER);
-                    ret = Cursor::CANCLICK;
                 }
-                else if (btit.second->get_state() == Button::MOUSEOVER)
-                {
-                    if (down)
-                    {
-                        Sound(Sound::BUTTONCLICK).play();
 
-                        btit.second->set_state(button_pressed(btit.first));
-
-                        ret = Cursor::IDLE;
-                    }
-                    else
-                    {
-                        ret = Cursor::CANCLICK;
-                    }
-                }
+                return { Cursor::CANCLICK, true };
             }
             else if (btit.second->get_state() == Button::MOUSEOVER)
             {
@@ -154,7 +169,7 @@ namespace jrc
             }
         }
 
-        return ret;
+        return { down ? Cursor::CLICKING : Cursor::IDLE, false };
     }
 
     void UIElement::send_scroll(double)

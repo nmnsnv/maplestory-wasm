@@ -33,6 +33,7 @@ namespace jrc
     UI::UI()
     {
         state = std::make_unique<UIStateNull>();
+        cursor_press_id = 0;
         enabled = true;
         quitted = false;
     }
@@ -92,6 +93,11 @@ namespace jrc
         return !quitted;
     }
 
+    uint64_t UI::get_cursor_press_id() const
+    {
+        return cursor_press_id;
+    }
+
     void UI::send_cursor(Point<int16_t> cursorpos, Cursor::State cursorstate)
     {
         Cursor::State nextstate = state->send_cursor(cursorstate, cursorpos);
@@ -101,6 +107,11 @@ namespace jrc
 
     void UI::send_cursor(bool pressed)
     {
+        if (pressed && enabled)
+        {
+            cursor_press_id++;
+        }
+
         Cursor::State cursorstate = (pressed && enabled) ?
             Cursor::CLICKING :
             Cursor::IDLE;

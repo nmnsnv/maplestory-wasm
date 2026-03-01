@@ -60,7 +60,7 @@ namespace jrc
 
         bool is_in_range(Point<int16_t> cursorpos) const override;
         bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
-        Cursor::State send_cursor(bool pressed, Point<int16_t> cursorpos) override;
+        CursorResult send_cursor(bool pressed, Point<int16_t> cursorpos) override;
 
         void send_line(const std::string& line, LineType type);
 

@@ -135,13 +135,12 @@ namespace jrc
         }
     }
 
-    Cursor::State UIEquipInventory::send_cursor(bool pressed, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIEquipInventory::send_cursor(bool pressed, Point<int16_t> cursorpos)
     {
-        Cursor::State dstate = UIDragElement::send_cursor(pressed, cursorpos);
         if (dragged)
         {
             clear_tooltip();
-            return dstate;
+            return UIDragElement::send_cursor(pressed, cursorpos);
         }
 
         Equipslot::Id slot = slot_by_position(cursorpos);
@@ -153,19 +152,17 @@ namespace jrc
                 UI::get().drag_icon(icon);
 
                 clear_tooltip();
-                return Cursor::GRABBING;
+                return { Cursor::GRABBING, true };
             }
             else
             {
                 show_equip(slot);
-                return Cursor::CANGRAB;
+                return { Cursor::CANGRAB, true };
             }
         }
-        else
-        {
-            clear_tooltip();
-            return Cursor::IDLE;
-        }
+
+        clear_tooltip();
+        return UIDragElement::send_cursor(pressed, cursorpos);
     }
 
     void UIEquipInventory::doubleclick(Point<int16_t> cursorpos)

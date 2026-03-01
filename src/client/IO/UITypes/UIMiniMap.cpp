@@ -245,12 +245,11 @@ namespace jrc
         return removed || slider_removed;
     }
 
-    Cursor::State UIMiniMap::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIMiniMap::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        Cursor::State dragged_state = UIDragElement::send_cursor(clicked, cursorpos);
         if (dragged)
         {
-            return dragged_state;
+            return UIDragElement::send_cursor(clicked, cursorpos);
         }
 
         Point<int16_t> relative = cursorpos - position;
@@ -260,7 +259,7 @@ namespace jrc
             Cursor::State slider_state = list_npc_slider.send_cursor(relative, clicked);
             if (slider_state != Cursor::IDLE)
             {
-                return slider_state;
+                return { slider_state, true };
             }
         }
 
@@ -289,7 +288,7 @@ namespace jrc
                     UI::get().show_text(Tooltip::MINIMAP, list_npc_full_names[list_index]);
                 }
 
-                return Cursor::IDLE;
+                return { Cursor::IDLE, true };
             }
         }
 
@@ -358,7 +357,7 @@ namespace jrc
             UI::get().clear_tooltip(Tooltip::MINIMAP);
         }
 
-        return UIElement::send_cursor(clicked, cursorpos);
+        return UIDragElement::send_cursor(clicked, cursorpos);
     }
 
     void UIMiniMap::send_scroll(double yoffset)

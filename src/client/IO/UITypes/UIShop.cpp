@@ -206,7 +206,7 @@ namespace jrc
         return UIElement::remove_cursor(clicked, cursorpos);
     }
 
-    Cursor::State UIShop::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIShop::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         Point<int16_t> cursoroffset = cursorpos - position;
         last_cursor_pos = cursoroffset;
@@ -217,7 +217,7 @@ namespace jrc
             if (bstate != Cursor::IDLE)
             {
                 clear_tooltip();
-                return bstate;
+                return { bstate, true };
             }
         }
 
@@ -227,7 +227,7 @@ namespace jrc
             if (sstate != Cursor::IDLE)
             {
                 clear_tooltip();
-                return sstate;
+                return { sstate, true };
             }
         }
 

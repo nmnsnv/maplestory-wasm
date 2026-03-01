@@ -190,12 +190,17 @@ namespace jrc
         return removed;
     }
 
-    Cursor::State UIWorldMap::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIWorldMap::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
+        if (dragged)
+        {
+            return UIDragElement::send_cursor(clicked, cursorpos);
+        }
+
         Cursor::State text_state = search_text.send_cursor(cursorpos, clicked);
         if (text_state != Cursor::IDLE)
         {
-            return text_state;
+            return { text_state, true };
         }
 
         show_path_img = false;

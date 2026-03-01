@@ -36,6 +36,20 @@ namespace jrc
     public:
         using UPtr = std::unique_ptr<UIElement>;
 
+        struct CursorResult
+        {
+            Cursor::State state;
+            bool handled;
+
+            CursorResult(Cursor::State new_state = Cursor::IDLE, bool was_handled = false)
+                : state(new_state), handled(was_handled) {}
+
+            explicit operator bool() const
+            {
+                return handled;
+            }
+        };
+
         enum Type
         {
             NONE,
@@ -80,7 +94,7 @@ namespace jrc
         virtual void rightclick(Point<int16_t> cursorpos);
         virtual bool is_in_range(Point<int16_t> cursorpos) const;
         virtual bool remove_cursor(bool clicked, Point<int16_t> cursorpos);
-        virtual Cursor::State send_cursor(bool clicked, Point<int16_t> cursorpos);
+        virtual CursorResult send_cursor(bool clicked, Point<int16_t> cursorpos);
         virtual void send_scroll(double yoffset);
         virtual void send_key(int32_t keycode, bool pressed, bool escape);
         virtual UIElement::Type get_type() const;
@@ -101,5 +115,6 @@ namespace jrc
         Point<int16_t> dimension;
         bool active;
         Type type;
+        uint64_t handled_button_press_id;
     };
 }

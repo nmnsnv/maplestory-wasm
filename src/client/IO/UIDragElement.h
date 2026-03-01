@@ -18,6 +18,7 @@
 #pragma once
 #include "UIElement.h"
 
+#include "../Console.h"
 #include "../Configuration.h"
 
 namespace jrc
@@ -45,31 +46,52 @@ namespace jrc
             return false;
         }
 
-        Cursor::State send_cursor(bool clicked, Point<int16_t> cursorpos) override
+        CursorResult send_cursor(bool clicked, Point<int16_t> cursorpos) override
         {
-            if (clicked)
+            if (dragged)
             {
-                if (dragged)
+                if (clicked)
                 {
                     position = cursorpos - cursoroffset;
-                    return Cursor::CLICKING;
+                    return { Cursor::CLICKING, true };
                 }
-                else if (indragrange(cursorpos))
+
+                dragged = false;
+                Setting<T>::get().save(position);
+                return { Cursor::IDLE, true };
+            }
+
+            if (CursorResult button_result = UIElement::send_cursor(clicked, cursorpos))
+            {
+                return button_result;
+            }
+
+            if (clicked)
+            {
+                if (indragrange(cursorpos))
                 {
+                    for (const auto& btit : buttons)
+                    {
+                        const Button* button = btit.second.get();
+                        if (button && button->is_active() && button->bounds(position).contains(cursorpos))
+                        {
+                            Console::get().print(
+                                "[ui-debug] drag consumed title-bar click: type=" +
+                                std::to_string(static_cast<int32_t>(get_type())) +
+                                " button=" + std::to_string(btit.first) +
+                                " cursor=(" + std::to_string(cursorpos.x()) +
+                                "," + std::to_string(cursorpos.y()) + ")"
+                            );
+                        }
+                    }
+
                     cursoroffset = cursorpos - position;
                     dragged = true;
-                    return Cursor::CLICKING;
+                    return { Cursor::CLICKING, true };
                 }
             }
-            else
-            {
-                if (dragged)
-                {
-                    dragged = false;
-                    Setting<T>::get().save(position);
-                }
-            }
-            return UIElement::send_cursor(clicked, cursorpos);
+
+            return { clicked ? Cursor::CLICKING : Cursor::IDLE, false };
         }
 
     protected:

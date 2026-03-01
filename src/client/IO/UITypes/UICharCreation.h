@@ -41,7 +41,7 @@ namespace jrc
         void draw(float) const override;
         void update() override;
 
-        Cursor::State send_cursor(bool, Point<int16_t>) override;
+        CursorResult send_cursor(bool, Point<int16_t>) override;
 
         void send_naming_result(bool success);
 

@@ -70,6 +70,7 @@ namespace jrc
         void remove_textfield();
         void drag_icon(Icon* icon);
         Keyboard& get_keyboard();
+        uint64_t get_cursor_press_id() const;
 
         void add_keymapping(uint8_t no, uint8_t type, int32_t action);
 
@@ -96,6 +97,7 @@ namespace jrc
 
         Optional<Textfield> focusedtextfield;
         std::unordered_map<int32_t, bool> is_key_down;
+        uint64_t cursor_press_id;
 
         bool enabled;
         bool quitted;

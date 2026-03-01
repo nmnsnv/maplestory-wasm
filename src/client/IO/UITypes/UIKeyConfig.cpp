@@ -201,12 +201,11 @@ namespace jrc
         }
     }
 
-    Cursor::State UIKeyConfig::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIKeyConfig::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        Cursor::State dstate = UIDragElement::send_cursor(clicked, cursorpos);
         if (dragged)
         {
-            return dstate;
+            return UIDragElement::send_cursor(clicked, cursorpos);
         }
 
         int32_t unbound_action = unbound_action_by_position(cursorpos);
@@ -220,10 +219,10 @@ namespace jrc
                 {
                     it->second->start_drag(cursorpos - position - pit->second);
                     UI::get().drag_icon(it->second.get());
-                    return Cursor::GRABBING;
+                    return { Cursor::GRABBING, true };
                 }
 
-                return Cursor::CANGRAB;
+                return { Cursor::CANGRAB, true };
             }
         }
 
@@ -238,14 +237,14 @@ namespace jrc
                 {
                     mapped->start_drag(cursorpos - position - keys_pos[key_slot]);
                     UI::get().drag_icon(mapped);
-                    return Cursor::GRABBING;
+                    return { Cursor::GRABBING, true };
                 }
 
-                return Cursor::CANGRAB;
+                return { Cursor::CANGRAB, true };
             }
         }
 
-        return UIElement::send_cursor(clicked, cursorpos);
+        return UIDragElement::send_cursor(clicked, cursorpos);
     }
 
     void UIKeyConfig::send_icon(const Icon& dropped, Point<int16_t> cursorpos)

@@ -66,6 +66,7 @@ namespace jrc
     UIStateGame::UIStateGame()
     {
         focused       = UIElement::NONE;
+        cursor_captured = UIElement::NONE;
         tooltipparent = Tooltip::NONE;
         view_width    = Constants::viewwidth();
         view_height   = Constants::viewheight();
@@ -252,12 +253,33 @@ namespace jrc
         else
         {
             bool clicked = mst == Cursor::CLICKING;
+            if (UIElement* capturedelement = get(cursor_captured))
+            {
+                if (capturedelement->is_active())
+                {
+                    clear_cursors(clicked, pos, cursor_captured);
+                    UIElement::CursorResult result = capturedelement->send_cursor(clicked, pos);
+                    if (!clicked)
+                    {
+                        cursor_captured = UIElement::NONE;
+                    }
+                    return result.state;
+                }
+
+                cursor_captured = UIElement::NONE;
+            }
+
             if (UIElement* focusedelement = get(focused))
             {
                 if (focusedelement->is_active())
                 {
                     clear_cursors(clicked, pos, focused);
-                    return focusedelement->send_cursor(clicked, pos);
+                    UIElement::CursorResult result = focusedelement->send_cursor(clicked, pos);
+                    if (clicked && result.handled)
+                    {
+                        cursor_captured = focused;
+                    }
+                    return result.state;
                 }
                 else
                 {
@@ -305,10 +327,16 @@ namespace jrc
                         elementorder.push_back(fronttype);
                     }
                     clear_cursors(clicked, pos, fronttype);
-                    return front->send_cursor(clicked, pos);
+                    UIElement::CursorResult result = front->send_cursor(clicked, pos);
+                    if (clicked && result.handled)
+                    {
+                        cursor_captured = fronttype;
+                    }
+                    return result.state;
                 }
                 else
                 {
+                    cursor_captured = UIElement::NONE;
                     clear_cursors(clicked, pos, UIElement::NONE);
                     return Stage::get().send_cursor(clicked, pos);
                 }
@@ -463,6 +491,11 @@ namespace jrc
         if (type == focused)
         {
             focused = UIElement::NONE;
+        }
+
+        if (type == cursor_captured)
+        {
+            cursor_captured = UIElement::NONE;
         }
 
         if (tooltip_parent_for_type(type) == tooltipparent)

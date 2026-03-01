@@ -203,7 +203,7 @@ namespace jrc
         return UIElement::remove_cursor(clicked, cursorpos);
     }
 
-    Cursor::State UIChatbar::send_cursor(bool clicking, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIChatbar::send_cursor(bool clicking, Point<int16_t> cursorpos)
     {
         if (slider.isenabled())
         {
@@ -211,7 +211,7 @@ namespace jrc
             Cursor::State sstate = slider.send_cursor(cursoroffset, clicking);
             if (sstate != Cursor::IDLE)
             {
-                return sstate;
+                return { sstate, true };
             }
         }
 
@@ -220,7 +220,7 @@ namespace jrc
             Cursor::State tstate = chatfield.send_cursor(cursorpos, clicking);
             if (tstate != Cursor::IDLE)
             {
-                return tstate;
+                return { tstate, true };
             }
         }
 
@@ -248,7 +248,7 @@ namespace jrc
                 chatbox.setheight(1 + chatrows * CHATROWHEIGHT);
                 slider.setrows(rowpos, chatrows, rowmax);
                 slider.setvertical({ 0, CHATROWHEIGHT * chatrows - 14 });
-                return Cursor::CLICKING;
+                return { Cursor::CLICKING, true };
             }
             else
             {
@@ -260,11 +260,11 @@ namespace jrc
             if (clicking)
             {
                 dragchattop = true;
-                return Cursor::CLICKING;
+                return { Cursor::CLICKING, true };
             }
             else
             {
-                return Cursor::CANCLICK;
+                return { Cursor::CANCLICK, true };
             }
         }
 

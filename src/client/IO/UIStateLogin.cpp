@@ -29,6 +29,7 @@ namespace jrc
     UIStateLogin::UIStateLogin()
     {
         focused = UIElement::NONE;
+        cursor_captured = UIElement::NONE;
         view_width = Constants::viewwidth();
         view_height = Constants::viewheight();
 
@@ -90,12 +91,34 @@ namespace jrc
 
     Cursor::State UIStateLogin::send_cursor(Cursor::State mst, Point<int16_t> pos)
     {
+        bool clicked = mst == Cursor::CLICKING;
+        if (UIElement* capturedelement = get(cursor_captured))
+        {
+            if (capturedelement->is_active())
+            {
+                clear_cursors(clicked, pos, cursor_captured);
+                UIElement::CursorResult result = capturedelement->send_cursor(clicked, pos);
+                if (!clicked)
+                {
+                    cursor_captured = UIElement::NONE;
+                }
+                return result.state;
+            }
+
+            cursor_captured = UIElement::NONE;
+        }
+
         if (UIElement* focusedelement = get(focused))
         {
             if (focusedelement->is_active())
             {
-                clear_cursors(mst == Cursor::CLICKING, pos, focused);
-                return focusedelement->send_cursor(mst == Cursor::CLICKING, pos);
+                clear_cursors(clicked, pos, focused);
+                UIElement::CursorResult result = focusedelement->send_cursor(clicked, pos);
+                if (clicked && result.handled)
+                {
+                    cursor_captured = focused;
+                }
+                return result.state;
             }
             else
             {
@@ -132,12 +155,18 @@ namespace jrc
 
             if (front)
             {
-                clear_cursors(mst == Cursor::CLICKING, pos, fronttype);
-                return front->send_cursor(mst == Cursor::CLICKING, pos);
+                clear_cursors(clicked, pos, fronttype);
+                UIElement::CursorResult result = front->send_cursor(clicked, pos);
+                if (clicked && result.handled)
+                {
+                    cursor_captured = fronttype;
+                }
+                return result.state;
             }
             else
             {
-                clear_cursors(mst == Cursor::CLICKING, pos, UIElement::NONE);
+                cursor_captured = UIElement::NONE;
+                clear_cursors(clicked, pos, UIElement::NONE);
                 return Cursor::IDLE;
             }
         }
@@ -211,6 +240,9 @@ namespace jrc
     {
         if (focused == type)
             focused = UIElement::NONE;
+
+        if (cursor_captured == type)
+            cursor_captured = UIElement::NONE;
 
         if (auto& element = elements[type])
         {

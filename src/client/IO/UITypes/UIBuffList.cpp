@@ -112,7 +112,7 @@ namespace jrc
         dimension = { 32, 32 };
     }
 
-    Cursor::State UIBuffList::send_cursor(bool pressed, Point<int16_t> cursorposition)
+    UIElement::CursorResult UIBuffList::send_cursor(bool pressed, Point<int16_t> cursorposition)
     {
         return UIElement::send_cursor(pressed, cursorposition);
     }

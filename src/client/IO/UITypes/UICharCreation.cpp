@@ -376,10 +376,10 @@ namespace jrc
         return Button::PRESSED;
     }
 
-    Cursor::State UICharcreation::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UICharcreation::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (Cursor::State new_state = namechar.send_cursor(cursorpos, clicked))
-            return new_state;
+            return { new_state, true };
 
         return UIElement::send_cursor(clicked, cursorpos);
     }

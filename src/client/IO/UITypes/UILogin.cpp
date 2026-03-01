@@ -226,13 +226,13 @@ namespace jrc
         }
     }
 
-    Cursor::State UILogin::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UILogin::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (Cursor::State new_state = account.send_cursor(cursorpos, clicked))
-            return new_state;
+            return { new_state, true };
 
         if (Cursor::State new_state = password.send_cursor(cursorpos, clicked))
-            return new_state;
+            return { new_state, true };
 
         return UIElement::send_cursor(clicked, cursorpos);
     }

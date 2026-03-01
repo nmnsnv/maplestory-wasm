@@ -319,12 +319,11 @@ namespace jrc
         return slider.remove_cursor(clicked);
     }
 
-    Cursor::State UISkillbook::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UISkillbook::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        Cursor::State dstate = UIDragElement::send_cursor(clicked, cursorpos);
         if (dragged)
         {
-            return dstate;
+            return UIDragElement::send_cursor(clicked, cursorpos);
         }
 
         Point<int16_t> cursor_relative = cursorpos - position;
@@ -333,7 +332,7 @@ namespace jrc
             if (Cursor::State new_state = slider.send_cursor(cursor_relative, clicked))
             {
                 clear_tooltip();
-                return new_state;
+                return { new_state, true };
             }
         }
 
@@ -375,14 +374,14 @@ namespace jrc
                                 UI::get().drag_icon(icon);
                             }
 
-                            return Cursor::GRABBING;
+                            return { Cursor::GRABBING, true };
                         }
 
-                        return Cursor::IDLE;
+                        return { Cursor::IDLE, true };
                     }
                     case Cursor::CANGRAB:
                         show_skill(iter->get_id());
-                        return Cursor::IDLE;
+                        return { Cursor::IDLE, true };
                     default:
                         break;
                     }
@@ -398,7 +397,7 @@ namespace jrc
             grabbing = false;
         }
 
-        return UIElement::send_cursor(clicked, cursorpos);
+        return UIDragElement::send_cursor(clicked, cursorpos);
     }
 
     void UISkillbook::send_key(int32_t, bool pressed, bool escape)

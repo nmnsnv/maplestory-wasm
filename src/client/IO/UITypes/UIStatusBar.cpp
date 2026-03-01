@@ -194,18 +194,20 @@ namespace jrc
         return UIElement::remove_cursor(clicked, cursorpos);
     }
 
-    Cursor::State UIStatusbar::send_cursor(bool pressed, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIStatusbar::send_cursor(bool pressed, Point<int16_t> cursorpos)
     {
         if (chatbar.is_in_range(cursorpos))
         {
-            UIElement::send_cursor(pressed, cursorpos);
-            return chatbar.send_cursor(pressed, cursorpos);
-        }
-        else
-        {
-            chatbar.send_cursor(pressed, cursorpos);
+            if (CursorResult child_result = chatbar.send_cursor(pressed, cursorpos))
+            {
+                return child_result;
+            }
+
             return UIElement::send_cursor(pressed, cursorpos);
         }
+
+        chatbar.send_cursor(pressed, cursorpos);
+        return UIElement::send_cursor(pressed, cursorpos);
     }
 
     void UIStatusbar::send_chatline(const std::string& line, UIChatbar::LineType type)
