@@ -35,6 +35,7 @@ namespace jrc
         : combat(player, chars, mobs)
     {
         state = INACTIVE;
+        mapid = 0;
     }
 
     void Stage::init()
@@ -69,6 +70,7 @@ namespace jrc
     void Stage::clear()
     {
         state = INACTIVE;
+        mapid = 0;
 
         chars.clear();
         npcs.clear();
@@ -79,6 +81,8 @@ namespace jrc
 
     void Stage::load_map(int32_t mapid)
     {
+        this->mapid = mapid;
+
         std::string strid  = string_format::extend_id(mapid, 9);
         std::string prefix = std::to_string(mapid / 100000000);
         nl::node src       = nl::nx::map["Map"]["Map" + prefix][strid + ".img"];
@@ -320,6 +324,11 @@ namespace jrc
     Player& Stage::get_player()
     {
         return player;
+    }
+
+    int32_t Stage::get_mapid() const
+    {
+        return mapid;
     }
 
     Combat& Stage::get_combat()

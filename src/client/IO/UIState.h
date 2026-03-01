@@ -25,6 +25,7 @@
 #include "../Template/EnumMap.h"
 
 #include <memory>
+#include <string>
 
 namespace jrc
 {
@@ -48,6 +49,9 @@ namespace jrc
         virtual void show_item(Tooltip::Parent parent, int32_t itemid) = 0;
         virtual void show_skill(Tooltip::Parent parent, int32_t skill_id,
             int32_t level, int32_t masterlevel, int64_t expiration) = 0;
+        virtual void show_text(Tooltip::Parent parent, const std::string& text) = 0;
+        virtual void show_map(Tooltip::Parent parent, const std::string& title,
+            const std::string& description, int32_t mapid, bool bolded, bool portal) = 0;
 
         virtual Iterator pre_add(UIElement::Type type, bool toggled, bool focused) = 0;
         virtual void remove(UIElement::Type type) = 0;
@@ -67,6 +71,8 @@ namespace jrc
         void show_equip(Tooltip::Parent, int16_t) override {}
         void show_item(Tooltip::Parent, int32_t) override {}
         void show_skill(Tooltip::Parent, int32_t, int32_t, int32_t, int64_t) override {}
+        void show_text(Tooltip::Parent, const std::string&) override {}
+        void show_map(Tooltip::Parent, const std::string&, const std::string&, int32_t, bool, bool) override {}
         Iterator pre_add(UIElement::Type, bool, bool) override { return{ nullptr, UIElement::NUM_TYPES }; }
         void remove(UIElement::Type) override {}
         UIElement* get(UIElement::Type) override { return nullptr; }

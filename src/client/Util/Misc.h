@@ -17,6 +17,9 @@
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "../Console.h"
+#include "../Graphics/Text.h"
+
+#include "nlnx/node.hpp"
 
 #ifdef MS_PLATFORM_WASM
 #include <emscripten.h>
@@ -24,6 +27,7 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 
 namespace jrc
 {
@@ -65,6 +69,25 @@ namespace jrc
     {
         // Check if a bit mask contains the specified value.
         bool compare(int32_t mask, int32_t value);
+    }
+
+    namespace NxHelper
+    {
+        namespace Map
+        {
+            struct MapInfo
+            {
+                std::string description;
+                std::string name;
+                std::string street_name;
+                std::string full_name;
+            };
+
+            MapInfo get_map_info_by_id(int32_t mapid);
+            std::string get_map_category(int32_t mapid);
+            std::unordered_map<int64_t, std::pair<std::string, std::string>> get_life_on_map(int32_t mapid);
+            nl::node get_map_node_name(int32_t mapid);
+        }
     }
 
 #ifdef MS_PLATFORM_WASM

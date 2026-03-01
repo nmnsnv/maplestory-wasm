@@ -29,6 +29,9 @@ namespace jrc
     class Clothing
     {
     public:
+        static constexpr int32_t TOP_DEFAULT_ID = 1042399;
+        static constexpr int32_t BOTTOM_DEFAULT_ID = 1060026;
+
         enum Layer
         {
             CAPE, SHOES, PANTS, TOP, MAIL, MAILARM,
@@ -38,6 +41,7 @@ namespace jrc
             SHIELD, BACKSHIELD, SHIELD_BELOW_BODY, SHIELD_OVER_HAIR,
             WEAPON, BACKWEAPON, WEAPON_BELOW_ARM, WEAPON_BELOW_BODY,
             WEAPON_OVER_HAND, WEAPON_OVER_BODY, WEAPON_OVER_GLOVE,
+            PANTS_DEFAULT, TOP_DEFAULT,
             NUM_LAYERS
         };
 
@@ -78,4 +82,3 @@ namespace jrc
         static const std::unordered_map<std::string, Layer> sublayernames;
     };
 }
-

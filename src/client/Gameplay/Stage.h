@@ -82,6 +82,8 @@ namespace jrc
         MapDrops& get_drops();
         // Returns a reference to the Player.
         Player& get_player();
+        // Returns the id of the current map.
+        int32_t get_mapid() const;
         // Return a reference to the attack and buff component.
         Combat& get_combat();
 
@@ -109,6 +111,7 @@ namespace jrc
 
         Optional<Playable> playable;
         State state;
+        int32_t mapid;
 
         MapInfo mapinfo;
         MapTilesObjs tilesobjs;

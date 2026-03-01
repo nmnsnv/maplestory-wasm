@@ -114,6 +114,10 @@ namespace jrc
 
     void UIStateLogin::show_skill(Tooltip::Parent, int32_t, int32_t, int32_t, int64_t) {}
 
+    void UIStateLogin::show_text(Tooltip::Parent, const std::string&) {}
+
+    void UIStateLogin::show_map(Tooltip::Parent, const std::string&, const std::string&, int32_t, bool, bool) {}
+
     template <class T, typename...Args>
     void UIStateLogin::emplace(Args&&...args)
     {

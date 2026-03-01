@@ -36,6 +36,8 @@ namespace jrc
         sprites.emplace_back(src["backgrnd"]);
         sprites.emplace_back(src["backgrnd2"]);
         sprites.emplace_back(src["backgrnd3"]);
+        cover0 = Sprite(src["cover0"]);
+        cover1 = Sprite(src["cover1"]);
 
         textures_detail.emplace_back(detail["backgrnd"]);
         textures_detail.emplace_back(detail["backgrnd2"]);
@@ -58,6 +60,7 @@ namespace jrc
         buttons[BT_DETAILCLOSE] = std::make_unique<MapleButton>(src["BtDetailClose"]);
         buttons[BT_DETAILCLOSE]->set_active(false);
 
+        jobId = stats.get_stat(Maplestat::JOB);
         update_ap();
 
         for (size_t i = 0; i < NUMLABELS; ++i)
@@ -103,6 +106,12 @@ namespace jrc
     void UIStatsinfo::draw(float alpha) const
     {
         UIElement::draw(alpha);
+
+        if (jobId == Job::BEGINNER)
+        {
+            cover0.draw(position, alpha);
+            cover1.draw(position, alpha);
+        }
 
         if (showdetail)
         {
@@ -179,7 +188,15 @@ namespace jrc
         switch (stat)
         {
         case Maplestat::JOB:
+            jobId = stats.get_stat(Maplestat::JOB);
             statlabels[JOB].change_text(stats.get_jobname());
+
+            buttons[BT_HP]->set_active(jobId != Job::BEGINNER);
+            buttons[BT_MP]->set_active(jobId != Job::BEGINNER);
+            buttons[BT_STR]->set_active(jobId != Job::BEGINNER);
+            buttons[BT_DEX]->set_active(jobId != Job::BEGINNER);
+            buttons[BT_INT]->set_active(jobId != Job::BEGINNER);
+            buttons[BT_LUK]->set_active(jobId != Job::BEGINNER);
             break;
         case Maplestat::FAME:
             update_simple(FAME, Maplestat::FAME);

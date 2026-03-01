@@ -50,10 +50,19 @@ namespace jrc
 
         Optional<OtherChar> get_char(int32_t cid);
 
+        MapObjects* get_chars()
+        {
+            return &chars;
+        }
+
+        const MapObjects* get_chars() const
+        {
+            return &chars;
+        }
+
     private:
         MapObjects chars;
 
         std::queue<CharSpawn> spawns;
     };
 }
-

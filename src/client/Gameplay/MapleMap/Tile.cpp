@@ -23,7 +23,24 @@ namespace jrc
     Tile::Tile(nl::node src, const std::string& ts)
     {
         nl::node dsrc = nl::nx::map["Tile"][ts][src["u"]][src["no"]];
-        texture = Texture(nl::nx::map["Tile"][ts][src["u"]][src["no"]]);
+        if (nl::node outlink = dsrc["_outlink"])
+        {
+            std::string path = outlink.get_string();
+            std::string file;
+            constexpr const char* delimiter = "/";
+            if (size_t pos = path.find(delimiter); pos != std::string::npos)
+            {
+                file = path.substr(0, pos);
+                path.erase(0, pos + 1);
+            }
+
+            if (file == "Map")
+            {
+                dsrc = nl::nx::map.resolve(path);
+            }
+        }
+
+        texture = Texture(dsrc);
         pos = Point<int16_t>(src["x"], src["y"]);
         z = dsrc["z"];
         if (z == 0)

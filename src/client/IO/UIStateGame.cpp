@@ -26,8 +26,10 @@
 #include "UITypes/UIStatsInfo.h"
 #include "UITypes/UIItemInventory.h"
 #include "UITypes/UIEquipInventory.h"
+#include "UITypes/UIMiniMap.h"
 #include "UITypes/UISkillBook.h"
 #include "UITypes/UIKeyConfig.h"
+#include "UITypes/UIWorldMap.h"
 
 #include "../Console.h"
 #include "../Gameplay/Stage.h"
@@ -35,6 +37,30 @@
 
 namespace jrc
 {
+    namespace
+    {
+        Tooltip::Parent tooltip_parent_for_type(UIElement::Type type)
+        {
+            switch (type)
+            {
+            case UIElement::EQUIPINVENTORY:
+                return Tooltip::EQUIPINVENTORY;
+            case UIElement::ITEMINVENTORY:
+                return Tooltip::ITEMINVENTORY;
+            case UIElement::SKILLBOOK:
+                return Tooltip::SKILLBOOK;
+            case UIElement::SHOP:
+                return Tooltip::SHOP;
+            case UIElement::MINIMAP:
+                return Tooltip::MINIMAP;
+            case UIElement::WORLDMAP:
+                return Tooltip::WORLDMAP;
+            default:
+                return Tooltip::NONE;
+            }
+        }
+    }
+
     UIStateGame::UIStateGame()
     {
         focused       = UIElement::NONE;
@@ -142,6 +168,12 @@ namespace jrc
                         Stage::get().get_player().get_skills()
                     );
                     break;
+                case KeyAction::MINIMAP:
+                    emplace<UIMiniMap>(Stage::get().get_player().get_stats());
+                    break;
+                case KeyAction::WORLDMAP:
+                    emplace<UIWorldMap>();
+                    break;
                 default:
                     break;
                 }
@@ -215,7 +247,7 @@ namespace jrc
                     }
                 }
 
-                if (fronttype != tooltipparent)
+                if (tooltip_parent_for_type(fronttype) != tooltipparent)
                 {
                     clear_tooltip(tooltipparent);
                 }
@@ -248,6 +280,8 @@ namespace jrc
         {
             eqtooltip.set_equip(Tooltip::NONE, 0);
             ittooltip.set_item(0);
+            txttooltip.set_text("");
+            mtooltip.reset();
             tooltip       = {};
             tooltipparent = Tooltip::NONE;
         }
@@ -285,6 +319,26 @@ namespace jrc
             tooltip = sktooltip;
             tooltipparent = parent;
         }
+    }
+
+    void UIStateGame::show_text(Tooltip::Parent parent, const std::string& text)
+    {
+        if (txttooltip.set_text(text))
+        {
+            tooltip = txttooltip;
+            tooltipparent = parent;
+        }
+    }
+
+    void UIStateGame::show_map(Tooltip::Parent parent, const std::string& title,
+        const std::string& description, int32_t mapid, bool bolded, bool portal) {
+
+        mtooltip.set_title(parent, title, bolded);
+        mtooltip.set_desc(description);
+        mtooltip.set_mapid(mapid, portal);
+
+        tooltip = mtooltip;
+        tooltipparent = parent;
     }
 
     template <class T, typename...Args>
@@ -331,7 +385,7 @@ namespace jrc
             focused = UIElement::NONE;
         }
 
-        if (type == tooltipparent)
+        if (tooltip_parent_for_type(type) == tooltipparent)
         {
             clear_tooltip(tooltipparent);
         }

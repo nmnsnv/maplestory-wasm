@@ -250,6 +250,31 @@ namespace jrc
         PosKEYCONFIG() : PointEntry("PosKEYCONFIG", "(144,144)") {}
     };
 
+    struct PosMAP : public Configuration::PointEntry
+    {
+        PosMAP() : PointEntry("PosMAP", "(124,2)") {}
+    };
+
+    struct PosMINIMAP : public Configuration::PointEntry
+    {
+        PosMINIMAP() : PointEntry("PosMINIMAP", "(632,7)") {}
+    };
+
+    struct MiniMapType : public Configuration::ByteEntry
+    {
+        MiniMapType() : ByteEntry("MiniMapType", "1") {}
+    };
+
+    struct MiniMapSimpleMode : public Configuration::BoolEntry
+    {
+        MiniMapSimpleMode() : BoolEntry("MiniMapSimpleMode", "false") {}
+    };
+
+    struct MiniMapDefaultHelpers : public Configuration::BoolEntry
+    {
+        MiniMapDefaultHelpers() : BoolEntry("MiniMapDefaultHelpers", "false") {}
+    };
+
     // Can be used to access settings.
     template <typename T>
     struct Setting

@@ -133,4 +133,9 @@ namespace jrc
     {
         return objects.end();
     }
+
+    size_t MapObjects::size() const
+    {
+        return objects.size();
+    }
 }

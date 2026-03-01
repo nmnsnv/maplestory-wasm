@@ -40,6 +40,11 @@ namespace jrc
         settings.emplace<PosINV>();
         settings.emplace<PosSKILL>();
         settings.emplace<PosKEYCONFIG>();
+        settings.emplace<PosMAP>();
+        settings.emplace<PosMINIMAP>();
+        settings.emplace<MiniMapType>();
+        settings.emplace<MiniMapSimpleMode>();
+        settings.emplace<MiniMapDefaultHelpers>();
 
         load();
     }

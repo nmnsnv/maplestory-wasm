@@ -143,9 +143,10 @@ namespace jrc
     void MapPortals::init()
     {
         nl::node src = nl::nx::map["MapHelper.img"]["portal"]["game"];
+        nl::node regular = src["pv"];
 
         animations[Portal::HIDDEN]  = src["ph"]["default"]["portalContinue"];
-        animations[Portal::REGULAR] = src["pv"];
+        animations[Portal::REGULAR] = regular["default"] ? regular["default"] : regular;
     }
 
     std::unordered_map<Portal::Type, Animation> MapPortals::animations;

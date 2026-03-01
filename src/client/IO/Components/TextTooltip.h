@@ -16,32 +16,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../../Template/Point.h"
+#include "MapleFrame.h"
+#include "Tooltip.h"
 
-#include <cstdint>
+#include "../../Graphics/Text.h"
 
+#include <string>
 
 namespace jrc
 {
-    /// Interface for tooltips, information windows about something
-    /// the mouse cursor is pointed at.
-    class Tooltip
+    class TextTooltip : public Tooltip
     {
     public:
-        /// Possible parent UIs for Tooltips.
-        enum Parent
-        {
-            NONE,
-            EQUIPINVENTORY,
-            ITEMINVENTORY,
-            SKILLBOOK,
-            SHOP,
-            MINIMAP,
-            WORLDMAP
-        };
+        TextTooltip();
 
-        virtual ~Tooltip() = default;
+        void draw(Point<int16_t> position) const override;
+        bool set_text(const std::string& text, uint16_t maxwidth = 340, bool formatted = true);
 
-        virtual void draw(Point<int16_t> cursorpos) const = 0;
+    private:
+        MapleFrame frame;
+        Texture cover;
+        std::string text;
+        Text text_label;
     };
 }

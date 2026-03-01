@@ -48,6 +48,8 @@ namespace jrc
             SADDLE = 19,
             MEDAL = 49,
             BELT = 50,
+            TOP_DEFAULT,
+            BOTTOM_DEFAULT,
             LENGTH
         };
 

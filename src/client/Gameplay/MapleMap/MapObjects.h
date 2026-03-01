@@ -60,10 +60,10 @@ namespace jrc
         underlying_t::const_iterator begin() const;
         // Return an end iterator.
         underlying_t::const_iterator end() const;
+        size_t size() const;
 
     private:
         std::unordered_map<int32_t, std::unique_ptr<MapObject>> objects;
         std::array<std::unordered_set<int32_t>, Layer::LENGTH> layers;
     };
 }
-

@@ -16,32 +16,51 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../../Template/Point.h"
+#include "MapleFrame.h"
+#include "Tooltip.h"
 
-#include <cstdint>
+#include "../../Graphics/Geometry.h"
+#include "../../Graphics/Text.h"
 
+#include <string>
+#include <vector>
 
 namespace jrc
 {
-    /// Interface for tooltips, information windows about something
-    /// the mouse cursor is pointed at.
-    class Tooltip
+    class MapTooltip : public Tooltip
     {
     public:
-        /// Possible parent UIs for Tooltips.
-        enum Parent
-        {
-            NONE,
-            EQUIPINVENTORY,
-            ITEMINVENTORY,
-            SKILLBOOK,
-            SHOP,
-            MINIMAP,
-            WORLDMAP
-        };
+        MapTooltip();
 
-        virtual ~Tooltip() = default;
+        void draw(Point<int16_t> position) const override;
 
-        virtual void draw(Point<int16_t> cursorpos) const = 0;
+        void set_title(Tooltip::Parent parent, const std::string& title, bool bolded);
+        void set_desc(const std::string& description);
+        void set_mapid(int32_t mapid, bool portal);
+        void reset();
+
+    private:
+        void rebuild_layout();
+
+        static constexpr uint8_t MAX_LIFE = 10u;
+
+        MapleFrame frame;
+        Texture cover;
+        Texture mob_icon;
+        Texture npc_icon;
+
+        Tooltip::Parent parent;
+        std::string title;
+        std::string description;
+
+        Text title_label;
+        Text desc_label;
+        std::vector<Text> mob_labels;
+        std::vector<Text> npc_labels;
+        int32_t current_mapid = -1;
+
+        int16_t fillwidth;
+        int16_t fillheight;
+        ColorLine separator;
     };
 }

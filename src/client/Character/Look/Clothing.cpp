@@ -32,6 +32,15 @@ namespace jrc
         const EquipData& equipdata = EquipData::get(itemid);
 
         eqslot = equipdata.get_eqslot();
+        if (itemid == TOP_DEFAULT_ID)
+        {
+            eqslot = Equipslot::TOP_DEFAULT;
+        }
+        else if (itemid == BOTTOM_DEFAULT_ID)
+        {
+            eqslot = Equipslot::BOTTOM_DEFAULT;
+        }
+
         if (eqslot == Equipslot::WEAPON)
         {
             twohanded = WeaponData::get(itemid)
@@ -54,7 +63,15 @@ namespace jrc
 
         Layer chlayer;
         auto index = (itemid / 10000) - 100;
-        if (index < NON_WEAPON_TYPES)
+        if (itemid == TOP_DEFAULT_ID)
+        {
+            chlayer = Layer::TOP_DEFAULT;
+        }
+        else if (itemid == BOTTOM_DEFAULT_ID)
+        {
+            chlayer = Layer::PANTS_DEFAULT;
+        }
+        else if (index < NON_WEAPON_TYPES)
         {
             chlayer = layers[index];
         }
@@ -155,7 +172,9 @@ namespace jrc
                     case Equipslot::SHOES:
                     case Equipslot::GLOVES:
                     case Equipslot::TOP:
+                    case Equipslot::TOP_DEFAULT:
                     case Equipslot::PANTS:
+                    case Equipslot::BOTTOM_DEFAULT:
                     case Equipslot::CAPE:
                         shift = drawinfo.get_body_position(stance, frame) - parentpos;
                         break;

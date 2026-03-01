@@ -227,6 +227,17 @@ namespace jrc
         state->show_skill(parent, skill_id, level, masterlevel, expiration);
     }
 
+    void UI::show_text(Tooltip::Parent parent, const std::string& text)
+    {
+        state->show_text(parent, text);
+    }
+
+    void UI::show_map(Tooltip::Parent parent, const std::string& title,
+        const std::string& description, int32_t mapid, bool bolded, bool portal) {
+
+        state->show_map(parent, title, description, mapid, bolded, portal);
+    }
+
     void UI::remove(UIElement::Type type)
     {
         focusedtextfield = {};

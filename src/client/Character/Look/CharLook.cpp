@@ -33,6 +33,9 @@ namespace jrc
         set_hair(entry.hairid);
         set_face(entry.faceid);
 
+        add_equip(Clothing::TOP_DEFAULT_ID);
+        add_equip(Clothing::BOTTOM_DEFAULT_ID);
+
         for (auto& equip : entry.equips)
         {
             add_equip(equip.second);
@@ -76,7 +79,9 @@ namespace jrc
             body->draw(interstance, Body::BODY, interframe, args);
             equips.draw(Equipslot::GLOVES, interstance, Clothing::GLOVE, interframe, args);
             equips.draw(Equipslot::SHOES, interstance, Clothing::SHOES, interframe, args);
+            equips.draw(Equipslot::BOTTOM_DEFAULT, interstance, Clothing::PANTS_DEFAULT, interframe, args);
             equips.draw(Equipslot::PANTS, interstance, Clothing::PANTS, interframe, args);
+            equips.draw(Equipslot::TOP_DEFAULT, interstance, Clothing::TOP_DEFAULT, interframe, args);
             equips.draw(Equipslot::TOP, interstance, Clothing::TOP, interframe, args);
             equips.draw(Equipslot::TOP, interstance, Clothing::MAIL, interframe, args);
             equips.draw(Equipslot::CAPE, interstance, Clothing::CAPE, interframe, args);
@@ -126,7 +131,9 @@ namespace jrc
             }
             else
             {
+                equips.draw(Equipslot::BOTTOM_DEFAULT, interstance, Clothing::PANTS_DEFAULT, interframe, args);
                 equips.draw(Equipslot::PANTS, interstance, Clothing::PANTS, interframe, args);
+                equips.draw(Equipslot::TOP_DEFAULT, interstance, Clothing::TOP_DEFAULT, interframe, args);
                 equips.draw(Equipslot::TOP, interstance, Clothing::TOP, interframe, args);
             }
 

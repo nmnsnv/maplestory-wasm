@@ -51,6 +51,16 @@ namespace jrc
         // Check if the npc is in range of the cursor.
         bool inrange(Point<int16_t> cursorpos, Point<int16_t> viewpos) const;
 
+        const std::string& get_name() const
+        {
+            return name;
+        }
+
+        const std::string& get_func() const
+        {
+            return func;
+        }
+
     private:
         std::map<std::string, Animation> animations;
         std::map<std::string, std::vector<std::string>> lines;
@@ -71,4 +81,3 @@ namespace jrc
         Text funclabel;
     };
 }
-

@@ -125,6 +125,11 @@ namespace jrc
         {
             UI::get().set_scrollnotice(message);
         }
+        else if (type == 5)
+        {
+            if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                statusbar->send_chatline(message, UIChatbar::WHITE);
+        }
         else if (type == 7)
         {
             recv.read_int(); // npcid

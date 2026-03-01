@@ -44,10 +44,19 @@ namespace jrc
         // Send mouse input to clickable npcs.
         Cursor::State send_cursor(bool pressed, Point<int16_t> position, Point<int16_t> viewpos);
 
+        MapObjects* get_npcs()
+        {
+            return &npcs;
+        }
+
+        const MapObjects* get_npcs() const
+        {
+            return &npcs;
+        }
+
     private:
         MapObjects npcs;
 
         std::queue<NpcSpawn> spawns;
     };
 }
-
