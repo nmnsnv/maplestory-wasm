@@ -1,6 +1,0 @@
-[submodule "src/nlnx"]
-	path = src/nlnx
-	url = https://github.com/NoLifeDev/NoLifeNx.git
-[submodule "src/client/includes/stb"]
-	path = src/client/includes/stb
-	url = https://github.com/nothings/stb.git
