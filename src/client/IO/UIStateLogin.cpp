@@ -17,13 +17,20 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "UIStateLogin.h"
 
+#include "UI.h"
 #include "UITypes/UILogin.h"
+
+#include "../Constants.h"
+
+#include <algorithm>
 
 namespace jrc
 {
     UIStateLogin::UIStateLogin()
     {
         focused = UIElement::NONE;
+        view_width = Constants::viewwidth();
+        view_height = Constants::viewheight();
 
         emplace<UILogin>();
     }
@@ -40,17 +47,46 @@ namespace jrc
 
     void UIStateLogin::update()
     {
+        int16_t new_width = Constants::viewwidth();
+        int16_t new_height = Constants::viewheight();
+        bool screen_changed = new_width != view_width || new_height != view_height;
+        if (screen_changed)
+        {
+            view_width = new_width;
+            view_height = new_height;
+        }
+
         for (auto iter : elements)
         {
             UIElement* element = iter.second.get();
             if (element && element->is_active())
+            {
+                if (screen_changed)
+                {
+                    element->update_screen(new_width, new_height);
+                }
                 element->update();
+            }
         }
     }
 
     void UIStateLogin::doubleclick(Point<int16_t>) {}
 
-    void UIStateLogin::send_key(KeyType::Id, int32_t, bool) {}
+    void UIStateLogin::rightclick(Point<int16_t>) {}
+
+    void UIStateLogin::send_key(KeyType::Id, int32_t action, bool pressed, bool escape)
+    {
+        if (UIElement* focusedelement = get(focused))
+        {
+            if (focusedelement->is_active())
+            {
+                focusedelement->send_key(action, pressed, escape);
+                return;
+            }
+
+            focused = UIElement::NONE;
+        }
+    }
 
     Cursor::State UIStateLogin::send_cursor(Cursor::State mst, Point<int16_t> pos)
     {
@@ -58,6 +94,7 @@ namespace jrc
         {
             if (focusedelement->is_active())
             {
+                clear_cursors(mst == Cursor::CLICKING, pos, focused);
                 return focusedelement->send_cursor(mst == Cursor::CLICKING, pos);
             }
             else
@@ -95,13 +132,24 @@ namespace jrc
 
             if (front)
             {
+                clear_cursors(mst == Cursor::CLICKING, pos, fronttype);
                 return front->send_cursor(mst == Cursor::CLICKING, pos);
             }
             else
             {
+                clear_cursors(mst == Cursor::CLICKING, pos, UIElement::NONE);
                 return Cursor::IDLE;
             }
         }
+    }
+
+    void UIStateLogin::send_scroll(Point<int16_t>, double)
+    {
+    }
+
+    void UIStateLogin::send_close()
+    {
+        UI::get().quit();
     }
 
     void UIStateLogin::drag_icon(Icon*) {}
@@ -118,14 +166,34 @@ namespace jrc
 
     void UIStateLogin::show_map(Tooltip::Parent, const std::string&, const std::string&, int32_t, bool, bool) {}
 
+    void UIStateLogin::clear_cursors(bool clicked, Point<int16_t> pos, UIElement::Type except)
+    {
+        for (auto iter : elements)
+        {
+            if (iter.first == except)
+            {
+                continue;
+            }
+
+            auto& element = iter.second;
+            if (element && element->is_active())
+            {
+                element->remove_cursor(clicked, pos);
+            }
+        }
+    }
+
     template <class T, typename...Args>
     void UIStateLogin::emplace(Args&&...args)
     {
         if (auto iter = pre_add(T::TYPE, T::TOGGLED, T::FOCUSED))
         {
-            (*iter).second = std::make_unique<T>(
+            auto element = std::make_unique<T>(
                 std::forward<Args>(args)...
                 );
+            element->set_type(T::TYPE);
+            element->update_screen(view_width, view_height);
+            (*iter).second = std::move(element);
         }
     }
 
@@ -147,13 +215,30 @@ namespace jrc
         if (auto& element = elements[type])
         {
             element->deactivate();
-            element.release();
+            element.reset();
         }
     }
 
     UIElement* UIStateLogin::get(UIElement::Type type)
     {
         return elements[type].get();
+    }
+
+    UIElement* UIStateLogin::get_front(const std::list<UIElement::Type>& types)
+    {
+        auto begin = elements.values().rbegin();
+        auto end = elements.values().rend();
+        for (auto iter = begin; iter != end; ++iter)
+        {
+            auto& element = *iter;
+            if (element && element->is_active() &&
+                std::find(types.begin(), types.end(), element->get_type()) != types.end())
+            {
+                return element.get();
+            }
+        }
+
+        return nullptr;
     }
 
     UIElement* UIStateLogin::get_front(Point<int16_t> pos)

@@ -58,6 +58,7 @@ namespace jrc
         UIYesNo(std::string question, std::function<void(bool yes)> yesnohandler);
 
         void draw(float alpha) const override;
+        void send_key(int32_t keycode, bool pressed, bool escape) override;
 
     protected:
         Button::State button_pressed(uint16_t buttonid) override;
@@ -82,6 +83,7 @@ namespace jrc
         void update() override;
 
         Cursor::State send_cursor(bool pressed, Point<int16_t> cursorpos) override;
+        void send_key(int32_t keycode, bool pressed, bool escape) override;
 
     protected:
         Button::State button_pressed(uint16_t buttonid) override;

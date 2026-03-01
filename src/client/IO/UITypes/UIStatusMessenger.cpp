@@ -46,7 +46,7 @@ namespace jrc
 
     UIStatusMessenger::UIStatusMessenger()
     {
-        position = { 790, 500 };
+        update_screen(Constants::viewwidth(), Constants::viewheight());
     }
 
     void UIStatusMessenger::draw(float inter) const
@@ -65,6 +65,14 @@ namespace jrc
         {
             info.update();
         }
+    }
+
+    void UIStatusMessenger::update_screen(int16_t new_width, int16_t new_height)
+    {
+        position = {
+            static_cast<int16_t>(new_width - 10),
+            static_cast<int16_t>(new_height - 100)
+        };
     }
 
     void UIStatusMessenger::show_status(Text::Color color, const std::string& message)

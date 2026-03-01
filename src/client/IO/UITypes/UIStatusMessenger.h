@@ -54,6 +54,7 @@ namespace jrc
 
         void draw(float alpha) const override;
         void update() override;
+        void update_screen(int16_t new_width, int16_t new_height) override;
 
         void show_status(Text::Color color, const std::string& message);
 

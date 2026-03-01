@@ -1,6 +1,6 @@
 # Task: Input And UI State Plumbing
 
-Status: Not started
+Status: In progress
 
 ## Goal
 
@@ -32,15 +32,19 @@ Backport the shared UI/input capabilities that multiple missing features depend 
 
 ## Subtasks
 
-- [ ] Add right-click plumbing from `Window` through `UI` and `UIState`.
-- [ ] Add mouse-wheel routing from `Window` through `UI` and `UIState`.
-- [ ] Add close/focus handling where upstream behavior matters.
-- [ ] Expand per-element keyboard handling to include `escape`.
-- [ ] Add missing `UIElement` capabilities: `get_type`, `send_key`, `send_scroll`, `rightclick`, `update_screen`.
-- [ ] Decide whether to adopt upstream cursor-removal semantics wholesale or selectively.
+- [x] Add right-click plumbing from `Window` through `UI` and `UIState`.
+- [x] Add mouse-wheel routing from `Window` through `UI` and `UIState`.
+- [x] Add close/focus handling where upstream behavior matters.
+- [x] Expand per-element keyboard handling to include `escape`.
+- [x] Add missing `UIElement` capabilities: `get_type`, `send_key`, `send_scroll`, `rightclick`, `update_screen`.
+- [x] Decide whether to adopt upstream cursor-removal semantics wholesale or selectively.
 - [ ] Add `UIStateCashShop` only when the cash-shop epic is ready to use it.
 - [ ] Add upstream slider scroll behavior where required by quest log, shop, and minimap NPC lists.
 
 ## Notes
 
 - Several higher-level epics should not start until this plumbing is explicitly assessed.
+- Implemented selectively rather than copying upstream wholesale:
+  - cursor clearing now happens centrally in `UIStateGame` and `UIStateLogin`
+  - close handling routes through the state layer, but still falls back to immediate local quit until the quit/cash-shop epics land
+  - shop scroll/right-click plumbing and minimap/world map/key config escape routing are available for current windows

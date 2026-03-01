@@ -24,6 +24,7 @@
 #include "Components/Textfield.h"
 #include "Components/ScrollingNotice.h"
 
+#include "../Constants.h"
 #include "../Template/Singleton.h"
 #include "../Template/Optional.h"
 
@@ -56,13 +57,17 @@ namespace jrc
         void send_cursor(Point<int16_t> pos);
         void send_cursor(bool pressed);
         void send_cursor(Point<int16_t> cursorpos, Cursor::State cursorstate);
+        void send_focus(int focused);
         void send_scroll(double yoffset);
+        void send_close();
+        void rightclick();
         void doubleclick();
         void send_key(int32_t keycode, bool pressed);
         void send_menu(KeyAction::Id action);
 
         void set_scrollnotice(const std::string& notice);
         void focus_textfield(Textfield* textfield);
+        void remove_textfield();
         void drag_icon(Icon* icon);
         Keyboard& get_keyboard();
 
@@ -101,9 +106,12 @@ namespace jrc
     {
         if (auto iter = state->pre_add(T::TYPE, T::TOGGLED, T::FOCUSED))
         {
-            (*iter).second = std::make_unique<T>(
+            auto element = std::make_unique<T>(
                 std::forward<Args>(args)...
                 );
+            element->set_type(T::TYPE);
+            element->update_screen(Constants::viewwidth(), Constants::viewheight());
+            (*iter).second = std::move(element);
         }
         return state->get(T::TYPE);
     }

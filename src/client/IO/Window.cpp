@@ -76,7 +76,7 @@ namespace jrc
             switch (action)
             {
             case GLFW_PRESS:
-                UI::get().doubleclick();
+                UI::get().rightclick();
                 break;
             default:
                 break;
@@ -98,6 +98,17 @@ namespace jrc
     void scroll_callback(GLFWwindow*, double, double yoffset)
     {
         UI::get().send_scroll(yoffset);
+    }
+
+    void focus_callback(GLFWwindow*, int focused)
+    {
+        UI::get().send_focus(focused);
+    }
+
+    void close_callback(GLFWwindow* window)
+    {
+        UI::get().send_close();
+        glfwSetWindowShouldClose(window, GL_FALSE);
     }
 
     void framebuffer_size_callback(GLFWwindow*, int width, int height)
@@ -195,7 +206,9 @@ namespace jrc
         glfwSetKeyCallback(glwnd, key_callback);
         glfwSetMouseButtonCallback(glwnd, mousekey_callback);
         glfwSetCursorPosCallback(glwnd, cursor_callback);
+        glfwSetWindowFocusCallback(glwnd, focus_callback);
         glfwSetScrollCallback(glwnd, scroll_callback);
+        glfwSetWindowCloseCallback(glwnd, close_callback);
         glfwSetFramebufferSizeCallback(glwnd, framebuffer_size_callback);
 
         int32_t framebuffer_width = 0;

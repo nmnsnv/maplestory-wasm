@@ -32,8 +32,10 @@
 #include "UITypes/UIWorldMap.h"
 
 #include "../Console.h"
+#include "../Constants.h"
 #include "../Gameplay/Stage.h"
 
+#include <algorithm>
 
 namespace jrc
 {
@@ -65,6 +67,8 @@ namespace jrc
     {
         focused       = UIElement::NONE;
         tooltipparent = Tooltip::NONE;
+        view_width    = Constants::viewwidth();
+        view_height   = Constants::viewheight();
 
         const CharLook&  look      = Stage::get().get_player().get_look();
         const CharStats& stats     = Stage::get().get_player().get_stats();
@@ -102,11 +106,24 @@ namespace jrc
 
     void UIStateGame::update()
     {
+        int16_t new_width = Constants::viewwidth();
+        int16_t new_height = Constants::viewheight();
+        bool screen_changed = new_width != view_width || new_height != view_height;
+        if (screen_changed)
+        {
+            view_width = new_width;
+            view_height = new_height;
+        }
+
         for (const auto& type : elementorder)
         {
             auto& element = elements[type];
             if (element && element->is_active())
             {
+                if (screen_changed)
+                {
+                    element->update_screen(new_width, new_height);
+                }
                 element->update();
             }
         }
@@ -132,8 +149,27 @@ namespace jrc
         }
     }
 
-    void UIStateGame::send_key(KeyType::Id type, int32_t action, bool pressed)
+    void UIStateGame::rightclick(Point<int16_t> pos)
     {
+        if (UIElement* front = get_front(pos))
+        {
+            front->rightclick(pos);
+        }
+    }
+
+    void UIStateGame::send_key(KeyType::Id type, int32_t action, bool pressed, bool escape)
+    {
+        if (UIElement* focusedelement = get(focused))
+        {
+            if (focusedelement->is_active())
+            {
+                focusedelement->send_key(action, pressed, escape);
+                return;
+            }
+
+            focused = UIElement::NONE;
+        }
+
         switch (type)
         {
         case KeyType::MENU:
@@ -172,7 +208,7 @@ namespace jrc
                 case KeyAction::MINIMAP:
                     if (auto minimap = UI::get().get_element<UIMiniMap>(); minimap && minimap->is_active())
                     {
-                        minimap->send_key(0, pressed, false);
+                        minimap->send_key(action, pressed, escape);
                     }
                     else
                     {
@@ -220,6 +256,7 @@ namespace jrc
             {
                 if (focusedelement->is_active())
                 {
+                    clear_cursors(clicked, pos, focused);
                     return focusedelement->send_cursor(clicked, pos);
                 }
                 else
@@ -267,19 +304,51 @@ namespace jrc
                         elementorder.remove(fronttype);
                         elementorder.push_back(fronttype);
                     }
+                    clear_cursors(clicked, pos, fronttype);
                     return front->send_cursor(clicked, pos);
                 }
                 else
                 {
+                    clear_cursors(clicked, pos, UIElement::NONE);
                     return Stage::get().send_cursor(clicked, pos);
                 }
             }
         }
     }
 
+    void UIStateGame::send_scroll(Point<int16_t> pos, double yoffset)
+    {
+        if (UIElement* front = get_front(pos))
+        {
+            front->send_scroll(yoffset);
+        }
+    }
+
+    void UIStateGame::send_close()
+    {
+        UI::get().quit();
+    }
+
     void UIStateGame::drag_icon(Icon* drgic)
     {
         draggedicon = drgic;
+    }
+
+    void UIStateGame::clear_cursors(bool clicked, Point<int16_t> pos, UIElement::Type except)
+    {
+        for (const auto& type : elementorder)
+        {
+            if (type == except)
+            {
+                continue;
+            }
+
+            auto& element = elements[type];
+            if (element && element->is_active())
+            {
+                element->remove_cursor(clicked, pos);
+            }
+        }
     }
 
     void UIStateGame::clear_tooltip(Tooltip::Parent parent)
@@ -354,9 +423,12 @@ namespace jrc
     {
         if (auto iter = pre_add(T::TYPE, T::TOGGLED, T::FOCUSED))
         {
-            (*iter).second = std::make_unique<T>(
+            auto element = std::make_unique<T>(
                 std::forward<Args>(args)...
             );
+            element->set_type(T::TYPE);
+            element->update_screen(view_width, view_height);
+            (*iter).second = std::move(element);
         }
     }
 
@@ -403,13 +475,32 @@ namespace jrc
         if (auto& element = elements[type])
         {
             element->deactivate();
-            element.release();
+            element.reset();
         }
     }
 
     UIElement* UIStateGame::get(UIElement::Type type)
     {
         return elements[type].get();
+    }
+
+    UIElement* UIStateGame::get_front(const std::list<UIElement::Type>& types)
+    {
+        for (auto iter = elementorder.rbegin(); iter != elementorder.rend(); ++iter)
+        {
+            if (std::find(types.begin(), types.end(), *iter) == types.end())
+            {
+                continue;
+            }
+
+            auto& element = elements[*iter];
+            if (element && element->is_active())
+            {
+                return element.get();
+            }
+        }
+
+        return nullptr;
     }
 
     UIElement* UIStateGame::get_front(Point<int16_t> pos)

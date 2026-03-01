@@ -218,6 +218,17 @@ namespace jrc
         dimension = { top.width(), height + 120 };
     }
 
+    void UINpcTalk::send_key(int32_t, bool pressed, bool escape)
+    {
+        if (!pressed || !escape)
+        {
+            return;
+        }
+
+        active = false;
+        NpcTalkMorePacket(type, 0).dispatch();
+    }
+
     void UINpcTalk::parse_selections(const std::string& source, std::string& rendered_text)
     {
         rendered_text.clear();

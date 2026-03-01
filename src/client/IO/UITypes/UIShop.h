@@ -41,6 +41,9 @@ namespace jrc
 
         bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
         Cursor::State send_cursor(bool clicked, Point<int16_t> position) override;
+        void send_scroll(double yoffset) override;
+        void rightclick(Point<int16_t> cursorpos) override;
+        void send_key(int32_t keycode, bool pressed, bool escape) override;
 
         void reset(int32_t npcid);
         void add_item(int32_t id, int32_t price,
@@ -165,5 +168,6 @@ namespace jrc
             void select(int16_t selected);
         };
         SellState sellstate;
+        Point<int16_t> last_cursor_pos;
     };
 }

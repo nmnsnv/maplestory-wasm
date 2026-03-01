@@ -24,6 +24,7 @@
 
 #include "../Template/EnumMap.h"
 
+#include <list>
 #include <memory>
 #include <string>
 
@@ -40,8 +41,11 @@ namespace jrc
         virtual void update() = 0;
 
         virtual void doubleclick(Point<int16_t> pos) = 0;
-        virtual void send_key(KeyType::Id type, int32_t action, bool pressed) = 0;
+        virtual void rightclick(Point<int16_t> pos) = 0;
+        virtual void send_key(KeyType::Id type, int32_t action, bool pressed, bool escape) = 0;
         virtual Cursor::State send_cursor(Cursor::State mst, Point<int16_t> pos) = 0;
+        virtual void send_scroll(Point<int16_t> pos, double yoffset) = 0;
+        virtual void send_close() = 0;
 
         virtual void drag_icon(Icon* icon) = 0;
         virtual void clear_tooltip(Tooltip::Parent parent) = 0;
@@ -56,6 +60,7 @@ namespace jrc
         virtual Iterator pre_add(UIElement::Type type, bool toggled, bool focused) = 0;
         virtual void remove(UIElement::Type type) = 0;
         virtual UIElement* get(UIElement::Type type) = 0;
+        virtual UIElement* get_front(const std::list<UIElement::Type>& types) = 0;
         virtual UIElement* get_front(Point<int16_t> pos) = 0;
     };
 
@@ -64,8 +69,11 @@ namespace jrc
         void draw(float, Point<int16_t>) const override {}
         void update() override {}
         void doubleclick(Point<int16_t>) override {}
-        void send_key(KeyType::Id, int32_t, bool) override {}
+        void rightclick(Point<int16_t>) override {}
+        void send_key(KeyType::Id, int32_t, bool, bool) override {}
         Cursor::State send_cursor(Cursor::State, Point<int16_t>) override { return Cursor::IDLE; }
+        void send_scroll(Point<int16_t>, double) override {}
+        void send_close() override {}
         void drag_icon(Icon*) override {}
         void clear_tooltip(Tooltip::Parent) override {}
         void show_equip(Tooltip::Parent, int16_t) override {}
@@ -76,6 +84,7 @@ namespace jrc
         Iterator pre_add(UIElement::Type, bool, bool) override { return{ nullptr, UIElement::NUM_TYPES }; }
         void remove(UIElement::Type) override {}
         UIElement* get(UIElement::Type) override { return nullptr; }
+        UIElement* get_front(const std::list<UIElement::Type>&) override { return nullptr; }
         UIElement* get_front(Point<int16_t>) override { return nullptr; }
     };
 }

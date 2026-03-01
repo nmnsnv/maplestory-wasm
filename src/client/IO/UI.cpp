@@ -21,9 +21,12 @@
 #include "UIStateGame.h"
 #include "UITypes/UIWorldMap.h"
 #include "Window.h"
+#include "../Audio/Audio.h"
 #include "../Console.h"
+#include "../Configuration.h"
 
 #include <GLFW/glfw3.h>
+#include <list>
 
 namespace jrc
 {
@@ -31,6 +34,7 @@ namespace jrc
     {
         state = std::make_unique<UIStateNull>();
         enabled = true;
+        quitted = false;
     }
 
     void UI::init()
@@ -133,22 +137,67 @@ namespace jrc
             return;
         }
 
-        if (UIElement* front = state->get_front(cursor.get_position()))
+        state->send_scroll(cursor.get_position(), yoffset);
+    }
+
+    void UI::send_focus(int focused)
+    {
+        if (focused)
         {
-            front->send_scroll(yoffset);
+            Sound::set_sfxvolume(Setting<SFXVolume>::get().load());
+            Music::set_bgmvolume(Setting<BGMVolume>::get().load());
         }
+        else
+        {
+            Sound::set_sfxvolume(0);
+            Music::set_bgmvolume(0);
+        }
+    }
+
+    void UI::send_close()
+    {
+        state->send_close();
+    }
+
+    void UI::rightclick()
+    {
+        if (!enabled)
+        {
+            return;
+        }
+
+        state->rightclick(cursor.get_position());
     }
 
     void UI::send_key(int32_t keycode, bool pressed)
     {
-        if (pressed && keycode == GLFW_KEY_ESCAPE)
+        bool escape = keycode == GLFW_KEY_ESCAPE;
+
+        if (escape)
         {
-            if (auto worldmap = get_element<UIWorldMap>(); worldmap && worldmap->is_active())
+            std::list<UIElement::Type> escape_types = {
+                UIElement::WORLDMAP,
+                UIElement::KEYCONFIG,
+                UIElement::NPCTALK,
+                UIElement::SHOP,
+                UIElement::ITEMINVENTORY,
+                UIElement::EQUIPINVENTORY,
+                UIElement::SKILLBOOK,
+                UIElement::STATSINFO,
+                UIElement::NOTICE
+            };
+
+            if (UIElement* front = state->get_front(escape_types))
             {
-                worldmap->send_key(keycode, pressed, true);
-                is_key_down[keycode] = pressed;
-                return;
+                front->send_key(0, pressed, true);
             }
+            else
+            {
+                state->send_key(KeyType::NONE, 0, pressed, true);
+            }
+
+            is_key_down[keycode] = pressed;
+            return;
         }
 
         if (focusedtextfield)
@@ -180,17 +229,10 @@ namespace jrc
         else
         {
             Keyboard::Mapping mapping = keyboard.get_mapping(keycode);
-            if (pressed && (mapping.action == KeyAction::KEYCONFIG || keycode == 92))
-            {
-                Console::get().print(
-                    "[input] keycode=" + std::to_string(keycode) +
-                    " -> type=" + std::to_string(static_cast<int32_t>(mapping.type)) +
-                    " action=" + std::to_string(mapping.action)
-                );
-            }
+
             if (mapping.type)
             {
-                state->send_key(mapping.type, mapping.action, pressed);
+                state->send_key(mapping.type, mapping.action, pressed, escape);
             }
         }
 
@@ -199,7 +241,7 @@ namespace jrc
 
     void UI::send_menu(KeyAction::Id action)
     {
-        state->send_key(KeyType::MENU, action, true);
+        state->send_key(KeyType::MENU, action, true, false);
     }
 
     void UI::set_scrollnotice(const std::string& notice)
@@ -215,6 +257,16 @@ namespace jrc
         }
 
         focusedtextfield = tofocus;
+    }
+
+    void UI::remove_textfield()
+    {
+        if (focusedtextfield)
+        {
+            focusedtextfield->set_state(Textfield::NORMAL);
+        }
+
+        focusedtextfield = {};
     }
 
     void UI::drag_icon(Icon* icon)
@@ -266,7 +318,7 @@ namespace jrc
 
     void UI::remove(UIElement::Type type)
     {
-        focusedtextfield = {};
+        remove_textfield();
         state->remove(type);
     }
 }

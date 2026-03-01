@@ -194,6 +194,14 @@ namespace jrc
         UIElement::toggle_active();
     }
 
+    void UIEquipInventory::send_key(int32_t, bool pressed, bool escape)
+    {
+        if (pressed && escape)
+        {
+            toggle_active();
+        }
+    }
+
     void UIEquipInventory::modify(int16_t pos, int8_t mode, int16_t arg)
     {
         Equipslot::Id eqpos = Equipslot::by_id(pos);

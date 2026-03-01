@@ -36,6 +36,7 @@ namespace jrc
 
         void draw(float inter) const override;
         bool is_in_range(Point<int16_t> cursorpos) const override;
+        void send_key(int32_t keycode, bool pressed, bool escape) override;
 
         void change_text(int32_t npcid, int8_t msgtype, int16_t style, int8_t speaker, const std::string& text);
 

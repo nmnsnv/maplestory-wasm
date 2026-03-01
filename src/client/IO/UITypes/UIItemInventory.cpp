@@ -402,6 +402,14 @@ namespace jrc
         return slider.remove_cursor(clicked);
     }
 
+    void UIItemInventory::send_key(int32_t, bool pressed, bool escape)
+    {
+        if (pressed && escape)
+        {
+            toggle_active();
+        }
+    }
+
     void UIItemInventory::show_item(int16_t slot)
     {
         if (tab == InventoryType::EQUIP)

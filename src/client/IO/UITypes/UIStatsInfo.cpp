@@ -136,6 +136,14 @@ namespace jrc
         }
     }
 
+    void UIStatsinfo::send_key(int32_t, bool pressed, bool escape)
+    {
+        if (pressed && escape)
+        {
+            deactivate();
+        }
+    }
+
     void UIStatsinfo::update_all_stats()
     {
         update_simple(AP, Maplestat::AP);

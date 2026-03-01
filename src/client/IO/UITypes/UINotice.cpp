@@ -17,6 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "UINotice.h"
 
+#include "../UI.h"
 #include "../Components/MapleButton.h"
 
 #include "nlnx/nx.hpp"
@@ -93,6 +94,25 @@ namespace jrc
         UIElement::draw(alpha);
     }
 
+    void UIYesNo::send_key(int32_t keycode, bool pressed, bool escape)
+    {
+        if (!pressed)
+        {
+            return;
+        }
+
+        if (keycode == KeyAction::RETURN)
+        {
+            yesnohandler(true);
+            active = false;
+        }
+        else if (escape)
+        {
+            yesnohandler(false);
+            active = false;
+        }
+    }
+
     Button::State UIYesNo::button_pressed(uint16_t buttonid)
     {
         switch (buttonid)
@@ -162,6 +182,24 @@ namespace jrc
         return UIElement::send_cursor(clicked, cursorpos);
     }
 
+    void UIEnterNumber::send_key(int32_t keycode, bool pressed, bool escape)
+    {
+        if (!pressed)
+        {
+            return;
+        }
+
+        if (keycode == KeyAction::RETURN)
+        {
+            handlestring(numfield.get_text());
+        }
+        else if (escape)
+        {
+            UI::get().remove_textfield();
+            active = false;
+        }
+    }
+
     Button::State UIEnterNumber::button_pressed(uint16_t buttonid)
     {
         switch (buttonid)
@@ -171,6 +209,7 @@ namespace jrc
             break;
         }
 
+        UI::get().remove_textfield();
         active = false;
 
         return Button::PRESSED;
@@ -187,6 +226,7 @@ namespace jrc
                 if (num >= min && num <= max)
                 {
                     numhandler(num);
+                    UI::get().remove_textfield();
                     active = false;
                 }
             }

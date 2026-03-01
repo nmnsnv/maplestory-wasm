@@ -34,7 +34,7 @@
 namespace jrc
 {
     UIShop::UIShop(const CharLook& in_charlook, const Inventory& in_inventory)
-        : charlook(in_charlook), inventory(in_inventory)
+        : charlook(in_charlook), inventory(in_inventory), last_cursor_pos()
     {
         nl::node src  = nl::nx::ui["UIWindow2.img"]["Shop"];
         nl::node src2 = nl::nx::ui["UIWindow2.img"]["Shop2"];
@@ -209,6 +209,8 @@ namespace jrc
     Cursor::State UIShop::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         Point<int16_t> cursoroffset = cursorpos - position;
+        last_cursor_pos = cursoroffset;
+
         if (buyslider.isenabled())
         {
             Cursor::State bstate = buyslider.send_cursor(cursoroffset, clicked);
@@ -252,6 +254,54 @@ namespace jrc
             clear_tooltip();
         }
         return UIElement::send_cursor(clicked, cursorpos);
+    }
+
+    void UIShop::send_scroll(double yoffset)
+    {
+        int16_t xoff = last_cursor_pos.x();
+        int16_t yoff = last_cursor_pos.y();
+        if (yoff < 115 || yoff > 308)
+        {
+            return;
+        }
+
+        if (buyslider.isenabled() && xoff >= 7 && xoff <= 223)
+        {
+            buyslider.send_scroll(yoffset);
+        }
+        else if (sellslider.isenabled() && xoff >= 241 && xoff <= 454)
+        {
+            sellslider.send_scroll(yoffset);
+        }
+    }
+
+    void UIShop::rightclick(Point<int16_t> cursorpos)
+    {
+        Point<int16_t> cursoroffset = cursorpos - position;
+        int16_t slot = slot_by_position(cursoroffset.y());
+        if (slot < 0 || slot > 4)
+        {
+            return;
+        }
+
+        if (cursoroffset.x() > 241 && cursoroffset.x() < 443)
+        {
+            clear_tooltip();
+            buystate.selection = -1;
+            sellstate.selection = slot + sellstate.offset;
+            sellstate.sell();
+        }
+    }
+
+    void UIShop::send_key(int32_t, bool pressed, bool escape)
+    {
+        if (!pressed || !escape)
+        {
+            return;
+        }
+
+        active = false;
+        NpcShopActionPacket().dispatch();
     }
 
     void UIShop::clear_tooltip()

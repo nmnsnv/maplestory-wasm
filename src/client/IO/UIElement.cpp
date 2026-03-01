@@ -23,7 +23,7 @@
 namespace jrc
 {
     UIElement::UIElement(Point<int16_t> p, Point<int16_t> d, bool a)
-        : position(p), dimension(d), active(a) {}
+        : position(p), dimension(d), active(a), type(NONE) {}
 
     UIElement::UIElement(Point<int16_t> p, Point<int16_t> d)
         : UIElement(p, d, true) {}
@@ -64,6 +64,10 @@ namespace jrc
         }
     }
 
+    void UIElement::update_screen(int16_t, int16_t)
+    {
+    }
+
     void UIElement::makeactive()
     {
         active = true;
@@ -89,6 +93,8 @@ namespace jrc
     void UIElement::send_icon(const Icon&, Point<int16_t>) {}
 
     void UIElement::doubleclick(Point<int16_t>) {}
+
+    void UIElement::rightclick(Point<int16_t>) {}
 
     bool UIElement::is_in_range(Point<int16_t> cursorpos) const
     {
@@ -153,5 +159,19 @@ namespace jrc
 
     void UIElement::send_scroll(double)
     {
+    }
+
+    void UIElement::send_key(int32_t, bool, bool)
+    {
+    }
+
+    UIElement::Type UIElement::get_type() const
+    {
+        return type;
+    }
+
+    void UIElement::set_type(UIElement::Type value)
+    {
+        type = value;
     }
 }

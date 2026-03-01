@@ -73,7 +73,7 @@ namespace jrc
 
     UIBuffList::UIBuffList()
     {
-        position = { 750, 40 };
+        update_screen(Constants::viewwidth(), Constants::viewheight());
         active = true;
     }
 
@@ -101,6 +101,15 @@ namespace jrc
                 iter++;
             }
         }
+    }
+
+    void UIBuffList::update_screen(int16_t new_width, int16_t)
+    {
+        position = {
+            static_cast<int16_t>(new_width - 50),
+            40
+        };
+        dimension = { 32, 32 };
     }
 
     Cursor::State UIBuffList::send_cursor(bool pressed, Point<int16_t> cursorposition)

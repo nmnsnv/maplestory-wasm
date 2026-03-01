@@ -41,8 +41,11 @@ namespace jrc
         void update() override;
 
         void doubleclick(Point<int16_t> pos) override;
-        void send_key(KeyType::Id type, int32_t action, bool pressed) override;
+        void rightclick(Point<int16_t> pos) override;
+        void send_key(KeyType::Id type, int32_t action, bool pressed, bool escape) override;
         Cursor::State send_cursor(Cursor::State mst, Point<int16_t> pos) override;
+        void send_scroll(Point<int16_t> pos, double yoffset) override;
+        void send_close() override;
 
         void drag_icon(Icon* icon) override;
         void clear_tooltip(Tooltip::Parent parent) override;
@@ -57,9 +60,11 @@ namespace jrc
         Iterator pre_add(UIElement::Type type, bool toggled, bool focused) override;
         void remove(UIElement::Type type) override;
         UIElement* get(UIElement::Type type) override;
+        UIElement* get_front(const std::list<UIElement::Type>& types) override;
         UIElement* get_front(Point<int16_t> pos) override;
 
     private:
+        void clear_cursors(bool clicked, Point<int16_t> pos, UIElement::Type except);
         void drop_icon(const Icon& icon, Point<int16_t> pos);
         template <class T, typename...Args>
         void emplace(Args&&...args);
@@ -77,5 +82,7 @@ namespace jrc
         Tooltip::Parent tooltipparent;
 
         Optional<Icon> draggedicon;
+        int16_t view_width;
+        int16_t view_height;
     };
 }

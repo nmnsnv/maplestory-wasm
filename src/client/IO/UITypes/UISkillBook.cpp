@@ -401,6 +401,15 @@ namespace jrc
         return UIElement::send_cursor(clicked, cursorpos);
     }
 
+    void UISkillbook::send_key(int32_t, bool pressed, bool escape)
+    {
+        if (pressed && escape)
+        {
+            clear_tooltip();
+            deactivate();
+        }
+    }
+
     void UISkillbook::update_stat(Maplestat::Id stat, int16_t value)
     {
         switch (stat)

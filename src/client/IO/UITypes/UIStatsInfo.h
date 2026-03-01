@@ -33,6 +33,7 @@ namespace jrc
         UIStatsinfo(const CharStats& stats);
 
         void draw(float alpha) const override;
+        void send_key(int32_t keycode, bool pressed, bool escape) override;
 
         void update_all_stats();
         void update_stat(Maplestat::Id stat);
