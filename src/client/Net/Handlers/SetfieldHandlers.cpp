@@ -336,4 +336,26 @@ namespace jrc
             areainfo[area] = recv.read_string();
         }
     }
+
+    void FieldEffectHandler::handle(InPacket& recv) const
+    {
+        int8_t mode = recv.read_byte();
+        if (mode == 3)
+        {
+            std::string path = recv.read_string();
+            if (path.empty())
+            {
+                Console::get().print("[FieldEffectHandler] Received empty field effect path for mode 3");
+                return;
+            }
+
+            Stage::get().add_effect(path);
+            return;
+        }
+
+        Console::get().print(
+            "[FieldEffectHandler] Unhandled field effect mode: " + std::to_string(mode) +
+            ", remaining bytes: " + std::to_string(recv.length())
+        );
+    }
 }

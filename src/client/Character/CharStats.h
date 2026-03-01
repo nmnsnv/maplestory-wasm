@@ -42,6 +42,7 @@ namespace jrc
 
         void set_weapontype(Weapon::Type weapontype);
         void set_exp(int64_t exp);
+        void set_mapid(int32_t mapid);
         void set_portal(uint8_t portal);
         void set_mastery(float mastery);
         void set_damagepercent(float damagepercent);
@@ -116,4 +117,3 @@ namespace jrc
         float reducedamage;
     };
 }
-

@@ -182,6 +182,11 @@ namespace jrc
         exp = e;
     }
 
+    void CharStats::set_mapid(int32_t id)
+    {
+        mapid = id;
+    }
+
     void CharStats::set_portal(uint8_t p)
     {
         portal = p;

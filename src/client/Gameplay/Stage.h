@@ -21,6 +21,7 @@
 
 #include "Combat/Combat.h"
 #include "MapleMap/MapInfo.h"
+#include "MapleMap/MapEffect.h"
 #include "MapleMap/MapTilesObjs.h"
 #include "MapleMap/MapBackgrounds.h"
 #include "MapleMap/MapPortals.h"
@@ -61,6 +62,8 @@ namespace jrc
 
         // Show a character effect.
         void show_character_effect(int32_t cid, CharEffect::Id effect);
+        // Show a map-level field effect.
+        void add_effect(const std::string& path);
 
         // Send key input to the stage.
         void send_key(KeyType::Id keytype, int32_t keycode, bool pressed);
@@ -122,6 +125,7 @@ namespace jrc
         MapChars chars;
         MapMobs mobs;
         MapDrops drops;
+        MapEffect effect;
 
         Combat combat;
     };

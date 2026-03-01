@@ -47,4 +47,10 @@ namespace jrc
         void parse_nyinfo(InPacket& recv) const;
         void parse_areainfo(InPacket& recv) const;
     };
+
+    class FieldEffectHandler : public PacketHandler
+    {
+    public:
+        void handle(InPacket& recv) const override;
+    };
 }

@@ -222,7 +222,7 @@ namespace jrc
         emplace<FAMILY_PRIV_LIST, NullHandler>();
         emplace<SCRIPT_PROGRESS_MESSAGE, NullHandler>();
         emplace<RECEIVE_POLICE, NullHandler>();
-        emplace<FIELD_EFFECT, NullHandler>();
+        emplace<FIELD_EFFECT, FieldEffectHandler>();
         emplace<LEGACY_FIELD_OBJECT, NullHandler>();
         emplace<LOCK_UI, NullHandler>();
         emplace<TOGGLE_UI, NullHandler>();

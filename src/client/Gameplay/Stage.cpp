@@ -26,9 +26,6 @@
 
 #include "nlnx/nx.hpp"
 
-#include <iostream>
-
-
 namespace jrc
 {
     Stage::Stage()
@@ -71,6 +68,7 @@ namespace jrc
     {
         state = INACTIVE;
         mapid = 0;
+        effect = MapEffect();
 
         chars.clear();
         npcs.clear();
@@ -92,6 +90,7 @@ namespace jrc
         physics     = Physics(src["foothold"]);
         mapinfo     = MapInfo(src, physics.get_fht().get_walls(), physics.get_fht().get_borders());
         portals     = MapPortals(src["portal"], mapid);
+        effect      = MapEffect();
     }
 
     void Stage::respawn(int8_t portalid)
@@ -132,6 +131,7 @@ namespace jrc
         combat.draw(viewx, viewy, alpha);
         portals.draw(viewpos, alpha);
         backgrounds.drawforegrounds(viewx, viewy, alpha);
+        effect.draw();
     }
 
     void Stage::update()
@@ -143,6 +143,7 @@ namespace jrc
 
         combat.update();
         backgrounds.update();
+        effect.update();
         tilesobjs.update();
 
         reactors.update(physics);
@@ -180,26 +181,24 @@ namespace jrc
 
     void Stage::check_portals()
     {
-        std::cout << "check_portals;";
         if (player.is_attacking())
         {
             return;
         }
-        std::cout << " !player.is_attacking();";
 
         Point<int16_t> playerpos  = player.get_position();
         Portal::WarpInfo warpinfo = portals.find_warp_at(playerpos);
         if (warpinfo.intramap)
         {
-            std::cout << " warpinfo.intramap;";
             Point<int16_t> spawnpoint = portals.get_portal_by_name(warpinfo.toname);
             Point<int16_t> startpos   = physics.get_y_below(spawnpoint);
             player.respawn(startpos, mapinfo.is_underwater());
         }
         else if (warpinfo.valid)
         {
-            std::cout << " warpinfo.valid, mapid: " << warpinfo.mapid << std::endl;
-            ChangeMapPacket(false, warpinfo.mapid, warpinfo.name, false).dispatch();
+            ChangeMapPacket(false, -1, warpinfo.name, false).dispatch();
+            player.get_stats().set_mapid(warpinfo.mapid);
+            Sound(Sound::PORTAL).play();
         }
     }
 
@@ -346,5 +345,10 @@ namespace jrc
         {
             return chars.get_char(cid);
         }
+    }
+
+    void Stage::add_effect(const std::string& path)
+    {
+        effect = MapEffect(path);
     }
 }
