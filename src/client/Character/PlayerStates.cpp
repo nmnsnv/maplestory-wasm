@@ -22,6 +22,26 @@
 
 namespace jrc
 {
+    namespace
+    {
+        bool has_horizontal_input(const Player& player)
+        {
+            return player.is_key_down(KeyAction::LEFT) || player.is_key_down(KeyAction::RIGHT);
+        }
+
+        bool try_jump_down(Player& player)
+        {
+            if (!player.get_phobj().enablejd || !player.is_key_down(KeyAction::DOWN))
+            {
+                return false;
+            }
+
+            player.get_phobj().y = player.get_phobj().groundbelow;
+            player.set_state(Char::FALL);
+            return true;
+        }
+    }
+
     // Base class
     void PlayerState::play_jumpsound() const
     {
@@ -99,10 +119,17 @@ namespace jrc
                 break;
             case KeyAction::JUMP:
                 play_jumpsound();
-                player.get_phobj().vforce = -player.get_jumpforce();
+                if (!try_jump_down(player))
+                {
+                    player.get_phobj().vforce = -player.get_jumpforce();
+                }
                 break;
             case KeyAction::DOWN:
-                player.set_state(Char::PRONE);
+                if (!has_horizontal_input(player))
+                {
+                    // Horizontal movement wins over crouch/prone when both inputs are held.
+                    player.set_state(Char::PRONE);
+                }
                 break;
             default:
                 break;
@@ -123,6 +150,10 @@ namespace jrc
         if (!player.get_phobj().onground)
         {
             player.set_state(Char::FALL);
+        }
+        else if (player.is_key_down(KeyAction::DOWN) && !has_horizontal_input(player))
+        {
+            player.set_state(Char::PRONE);
         }
     }
 
@@ -152,10 +183,17 @@ namespace jrc
                 break;
             case KeyAction::JUMP:
                 play_jumpsound();
-                player.get_phobj().vforce = -player.get_jumpforce();
+                if (!try_jump_down(player))
+                {
+                    player.get_phobj().vforce = -player.get_jumpforce();
+                }
                 break;
             case KeyAction::DOWN:
-                player.set_state(Char::PRONE);
+                if (!has_horizontal_input(player))
+                {
+                    // Keep walking when a horizontal key is already held with down.
+                    player.set_state(Char::PRONE);
+                }
                 break;
             default:
                 break;
@@ -165,7 +203,7 @@ namespace jrc
 
     bool PlayerWalkState::haswalkinput(const Player& player) const
     {
-        return player.is_key_down(KeyAction::LEFT) || player.is_key_down(KeyAction::RIGHT);
+        return has_horizontal_input(player);
     }
 
     void PlayerWalkState::update(Player& player) const
@@ -189,7 +227,14 @@ namespace jrc
         {
             if (!haswalkinput(player) || player.get_phobj().hspeed == 0.0f)
             {
-                player.set_state(Char::STAND);
+                if (!haswalkinput(player) && player.is_key_down(KeyAction::DOWN))
+                {
+                    player.set_state(Char::PRONE);
+                }
+                else
+                {
+                    player.set_state(Char::STAND);
+                }
             }
         }
         else
@@ -276,12 +321,18 @@ namespace jrc
         {
             switch (ka)
             {
+            case KeyAction::LEFT:
+                player.set_direction(false);
+                player.set_state(Char::WALK);
+                break;
+            case KeyAction::RIGHT:
+                player.set_direction(true);
+                player.set_state(Char::WALK);
+                break;
             case KeyAction::JUMP:
-                if (player.get_phobj().enablejd && player.is_key_down(KeyAction::DOWN))
+                if (try_jump_down(player))
                 {
                     play_jumpsound();
-                    player.get_phobj().y = player.get_phobj().groundbelow;
-                    player.set_state(Char::FALL);
                 }
                 else
                 {

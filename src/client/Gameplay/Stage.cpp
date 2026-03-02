@@ -152,6 +152,7 @@ namespace jrc
         chars.update(physics);
         drops.update(physics);
         player.update(physics);
+        update_directional_context();
 
         portals.update(player.get_position());
         camera.update(player.get_position());
@@ -224,6 +225,52 @@ namespace jrc
         player.set_ladder(ladder);
     }
 
+    void Stage::handle_directional_context(KeyAction::Id action, bool down)
+    {
+        if (!down)
+        {
+            return;
+        }
+
+        switch (action)
+        {
+        case KeyAction::UP:
+            check_ladders(true);
+            check_portals();
+            break;
+        case KeyAction::DOWN:
+            check_ladders(false);
+            break;
+        case KeyAction::LEFT:
+        case KeyAction::RIGHT:
+            // Re-evaluate ladder attachment using the currently held vertical intent
+            // so mixed directional combos behave the same regardless of press order.
+            if (player.is_key_down(KeyAction::UP))
+            {
+                check_ladders(true);
+            }
+            else if (player.is_key_down(KeyAction::DOWN))
+            {
+                check_ladders(false);
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    void Stage::update_directional_context()
+    {
+        if (player.is_key_down(KeyAction::UP))
+        {
+            check_ladders(true);
+        }
+        else if (player.is_key_down(KeyAction::DOWN))
+        {
+            check_ladders(false);
+        }
+    }
+
     void Stage::check_drops()
     {
         Point<int16_t> playerpos = player.get_position();
@@ -244,17 +291,11 @@ namespace jrc
         switch (type)
         {
         case KeyType::ACTION:
+            handle_directional_context(KeyAction::actionbyid(action), down);
             if (down)
             {
                 switch (action)
                 {
-                case KeyAction::UP:
-                    check_ladders(true);
-                    check_portals();
-                    break;
-                case KeyAction::DOWN:
-                    check_ladders(false);
-                    break;
                 case KeyAction::SIT:
                     check_seats();
                     break;

@@ -99,6 +99,8 @@ namespace jrc
         void check_portals();
         void check_seats();
         void check_ladders(bool up);
+        void handle_directional_context(KeyAction::Id action, bool down);
+        void update_directional_context();
         void check_drops();
 
         enum State
