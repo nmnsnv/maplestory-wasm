@@ -19,15 +19,26 @@
 
 #include "../Components/MapleButton.h"
 
+#include "../../Constants.h"
 #include "../../Net/Packets/NpcInteractionPackets.h"
 
 #include "nlnx/nx.hpp"
 #include "nlnx/node.hpp"
 
+#include <algorithm>
 #include <cctype>
 
 namespace jrc
 {
+    namespace
+    {
+        constexpr int16_t MIN_DIALOGUE_TILES = 8;
+        constexpr int16_t TEXT_WIDTH = 320;
+        constexpr int16_t TEXT_VERTICAL_PADDING = 16;
+        constexpr int16_t BUTTON_MARGIN = 20;
+        constexpr int16_t BUTTON_GAP = 6;
+    }
+
     UINpcTalk::UINpcTalk() : selected(0)
     {
         nl::node src = nl::nx::ui["UIWindow2.img"]["UtilDlgEx"];
@@ -89,7 +100,7 @@ namespace jrc
                 NpcTalkMorePacket(selection).dispatch();
                 active = false;
             }
-            else if (type == 0)
+            else
             {
                 NpcTalkMorePacket(type, 1).dispatch();
                 active = false;
@@ -148,7 +159,7 @@ namespace jrc
         return Button::PRESSED;
     }
 
-    void UINpcTalk::change_text(int32_t npcid, int8_t msgtype, int16_t, int8_t speakerbyte, const std::string& tx)
+    void UINpcTalk::change_text(int32_t npcid, int8_t msgtype, int16_t style, int8_t speakerbyte, const std::string& tx)
     {
         selections.clear();
         selection_texts.clear();
@@ -157,12 +168,12 @@ namespace jrc
         if (msgtype == 4)
         {
             parse_selections(tx, prompttext);
-            text = { Text::A12M, Text::LEFT, Text::DARKGREY, format_selectable_text(), 320, false };
+            text = { Text::A12M, Text::LEFT, Text::DARKGREY, format_selectable_text(), TEXT_WIDTH, false };
         }
         else
         {
             prompttext = strip_npc_tokens(tx);
-            text = { Text::A12M, Text::LEFT, Text::DARKGREY, prompttext, 320, false };
+            text = { Text::A12M, Text::LEFT, Text::DARKGREY, prompttext, TEXT_WIDTH, false };
         }
 
         if (speakerbyte == 0)
@@ -180,7 +191,15 @@ namespace jrc
             name.change_text("");
         }
 
-        vtile = 8;
+        int16_t minimum_fill_height = MIN_DIALOGUE_TILES * fill.height();
+        int16_t required_fill_height = std::max<int16_t>(
+            minimum_fill_height,
+            static_cast<int16_t>(text.height() + TEXT_VERTICAL_PADDING * 2)
+        );
+        vtile = std::max<int16_t>(
+            MIN_DIALOGUE_TILES,
+            static_cast<int16_t>((required_fill_height + fill.height() - 1) / fill.height())
+        );
         height = vtile * fill.height();
 
         for (auto& button : buttons)
@@ -188,34 +207,61 @@ namespace jrc
             button.second->set_active(false);
             button.second->set_state(Button::NORMAL);
         }
-        buttons[END]->set_position({ 20, height + 48 });
-        buttons[END]->set_active(true);
+        auto place_button = [&](Buttons id, int16_t x) {
+            int16_t footer_y = top.height() + height;
+            int16_t button_y = footer_y + std::max<int16_t>(0, (bottom.height() - buttons[id]->height()) / 2);
+            buttons[id]->set_position({ x, button_y });
+            buttons[id]->set_active(true);
+        };
+
+        int16_t right_edge = top.width() - BUTTON_MARGIN;
+        auto place_button_from_right = [&](Buttons id) {
+            right_edge -= buttons[id]->width();
+            place_button(id, right_edge);
+            right_edge -= BUTTON_GAP;
+        };
+
+        place_button(END, BUTTON_MARGIN);
         switch (msgtype)
         {
         case 0:
-            buttons[OK]->set_position({ 220, height + 48 });
-            buttons[OK]->set_active(true);
+        {
+            // Text-only NPC dialogue carries the Prev/Next flags in two trailing
+            // bytes. When both are absent the dialog expects a plain OK button.
+            bool has_prev = (style & 0x00FF) != 0;
+            bool has_next = (style & 0xFF00) != 0;
+
+            if (has_next)
+                place_button_from_right(NEXT);
+            if (has_prev)
+                place_button_from_right(PREV);
+            if (!has_prev && !has_next)
+                place_button_from_right(OK);
             break;
+        }
         case 1:
         case 12:
-            buttons[YES]->set_position({ 175, height + 48 });
-            buttons[YES]->set_active(true);
-            buttons[NO]->set_position({ 250, height + 48 });
-            buttons[NO]->set_active(true);
+            place_button_from_right(NO);
+            place_button_from_right(YES);
             break;
         case 4:
-            buttons[PREV]->set_position({ 145, height + 48 });
-            buttons[PREV]->set_active(true);
-            buttons[NEXT]->set_position({ 220, height + 48 });
-            buttons[NEXT]->set_active(true);
-            buttons[OK]->set_position({ 295, height + 48 });
-            buttons[OK]->set_active(true);
+            place_button_from_right(OK);
+            place_button_from_right(NEXT);
+            place_button_from_right(PREV);
+            break;
+        default:
+            // Older scripts and some server variants use dialogue types that this
+            // client does not model yet. Showing OK keeps the flow usable.
+            place_button_from_right(OK);
             break;
         }
         type = msgtype;
 
-        position = { 400 - top.width() / 2, 240 - height / 2 };
-        dimension = { top.width(), height + 120 };
+        dimension = { top.width(), static_cast<int16_t>(top.height() + height + bottom.height()) };
+        position = {
+            static_cast<int16_t>(Constants::viewwidth() / 2 - dimension.x() / 2),
+            static_cast<int16_t>(Constants::viewheight() / 2 - dimension.y() / 2)
+        };
     }
 
     void UINpcTalk::send_key(int32_t, bool pressed, bool escape)
