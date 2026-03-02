@@ -44,25 +44,51 @@
 
     <script>
         (function() {
+            const GAME_WIDTH = 800;
+            const GAME_HEIGHT = 600;
+
+            function syncCanvasResolution(canvas) {
+                if (canvas.width === GAME_WIDTH && canvas.height === GAME_HEIGHT) {
+                    return;
+                }
+
+                if (typeof Module !== 'undefined' && typeof Module.setCanvasSize === 'function') {
+                    Module.setCanvasSize(GAME_WIDTH, GAME_HEIGHT);
+                } else {
+                    canvas.width = GAME_WIDTH;
+                    canvas.height = GAME_HEIGHT;
+                }
+            }
+
+            function getFittedCanvasSize(viewW, viewH) {
+                if (viewW * GAME_HEIGHT <= viewH * GAME_WIDTH) {
+                    const width = Math.max(1, Math.floor(viewW));
+                    return {
+                        width,
+                        height: Math.max(1, Math.floor(width * GAME_HEIGHT / GAME_WIDTH))
+                    };
+                }
+
+                const height = Math.max(1, Math.floor(viewH));
+                return {
+                    width: Math.max(1, Math.floor(height * GAME_WIDTH / GAME_HEIGHT)),
+                    height
+                };
+            }
+
             function fitCanvas() {
                 const canvas = document.getElementById('canvas');
                 if (!canvas) {
                     return;
                 }
 
-                const viewW = window.innerWidth;
-                const viewH = window.innerHeight;
-                const width = Math.max(1, Math.floor(viewW));
-                const height = Math.max(1, Math.floor(viewH));
+                // Keep the render surface fixed and only scale it with CSS.
+                syncCanvasResolution(canvas);
+
+                const { width, height } = getFittedCanvasSize(window.innerWidth, window.innerHeight);
 
                 canvas.style.width = width + 'px';
                 canvas.style.height = height + 'px';
-                if (typeof Module !== 'undefined' && typeof Module.setCanvasSize === 'function') {
-                    Module.setCanvasSize(width, height);
-                } else {
-                    canvas.width = width;
-                    canvas.height = height;
-                }
             }
 
             window.MapleWasmUI = {

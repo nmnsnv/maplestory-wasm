@@ -115,8 +115,14 @@ namespace jrc
     {
         if (width > 0 && height > 0)
         {
+#ifdef MS_PLATFORM_WASM
+            // Browser resizes only change CSS scaling; the game keeps a fixed internal viewport.
+            Constants::set_viewsize(Constants::VIEWWIDTH, Constants::VIEWHEIGHT);
+            glViewport(0, 0, Constants::VIEWWIDTH, Constants::VIEWHEIGHT);
+#else
             Constants::set_viewsize(width, height);
             glViewport(0, 0, width, height);
+#endif
             GraphicsGL::get().set_screensize(
                 Constants::viewwidth(),
                 Constants::viewheight()
