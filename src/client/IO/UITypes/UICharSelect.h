@@ -47,10 +47,22 @@ namespace jrc
 
         void add_character(CharEntry&& character);
         void remove_char(int32_t cid);
+        bool handle_pic_failure(int8_t message, int32_t cid = -1);
+        void clear_pending_pic_request();
 
         const CharEntry& get_character(int32_t cid);
 
     private:
+        enum class PicAction
+        {
+            NONE,
+            REGISTER,
+            SELECT,
+            DELETE
+        };
+
+        void dispatch_pic_action(PicAction action, int32_t cid, const std::string& pic, bool auto_submit);
+        void prompt_pic_entry(PicAction action, int32_t cid);
         void send_selection();
         void send_deletion();
         void update_selection();
@@ -84,6 +96,8 @@ namespace jrc
         std::vector<CharLook> charlooks;
         std::vector<Nametag> nametags;
         int8_t require_pic;
+        PicAction pending_pic_action;
+        int32_t pending_pic_cid;
 
         uint8_t charcount_absolute;
         uint8_t charcount_relative;
@@ -142,4 +156,3 @@ namespace jrc
         OutlinedText infolabels[NUM_LABELS];
     };
 }
-

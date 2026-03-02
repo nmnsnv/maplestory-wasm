@@ -42,6 +42,22 @@ namespace jrc
         if (int32_t reason = recv.read_int())
         {
             printf("Login failed. reason=%d\n", reason);
+            int8_t reasonbyte = static_cast<int8_t>(reason - 1);
+
+            if (reason > 0)
+            {
+                if (auto charselect = UI::get().get_element<UICharSelect>())
+                {
+                    if (charselect->handle_pic_failure(reasonbyte))
+                    {
+                        UI::get().enable();
+                        return;
+                    }
+
+                    charselect->clear_pending_pic_request();
+                }
+            }
+
             // Login unsuccessful. The LoginNotice displayed will contain the specific information.
             switch (reason)
             {
@@ -59,7 +75,6 @@ namespace jrc
                 // Other reasons.
                 if (reason > 0)
                 {
-                    auto reasonbyte = static_cast<int8_t>(reason - 1);
                     UI::get().emplace<UILoginNotice>(reasonbyte);
                 }
             }
@@ -203,12 +218,26 @@ namespace jrc
                 message = UILoginNotice::UNKNOWN_ERROR;
             }
 
+            if (auto charselect = UI::get().get_element<UICharSelect>())
+            {
+                if (charselect->handle_pic_failure(message, cid))
+                {
+                    UI::get().enable();
+                    return;
+                }
+
+                charselect->clear_pending_pic_request();
+            }
+
             UI::get().emplace<UILoginNotice>(message);
         }
         else
         {
             if (auto charselect = UI::get().get_element<UICharSelect>())
+            {
+                charselect->clear_pending_pic_request();
                 charselect->remove_char(cid);
+            }
         }
 
         UI::get().enable();
@@ -218,6 +247,9 @@ namespace jrc
     void ServerIPHandler::handle(InPacket& recv) const
     {
         recv.skip(2);
+
+        if (auto charselect = UI::get().get_element<UICharSelect>())
+            charselect->clear_pending_pic_request();
 
         // Read the ipv4 adress in a string.
         std::string addrstr;

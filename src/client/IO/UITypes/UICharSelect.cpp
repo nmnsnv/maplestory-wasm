@@ -19,6 +19,7 @@
 
 #include "UISoftKey.h"
 #include "UICharCreation.h"
+#include "UILoginNotice.h"
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
@@ -35,12 +36,18 @@
 
 namespace jrc
 {
+    namespace
+    {
+        constexpr const char* AUTO_PIC = "1010";
+    }
+
     UICharSelect::UICharSelect(std::vector<CharEntry> cs,
                                uint8_t c,
                                uint8_t s,
                                uint8_t channel_id,
                                int8_t p)
         : characters(cs),        require_pic(p),
+          pending_pic_action(PicAction::NONE), pending_pic_cid(-1),
           charcount_absolute(c), slots_absolute(s)
     {
         selected_absolute = Setting<DefaultCharacter>::get().load();
@@ -328,6 +335,80 @@ namespace jrc
         }
     }
 
+    void UICharSelect::dispatch_pic_action(PicAction action, int32_t cid, const std::string& pic, bool auto_submit)
+    {
+        UI::get().disable();
+
+        if (auto_submit)
+        {
+            pending_pic_action = action;
+            pending_pic_cid = cid;
+        }
+        else
+        {
+            clear_pending_pic_request();
+        }
+
+        switch (action)
+        {
+        case PicAction::REGISTER:
+            Console::get().print((auto_submit ? "Registering" : "Retrying registration with") + std::string(" PIC ") + pic);
+            RegisterPicPacket(cid, pic).dispatch();
+            break;
+        case PicAction::SELECT:
+            Console::get().print((auto_submit ? "Selecting character with" : "Retrying character select with") + std::string(" PIC ") + pic);
+            SelectCharPicPacket(pic, cid).dispatch();
+            break;
+        case PicAction::DELETE:
+            Console::get().print((auto_submit ? "Deleting character with" : "Retrying deletion with") + std::string(" PIC ") + pic);
+            DeleteCharPacket(pic, cid).dispatch();
+            break;
+        case PicAction::NONE:
+            clear_pending_pic_request();
+            UI::get().enable();
+            break;
+        }
+    }
+
+    void UICharSelect::prompt_pic_entry(PicAction action, int32_t cid)
+    {
+        clear_pending_pic_request();
+        UI::get().emplace<UISoftkey>([this, action, cid](const std::string& pic) {
+            dispatch_pic_action(action, cid, pic, false);
+        });
+    }
+
+    bool UICharSelect::handle_pic_failure(int8_t message, int32_t cid)
+    {
+        if (pending_pic_action == PicAction::NONE)
+        {
+            return false;
+        }
+
+        if (cid != -1 && pending_pic_cid != cid)
+        {
+            return false;
+        }
+
+        switch (message)
+        {
+        case UILoginNotice::SECOND_PASSWORD_INCORRECT:
+        case UILoginNotice::SECOND_PASSWORD_NOT_DIFFERENT:
+            Console::get().print("Auto PIC was rejected. Prompting for manual PIC entry.");
+            prompt_pic_entry(pending_pic_action, pending_pic_cid);
+            return true;
+        default:
+            clear_pending_pic_request();
+            return false;
+        }
+    }
+
+    void UICharSelect::clear_pending_pic_request()
+    {
+        pending_pic_action = PicAction::NONE;
+        pending_pic_cid = -1;
+    }
+
     void UICharSelect::send_selection()
     {
         if (selected_relative >= charcount_relative)
@@ -341,20 +422,13 @@ namespace jrc
         switch (require_pic)
         {
         case 0:
-            UI::get().emplace<UISoftkey>([cid](const std::string& pic) {
-                UI::get().disable();
-                RegisterPicPacket(cid, pic).dispatch();
-            });
+            dispatch_pic_action(PicAction::REGISTER, cid, AUTO_PIC, true);
             break;
         case 1:
-            {
-                UI::get().disable();
-                std::string pic = "1010";
-                Console::get().print("Setting PIC to " + pic);
-                SelectCharPicPacket(pic, cid).dispatch();
-            }
+            dispatch_pic_action(PicAction::SELECT, cid, AUTO_PIC, true);
             break;
         case 2:
+            clear_pending_pic_request();
             UI::get().disable();
             Sound(Sound::SELECTCHAR).play();
             SelectCharPacket(cid).dispatch();
@@ -374,10 +448,7 @@ namespace jrc
         }
 
         int32_t cid = characters[selected_absolute].cid;
-        UI::get().emplace<UISoftkey>([cid](const std::string& pic) {
-            UI::get().disable();
-            DeleteCharPacket(pic, cid).dispatch();
-        });
+        dispatch_pic_action(PicAction::DELETE, cid, AUTO_PIC, true);
     }
 
     void UICharSelect::add_character(CharEntry&& character)
