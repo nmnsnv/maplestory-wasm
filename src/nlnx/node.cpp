@@ -31,6 +31,16 @@
 #endif
 
 namespace nl {
+    namespace {
+        size_t make_audio_id(const _file_data* file_data, uint64_t audio_offset) {
+            // On WASM the underlying contiguous buffer can be a stitched scratch buffer,
+            // so its address is not a stable identity for a logical audio asset.
+            size_t seed = reinterpret_cast<size_t>(file_data);
+            size_t value = static_cast<size_t>(audio_offset);
+            return seed ^ (value + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2));
+        }
+    }
+
     // Helper accessors for LazyFS on WASM
 #ifdef MS_PLATFORM_WASM
     
@@ -362,11 +372,11 @@ namespace nl {
         auto header_ptr = get_data<file::header>(m_file, m_file->header);
         if (d && d->type == type::audio && header_ptr && header_ptr->audio_count)
             return to_audio();
-        return {nullptr, 0};
+        return {nullptr, 0, 0};
 #else
         if (m_data && m_data->type == type::audio && m_file->header->audio_count)
             return to_audio();
-        return {nullptr, 0};
+        return {nullptr, 0, 0};
 #endif
     }
     bool node::get_bool() const {
@@ -549,18 +559,18 @@ namespace nl {
     }
     audio node::to_audio() const {
         auto d = DATA_PTR;
-        if (!d) return {nullptr, 0};
+        if (!d) return {nullptr, 0, 0};
 #ifdef MS_PLATFORM_WASM
         size_t au_table_entry = m_file->audio_table + d->audio.index * sizeof(uint64_t);
         auto offset_ptr = get_data<uint64_t>(m_file, au_table_entry);
         uint64_t audio_offset = offset_ptr ? *offset_ptr : 0;
         
         auto data_ptr = get_data_array<char>(m_file, audio_offset, d->audio.length);
-        return {data_ptr, d->audio.length};
+        return {data_ptr, d->audio.length, make_audio_id(m_file, audio_offset)};
 #else
-        return {reinterpret_cast<char const *>(m_file->base)
-            + m_file->audio_table[m_data->audio.index],
-            m_data->audio.length};
+        auto audio_offset = m_file->audio_table[m_data->audio.index];
+        auto data_ptr = reinterpret_cast<char const *>(m_file->base) + audio_offset;
+        return {data_ptr, m_data->audio.length, reinterpret_cast<size_t>(data_ptr)};
 #endif
     }
     node node::root() const {

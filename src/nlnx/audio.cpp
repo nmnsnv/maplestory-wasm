@@ -19,13 +19,13 @@
 #include "audio.hpp"
 
 namespace nl {
-    audio::audio(void const * d, uint32_t l) :
-        m_data(d), m_length(l) {}
+    audio::audio(void const * d, uint32_t l, size_t id) :
+        m_data(d), m_length(l), m_id(id) {}
     bool audio::operator<(audio const & o) const {
-        return m_data < o.m_data;
+        return m_id < o.m_id;
     }
     bool audio::operator==(audio const & o) const {
-        return m_data == o.m_data;
+        return m_id == o.m_id;
     }
     audio::operator bool() const {
         return m_data ? true : false;
@@ -37,6 +37,6 @@ namespace nl {
         return m_length;
     }
     size_t audio::id() const {
-        return reinterpret_cast<size_t>(m_data);
+        return m_id;
     }
 }
