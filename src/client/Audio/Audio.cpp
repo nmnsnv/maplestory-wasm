@@ -23,6 +23,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include "bass/bass.h"
 #else
+#include <emscripten.h>
 using HSTREAM = uint64_t;
 using HCHANNEL = uint64_t;
 using HSAMPLE = uint64_t;
@@ -35,6 +36,245 @@ using DWORD = uint32_t;
 namespace jrc
 {
     constexpr const char* Error::messages[];
+    constexpr uint32_t kNxAudioHeaderSize = 82;
+
+#ifdef MS_PLATFORM_WASM
+    EM_JS(int, wasm_audio_init, (), {
+        if (Module.MapleAudio) {
+            return 1;
+        }
+
+        const AudioContextCtor = globalThis.AudioContext || globalThis.webkitAudioContext;
+        if (!AudioContextCtor) {
+            console.error("[audio] Web Audio is not available in this browser");
+            return 0;
+        }
+
+        const context = new AudioContextCtor();
+        const bgmGain = context.createGain();
+        const sfxGain = context.createGain();
+        bgmGain.connect(context.destination);
+        sfxGain.connect(context.destination);
+
+        const state = {
+            context,
+            bgmGain,
+            sfxGain,
+            clips: new Map(),
+            currentMusic: null,
+            musicToken: 0,
+            unlockBound: false
+        };
+
+        const unlock = () => {
+            if (state.context.state !== "running") {
+                state.context.resume().catch((error) => {
+                    console.debug("[audio] AudioContext resume deferred:", error);
+                });
+            }
+        };
+
+        const ensureUnlockHandlers = () => {
+            if (state.unlockBound) {
+                return;
+            }
+
+            state.unlockBound = true;
+            const options = { passive: true };
+            document.addEventListener("pointerdown", unlock, options);
+            document.addEventListener("keydown", unlock, options);
+            document.addEventListener("touchend", unlock, options);
+        };
+
+        const copyBytes = (ptr, len) => HEAPU8.slice(ptr, ptr + len);
+
+        const decodeClip = (id, ptr, len) => {
+            let clip = state.clips.get(id);
+            if (!clip) {
+                clip = {};
+                state.clips.set(id, clip);
+            }
+
+            if (clip.buffer || clip.promise || clip.failed) {
+                return clip.promise;
+            }
+
+            const bytes = copyBytes(ptr, len);
+            clip.promise = state.context.decodeAudioData(bytes.buffer.slice(0)).then((buffer) => {
+                clip.buffer = buffer;
+                return buffer;
+            }).catch((error) => {
+                clip.failed = true;
+                console.error("[audio] Failed to decode clip", id, error);
+                throw error;
+            });
+
+            return clip.promise;
+        };
+
+        const playBuffer = (buffer, gainNode, loop) => {
+            unlock();
+
+            const source = state.context.createBufferSource();
+            source.buffer = buffer;
+            source.loop = loop;
+            source.connect(gainNode);
+            source.start(0);
+
+            return source;
+        };
+
+        Module.MapleAudio = {
+            unlock,
+
+            close() {
+                if (state.currentMusic) {
+                    try {
+                        state.currentMusic.stop();
+                    } catch (error) {
+                        console.debug("[audio] Ignoring stop failure during close:", error);
+                    }
+                    state.currentMusic.disconnect();
+                    state.currentMusic = null;
+                }
+            },
+
+            setSfxVolume(value) {
+                state.sfxGain.gain.value = Math.max(0, Math.min(1, value));
+            },
+
+            setBgmVolume(value) {
+                state.bgmGain.gain.value = Math.max(0, Math.min(1, value));
+            },
+
+            registerClip(id, ptr, len) {
+                ensureUnlockHandlers();
+                decodeClip(id, ptr, len);
+            },
+
+            playSound(id) {
+                const clip = state.clips.get(id);
+                if (!clip) {
+                    return;
+                }
+
+                if (clip.buffer) {
+                    playBuffer(clip.buffer, state.sfxGain, false);
+                    return;
+                }
+
+                if (clip.promise && !clip.pendingPlay) {
+                    clip.pendingPlay = true;
+                    clip.promise.then(() => {
+                        clip.pendingPlay = false;
+                        if (clip.buffer) {
+                            playBuffer(clip.buffer, state.sfxGain, false);
+                        }
+                    }).catch(() => {
+                        clip.pendingPlay = false;
+                    });
+                }
+            },
+
+            playMusic(id) {
+                const clip = state.clips.get(id);
+                if (!clip) {
+                    return;
+                }
+
+                state.musicToken += 1;
+                const token = state.musicToken;
+
+                if (state.currentMusic) {
+                    try {
+                        state.currentMusic.stop();
+                    } catch (error) {
+                        console.debug("[audio] Ignoring stop failure during music switch:", error);
+                    }
+                    state.currentMusic.disconnect();
+                    state.currentMusic = null;
+                }
+
+                const startMusic = (buffer) => {
+                    if (token != state.musicToken) {
+                        return;
+                    }
+
+                    const source = playBuffer(buffer, state.bgmGain, true);
+                    source.onended = () => {
+                        if (state.currentMusic === source) {
+                            state.currentMusic = null;
+                        }
+                    };
+                    state.currentMusic = source;
+                };
+
+                if (clip.buffer) {
+                    startMusic(clip.buffer);
+                    return;
+                }
+
+                if (clip.promise) {
+                    clip.promise.then((buffer) => {
+                        startMusic(buffer);
+                    }).catch(() => {});
+                }
+            }
+        };
+
+        return 1;
+    });
+
+    EM_JS(void, wasm_audio_close, (), {
+        if (Module.MapleAudio) {
+            Module.MapleAudio.close();
+        }
+    });
+
+    EM_JS(int, wasm_audio_set_sfx_volume, (double volume), {
+        if (!Module.MapleAudio) {
+            return 0;
+        }
+
+        Module.MapleAudio.setSfxVolume(volume);
+        return 1;
+    });
+
+    EM_JS(int, wasm_audio_set_bgm_volume, (double volume), {
+        if (!Module.MapleAudio) {
+            return 0;
+        }
+
+        Module.MapleAudio.setBgmVolume(volume);
+        return 1;
+    });
+
+    EM_JS(int, wasm_audio_register_clip, (int id, const void* data, int length), {
+        if (!Module.MapleAudio) {
+            return 0;
+        }
+
+        Module.MapleAudio.registerClip(id, data, length);
+        return 1;
+    });
+
+    EM_JS(void, wasm_audio_play_sound, (int id), {
+        if (Module.MapleAudio) {
+            Module.MapleAudio.playSound(id);
+        }
+    });
+
+    EM_JS(void, wasm_audio_play_music, (int id), {
+        if (Module.MapleAudio) {
+            Module.MapleAudio.playMusic(id);
+        }
+    });
+#else
+    using HSTREAM = uint64_t;
+    using HCHANNEL = uint64_t;
+    using HSAMPLE = uint64_t;
+    using DWORD = uint32_t;
+#endif
 
     Sound::Sound(Name name) : id(soundids[name]) {}
 
@@ -50,15 +290,20 @@ namespace jrc
         }
     }
 
-#include <cstdint>
-
     Error Sound::init() {
-        if (!set_sfxvolume(100)) return Error::AUDIO; // Provide default to avoid warning
 #ifndef MS_PLATFORM_WASM
+        if (!set_sfxvolume(100)) return Error::AUDIO;
         if (!BASS_Init(1, 44100, 0, nullptr, nullptr))
         {
             return Error::AUDIO;
         }
+#else
+        if (!wasm_audio_init())
+        {
+            return Error::AUDIO;
+        }
+
+        if (!set_sfxvolume(100)) return Error::AUDIO;
 #endif
 
         nl::node uisrc = nl::nx::sound["UI.img"];
@@ -90,6 +335,8 @@ namespace jrc
     {
 #ifndef MS_PLATFORM_WASM
         BASS_Free();
+#else
+        wasm_audio_close();
 #endif
     }
 
@@ -98,7 +345,7 @@ namespace jrc
 #ifndef MS_PLATFORM_WASM
         return BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, vol * 100u) == TRUE;
 #else
-        return true;
+        return wasm_audio_set_sfx_volume(static_cast<double>(vol) / 100.0) != 0;
 #endif
     }
 
@@ -115,6 +362,8 @@ namespace jrc
             false
         );
         BASS_ChannelPlay(channel, true);
+#else
+        wasm_audio_play_sound(static_cast<int>(id));
 #endif
     }
 
@@ -132,13 +381,23 @@ namespace jrc
             samples[id] = BASS_SampleLoad(
                 true,
                 data,
-                82,
+                kNxAudioHeaderSize,
                 static_cast<DWORD>(ad.length()),
                 4,
                 BASS_SAMPLE_OVER_POS
             );
 #else
-            samples[id] = 0;
+            if (ad.length() <= kNxAudioHeaderSize)
+            {
+                return 0;
+            }
+
+            samples[id] = id;
+            wasm_audio_register_clip(
+                static_cast<int>(id),
+                static_cast<uint8_t const*>(data) + kNxAudioHeaderSize,
+                static_cast<int>(ad.length() - kNxAudioHeaderSize)
+            );
 #endif
 
             return id;
@@ -190,11 +449,24 @@ namespace jrc
             stream = BASS_StreamCreateFile(
                 true,
                 data,
-                82,
+                kNxAudioHeaderSize,
                 ad.length(),
                 BASS_SAMPLE_FLOAT | BASS_SAMPLE_LOOP
             );
             BASS_ChannelPlay(stream, true);
+#else
+            if (ad.length() <= kNxAudioHeaderSize)
+            {
+                return;
+            }
+
+            size_t id = ad.id();
+            wasm_audio_register_clip(
+                static_cast<int>(id),
+                static_cast<uint8_t const*>(data) + kNxAudioHeaderSize,
+                static_cast<int>(ad.length() - kNxAudioHeaderSize)
+            );
+            wasm_audio_play_music(static_cast<int>(id));
 #endif
 
             bgmpath = path;
@@ -219,7 +491,7 @@ namespace jrc
 #ifndef MS_PLATFORM_WASM
         return BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, vol * 100u) == TRUE;
 #else
-        return true;
+        return wasm_audio_set_bgm_volume(static_cast<double>(vol) / 100.0) != 0;
 #endif
     }
 }
