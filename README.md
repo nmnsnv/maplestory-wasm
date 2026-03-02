@@ -311,7 +311,6 @@ The `docker-compose.yml` provides sensible defaults. Key environment variables:
 | `./scripts/build_wasm.sh` | Build WASM client (Release) |
 | `./scripts/build_wasm.sh --debug` | Build WASM client with debug symbols |
 | `./scripts/build_wasm.sh -j 4` | Build with 4 parallel jobs |
-| `./scripts/build_server.sh` | Build Java server |
 | `./scripts/run_all.sh` | Start all services |
 | `./scripts/stop_all.sh` | Stop all services |
 
