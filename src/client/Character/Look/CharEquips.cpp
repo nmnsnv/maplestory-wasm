@@ -111,14 +111,35 @@ namespace jrc
         if (const Clothing* cap = clothes[Equipslot::CAP])
         {
             const std::string& vslot = cap->get_vslot();
-            if (vslot == "CpH1H5")
+            const auto has_marker = [&vslot](const char* marker) {
+                return vslot.find(marker) != std::string::npos;
+            };
+
+            const bool covers_multiple_hair_sections =
+                has_marker("H1") || has_marker("H2") || has_marker("H3") ||
+                has_marker("H4") || has_marker("H6") || has_marker("Hd") ||
+                has_marker("Hf") || has_marker("Hs") || has_marker("Hb") ||
+                has_marker("Hc") || has_marker("Hx");
+            const bool has_h5 = has_marker("H5");
+            const bool fully_covers_face_and_hair = has_marker("Ay") || has_marker("As");
+
+            if (covers_multiple_hair_sections)
+            {
+                if (fully_covers_face_and_hair)
+                    return FULLCOVER;
+
                 return HALFCOVER;
-            else if (vslot == "CpH1H5AyAs")
-                return FULLCOVER;
-            else if (vslot == "CpH5")
+            }
+            else if (has_h5)
+            {
+                // H5-only caps behave like ribbons/headbands in this renderer.
                 return HEADBAND;
+            }
             else
-                return NONE;
+            {
+                // Preserve visibility for unclassified caps without forcing hair to render over them.
+                return HALFCOVER;
+            }
         }
         else
         {
