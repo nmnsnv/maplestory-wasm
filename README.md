@@ -3,112 +3,59 @@
 > **A WebAssembly port of MapleStory v83, playable directly in your browser.**
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Status: In Development](https://img.shields.io/badge/status-in%20development-orange.svg)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
 
-MapleStory WASM is a preservation project that brings the classic MapleStory v83 experience to modern web browsers using WebAssembly. This project **patches and integrates** two separate open-source projects—a C++ client and a Java server—making them compatible and able to run together seamlessly.
+MapleStory WASM brings the classic MapleStory v83 client to modern web browsers using WebAssembly. The repository contains the WASM client build, the local web services used by the browser runtime, and Docker entrypoints for running the web stack. The client is designed to run with Cosmic server.
 
 ---
 
 ## 🎯 Built On
 
-This project is made possible by patching and extending the following upstream projects:
+This project is made possible by patching and extending the following upstream project:
 
 | Component | Upstream Project | Description |
 |-----------|------------------|-------------|
 | **Client** | [ryantpayton/MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) | A C++ MapleStory v83 client |
-| **Server** | [ryantpayton/MapleStory-Server](https://github.com/ryantpayton/MapleStory-Server) | A Java MapleStory v83 server emulator |
 
-Our patch system maintains compatibility patches on top of these repositories, enabling:
+This repository builds on that project to provide:
 - **WebAssembly compilation** of the C++ client via Emscripten
 - **Browser networking** through WebSocket proxies
-- **Client-server compatibility** fixes and enhancements
-- **Easy upstream updates** without maintaining forks
-
----
-
-## ✨ Features
-
-| Feature | Status |
-|---------|--------|
-| Character Creation & Login | ✅ Working |
-| Map Rendering & Navigation | ✅ Working |
-| Mob Spawning & Combat | ✅ Working |
-| Multiplayer Sync | ✅ Working |
-| Job Advancement | ⚠️ Partial |
-| Skills & Abilities | ⚠️ Partial |
-| NPCs & Quests | 🔧 In Progress |
-
-### 🎮 Current Gameplay Status
-
-> [!NOTE]
-> **Explorers** are currently the only character type at an acceptable playability level.
-
-| Character Type | Status | Notes |
-|----------------|--------|-------|
-| **Explorers** | ⚠️ Playable | The main playable class type |
-| Cygnus Knights | ❌ Not Ready | Not yet implemented |
-| Aran | ❌ Not Ready | Not yet implemented |
-| Evan | ❌ Not Ready | Not yet implemented |
-
-#### Explorer Job Advancement
-
-| Job | 1st Job | Notes |
-|-----|---------|-------|
-| **Warrior** | ✅ Working | Job selection functional |
-| **Magician** | ✅ Working | Job selection functional |
-| **Bowman** | ✅ Working | Job selection functional |
-| **Thief** | ❌ Broken | NPC flow is missing |
-| **Pirate** | ❓ Untested | — |
-
-### ⚠️ Known Limitations
-
-> [!CAUTION]
-> **Skill Assignment is currently broken.** Players cannot assign skill points to any job skills. This is the highest-priority issue being worked on.
-
-| Limitation | Impact | Status |
-|------------|--------|--------|
-| **Cannot assign skill points** | Major - Blocks progression | 🔧 Being investigated |
-| Advanced job advancements | Not fully tested | 📋 Planned |
+- **Asset streaming** for `.nx` files used by the browser client
+- **Docker-based build and deployment** paths
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Browser (Client)                            │
-│  ┌─────────────────────────────────────────────────────────────┐    │
-│  │                  MapleStory WASM Client                     │    │
-│  │                 (C++ compiled to WASM)                      │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-└───────────────┬─────────────────────────────────┬───────────────────┘
-                │ WebSocket                       │ WebSocket
-                │ (Game Packets)                  │ (Asset Requests)
-                ▼                                 ▼
-┌───────────────────────────┐       ┌───────────────────────────┐
-│     WS Proxy (Python)     │       │   Assets Server (Python)  │
-│   ws://localhost:8080     │       │   ws://localhost:8765     │
-└───────────────┬───────────┘       └───────────────────────────┘
-                │ TCP
-                ▼
-┌───────────────────────────────────────────────────────────────┐
-│                    MapleStory Server (Java)                   │
-│              Login: 8484  │  Channels: 7575-7585              │
-└───────────────────────────┬───────────────────────────────────┘
-                            │
-                            ▼
-                    ┌───────────────┐
-                    │    MySQL DB   │
-                    └───────────────┘
+┌───────────────────────────┐       ┌──────────────────────────────────────┐
+│     Web Server (Python)   │       │            Browser (Client)           │
+│     web/server.py         │──────▶│     MapleStory WASM Client Runtime    │
+│     http://localhost:8000 │ HTTP  │        (JS + WASM in browser)         │
+└───────────────────────────┘       └───────────────┬──────────────┬───────┘
+                                                    │              │
+                                                    │ WebSocket    │ WebSocket
+                                                    │ (Game        │ (Asset
+                                                    │ Packets)     │ Requests)
+                                                    ▼              ▼
+                                          ┌────────────────┐  ┌───────────────────────────┐
+                                          │ WS Proxy       │  │   Assets Server (Python)  │
+                                          │ web/ws_proxy.py│  │   ws://localhost:8765     │
+                                          │ :8080          │  └───────────────────────────┘
+                                          └───────┬────────┘
+                                                  │ TCP
+                                                  ▼
+                                          ┌───────────────────────────┐
+                                          │    Cosmic Server (TCP)    │
+                                          └───────────────────────────┘
 ```
 
 ### How It Works
 
-1. **WASM Client** - The original C++ MapleStory client is compiled to WebAssembly using Emscripten, allowing it to run natively in browsers.
-2. **WebSocket Proxy** - Browsers cannot make raw TCP connections, so a Python proxy bridges WebSocket connections to the Java game server.
+1. **WASM Client** - The original C++ MapleStory client is compiled to WebAssembly using Emscripten, and `web/server.py` serves the generated JS/WASM bundle to the browser.
+2. **WebSocket Proxy** - Browsers cannot make raw TCP connections, so a Python proxy bridges WebSocket connections to Cosmic server over TCP.
 3. **LazyFS** - A dynamic file system technology that streams game assets (`.nx` files) on-demand via WebSocket and caches them locally in your browser. Assets are only fetched from the network once, providing native loading times on subsequent loads.
-4. **Patch System** - We maintain patches on top of upstream repositories, enabling easy updates without forking.
+4. **Containerized Tooling** - Docker can be used both for serving the project and as a fallback way to build the WASM client.
 
 ---
 
@@ -121,111 +68,95 @@ Our patch system maintains compatibility patches on top of these repositories, e
 Place the `.nx` files into the `assets/` directory at the project root.
 - These are the same `.nx` files required by the [MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) repository.
 - **Location:** `maplestory-wasm/assets/*.nx`
-
-### 2. Server Assets (`.wz` files)
-Place the original v83 `.wz` files into the `serverAssets/` directory at the project root.
-- These are the same `.wz` files required by the [MapleStory-Server](https://github.com/ryantpayton/MapleStory-Server) repository.
-- **Location:** `maplestory-wasm/serverAssets/*.wz`
+- Treat `assets/` as read-only. Do not modify files in this directory.
 
 ---
 
 ## 🚀 Quick Start
 
-### 🐳 Hosting with Docker (Recommended)
+### Client Build
 
-> **Only Docker is required to host the game!** No other tools needed.
+Prefer the local build first:
+
+```bash
+./scripts/build_wasm.sh
+```
+
+Useful variants:
+
+```bash
+./scripts/build_wasm.sh --debug
+./scripts/build_wasm.sh --jobs 4
+```
+
+If the local Emscripten or CMake toolchain is unavailable, use the Docker fallback:
+
+```bash
+./scripts/docker_build_wasm.sh
+./scripts/docker_build_wasm.sh --debug
+./scripts/docker_build_wasm.sh --jobs 4
+```
+
+The client build output is written to `build/`.
+
+### Local Deployment
+
+Use local deployment when the toolchain and supporting services are available on the host machine.
+
+Requirements:
+
+| Requirement | Version | Purpose |
+|-------------|---------|---------|
+| **Python** | 3.9+ | Local web services |
+| **Emscripten** | 3.1+ | WASM compilation |
+| **CMake** | 3.16+ | Build system |
+
+1. Build the client with `./scripts/build_wasm.sh`.
+2. Install the local Python dependency:
+
+```bash
+pip install -r web/requirements.txt
+```
+
+3. Start the web services from the repository root:
+
+```bash
+python3 web/server.py
+python3 web/ws_proxy.py --ws-port 8080
+python3 web/assets_server.py --port 8765 --directory .
+```
+
+4. Open **http://localhost:8000**.
+
+The websocket proxy is intended to forward traffic to a running Cosmic server instance.
+
+### Docker Deployment
+
+Use Docker when local deployment is not practical or when you want the containerized stack.
 
 | Requirement | Version | Notes |
 |-------------|---------|-------|
 | **Docker** | 20.10+ | Includes Docker Compose |
 
-```bash
-# Clone the repository
-git clone https://github.com/nmnsnv/maplestory-wasm.git
-cd maplestory-wasm
+Web stack:
 
-# Start everything (Server + Web + Proxy + Database)
+```bash
 ./scripts/run_all.sh
 ```
 
-Then open **http://<Your-LAN-IP>:8000** in your browser (e.g., `192.168.1.X:8000`).
-
-> [!WARNING]
-> You **must** use your LAN IP. Accessing via `localhost` or `127.0.0.1` **will not work** due to docker networking.
-
-> **Note:** The Docker setup automatically syncs sources, applies patches, builds the WASM client, and starts all services.
-
----
-
-### 🛠️ Development Setup (Manual)
-
-<details>
-<summary>Click to expand manual setup for development</summary>
-
-If you want to develop or build locally without Docker, you'll need additional tools:
-
-| Requirement | Version | Purpose |
-|-------------|---------|---------|
-| **Python** | 3.9+ | Patch system scripts |
-| **Java JDK** | 8 | Server compilation |
-| **Emscripten** | 3.1+ | WASM compilation |
-| **CMake** | 3.16+ | Build system |
-| **MySQL** | 8.0+ | Database |
-
-#### 1. Sync & Patch Sources
+Equivalent direct command:
 
 ```bash
-# Sync upstream client and server repositories
-python3 patch_system/scripts/sync.py
-
-# Apply our patches
-python3 patch_system/scripts/apply_patches.py
+./scripts/docker_web_up.sh -d
 ```
 
-#### 2. Build the WASM Client
+Stop all Docker services:
 
 ```bash
-# Ensure Emscripten is activated
-source /path/to/emsdk/emsdk_env.sh
-
-# Build the client
-./scripts/build_wasm.sh
-
-# For debug builds with symbols:
-./scripts/build_wasm.sh --debug
+./scripts/stop_all.sh
 ```
 
-#### 3. Configure & Start the Server
-
-```bash
-cd src/server
-
-# Copy and edit configuration
-cp configuration.ini.example configuration.ini
-# Edit configuration.ini with your MySQL credentials
-
-# Build and run
-./launch.sh
-```
-
-#### 4. Start Web Services
-
-```bash
-# Terminal 1: HTTP Server
-python web/server.py
-
-# Terminal 2: WebSocket Proxy
-python web/ws_proxy.py
-
-# Terminal 3: Asset Server
-python web/assets_server.py
-```
-
-#### 5. Play
-
-Open **http://<Your-LAN-IP>:8000** in a modern browser. Do NOT use `localhost`.
-
-</details>
+Open **http://localhost:8000** after the containers are up.
 
 ---
 
@@ -235,14 +166,10 @@ Open **http://<Your-LAN-IP>:8000** in a modern browser. Do NOT use `localhost`.
 maplestory-wasm/
 ├── 📁 build/              # WASM build output
 ├── 📁 docker/             # Dockerfiles for services
-├── 📁 patch_system/       # Patch management system
-│   ├── deps.lock.json     # Upstream repo pinning
-│   ├── patches/           # Patch files
-│   └── scripts/           # Sync/apply/update scripts
 ├── 📁 scripts/            # Build & run scripts
-├── 📁 src/                # Source code (gitignored)
+├── 📁 src/
 │   ├── client/            # C++ MapleStory Client
-│   └── server/            # Java MapleStory Server
+│   └── nlnx/              # Shared NX loading library
 ├── 📁 web/                # Web infrastructure
 │   ├── server.py          # HTTP server
 │   ├── ws_proxy.py        # WebSocket-TCP proxy
@@ -251,28 +178,7 @@ maplestory-wasm/
 ├── 📄 LICENSE             # AGPL-3.0 License
 └── 📄 README.md           # You are here
 ```
-
-> **Note:** The `src/` directory is gitignored. It is populated by the patch system from upstream repositories.
-
----
-
 ## ⚙️ Configuration
-
-### Server Configuration
-
-Edit `src/server/configuration.ini`:
-
-```ini
-# Database
-DB_HOST=localhost
-DB_USER=maple
-DB_PASS=yourpassword
-
-# Network (use 0.0.0.0 for Docker)
-HOST=0.0.0.0
-LOGIN_PORT=8484
-CHANNEL_PORT=7575
-```
 
 ### Docker Environment
 
@@ -281,7 +187,6 @@ The `docker-compose.yml` provides sensible defaults. Key environment variables:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `IS_DOCKER` | `true` | Enables Docker-specific networking |
-| `DB_HOST` | `db` | MySQL container hostname |
 
 ---
 
@@ -289,20 +194,11 @@ The `docker-compose.yml` provides sensible defaults. Key environment variables:
 
 ### Making Changes
 
-1. **Edit files** in `src/client/` or `src/server/`
-2. **Stage your changes** (for new files): `git add <file>`
-3. **Save your patches**:
-   ```bash
-   python3 patch_system/scripts/update_patches.py
-   ```
-4. **Commit** the patch files in `patch_system/patches/`
-
-### Updating Upstream
-
-1. Edit `patch_system/deps.lock.json` with the new commit SHA
-2. Re-sync: `python3 patch_system/scripts/sync.py`
-3. Re-apply patches: `python3 patch_system/scripts/apply_patches.py`
-4. Resolve any conflicts and update patches
+1. Edit files under `src/client/`, `src/nlnx/`, `web/`, `scripts/`, or `docker/`
+2. Keep `assets/` unchanged
+3. Rebuild the client with `./scripts/build_wasm.sh`
+4. If the local build is unavailable, use `./scripts/docker_build_wasm.sh`
+5. Re-test the relevant local or Docker workflow you changed
 
 ### Build Commands
 
@@ -311,7 +207,9 @@ The `docker-compose.yml` provides sensible defaults. Key environment variables:
 | `./scripts/build_wasm.sh` | Build WASM client (Release) |
 | `./scripts/build_wasm.sh --debug` | Build WASM client with debug symbols |
 | `./scripts/build_wasm.sh -j 4` | Build with 4 parallel jobs |
-| `./scripts/run_all.sh` | Start all services |
+| `./scripts/docker_build_wasm.sh` | Build WASM client in Docker |
+| `./scripts/run_all.sh` | Start the Docker web services |
+| `./scripts/docker_web_up.sh -d` | Start the Docker web services directly |
 | `./scripts/stop_all.sh` | Stop all services |
 
 ---
@@ -324,7 +222,7 @@ Contributions are welcome! Please read the guidelines below before submitting.
 
 1. **Fork** the repository
 2. **Create a branch** for your feature: `git checkout -b feature/amazing-feature`
-3. **Make changes** and update patches (see [Making Changes](#making-changes))
+3. **Make changes** and verify the relevant build and runtime flow
 4. **Test** your changes locally
 5. **Commit** your changes: `git commit -m 'Add amazing feature'`
 6. **Push** to your fork: `git push origin feature/amazing-feature`
@@ -332,8 +230,8 @@ Contributions are welcome! Please read the guidelines below before submitting.
 
 ### Code Guidelines
 
-- Follow the existing code style in each project (C++ client, Java server, Python scripts)
-- Keep patches focused and well-documented
+- Follow the existing code style in each project (C++, Python, shell scripts)
+- Keep changes focused and well-documented
 - Test across multiple browsers when modifying client code
 - Update documentation for user-facing changes
 
@@ -356,7 +254,6 @@ This project would not be possible without the incredible work of:
 | Project | Author | Contribution |
 |---------|--------|--------------|
 | [MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) | [@ryantpayton](https://github.com/ryantpayton) | The C++ client that we patch and compile to WASM |
-| [MapleStory-Server](https://github.com/ryantpayton/MapleStory-Server) | [@ryantpayton](https://github.com/ryantpayton) | The Java server that we patch for compatibility |
 
 ### Inspiration & Tools
 

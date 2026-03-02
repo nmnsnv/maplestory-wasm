@@ -19,7 +19,7 @@ Prefer the local workflow first. Use Docker when the local workflow is not possi
 - Client build output: `build/JourneyClient.js`, `build/JourneyClient.wasm`, and optionally `build/JourneyClient.wasm.map`
 - Local web entrypoints: `web/server.py`, `web/ws_proxy.py`, `web/assets_server.py`
 - Docker web stack: root `docker-compose.yml`
-- Full Docker server startup also expects `src/server/` to exist
+- The client is designed to run with Cosmic server
 
 ## Client Build
 
@@ -61,8 +61,7 @@ Use local deployment when the local toolchain and local services are available.
 pip install -r web/requirements.txt
 ```
 
-4. Start the local game server separately. The websocket proxy expects the game server to be reachable on TCP port `8484`.
-5. Start the web services from the repository root in separate terminals:
+4. Start the web services from the repository root in separate terminals:
 
 ```bash
 python3 web/server.py
@@ -70,21 +69,21 @@ python3 web/ws_proxy.py --ws-port 8080
 python3 web/assets_server.py --port 8765 --directory .
 ```
 
-6. Open `http://localhost:8000`.
+5. Open `http://localhost:8000`.
 
-If `src/server/` is missing in the workspace, do not try to recreate it manually. Local full-stack deployment is unavailable until that source tree is present.
+Assume the websocket proxy is forwarding to a running Cosmic server unless the user explicitly says otherwise.
 
 ## Docker Deployment
 
 Use Docker when local deployment is not practical.
 
-Preferred full stack command:
+Preferred Docker web-stack command:
 
 ```bash
 ./scripts/run_all.sh
 ```
 
-This script creates the shared Docker network, starts the root web containers, and then starts the server stack from `src/server/`.
+This script creates the shared Docker network and starts the root web containers.
 
 For the web side only:
 
@@ -97,8 +96,6 @@ To stop everything:
 ```bash
 ./scripts/stop_all.sh
 ```
-
-If `src/server/` is missing, `./scripts/run_all.sh` and `./scripts/run_server.sh` cannot start the game server. In that case, only use the client build and web-serving pieces, or restore the missing server checkout first.
 
 ## Agent Behavior
 
