@@ -60,6 +60,7 @@ namespace jrc
         void send_focus(int focused);
         void send_scroll(double yoffset);
         void send_close();
+        void cancel_drag();
         void rightclick();
         void doubleclick();
         void send_key(int32_t keycode, bool pressed);

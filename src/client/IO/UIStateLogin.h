@@ -40,6 +40,7 @@ namespace jrc
         void send_scroll(Point<int16_t> pos, double yoffset) override;
         void send_close() override;
 
+        void cancel_drag() override;
         void drag_icon(Icon* icon) override;
         void clear_tooltip(Tooltip::Parent parent) override;
         void show_equip(Tooltip::Parent parent, int16_t slot) override;

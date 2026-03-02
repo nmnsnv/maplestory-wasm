@@ -47,6 +47,7 @@ namespace jrc
         virtual void send_scroll(Point<int16_t> pos, double yoffset) = 0;
         virtual void send_close() = 0;
 
+        virtual void cancel_drag() = 0;
         virtual void drag_icon(Icon* icon) = 0;
         virtual void clear_tooltip(Tooltip::Parent parent) = 0;
         virtual void show_equip(Tooltip::Parent parent, int16_t slot) = 0;
@@ -74,6 +75,7 @@ namespace jrc
         Cursor::State send_cursor(Cursor::State, Point<int16_t>) override { return Cursor::IDLE; }
         void send_scroll(Point<int16_t>, double) override {}
         void send_close() override {}
+        void cancel_drag() override {}
         void drag_icon(Icon*) override {}
         void clear_tooltip(Tooltip::Parent) override {}
         void show_equip(Tooltip::Parent, int16_t) override {}

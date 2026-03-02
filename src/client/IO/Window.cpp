@@ -28,8 +28,45 @@
 #include "../Configuration.h"
 #include "../Graphics/GraphicsGL.h"
 
+#include <cstdlib>
+
 namespace jrc
 {
+    namespace
+    {
+        constexpr double DOUBLECLICK_MAX_INTERVAL_SECONDS = 0.35;
+        constexpr int16_t DOUBLECLICK_MAX_DISTANCE_PIXELS = 4;
+
+        struct DoubleclickState
+        {
+            double last_left_press_time = -1.0;
+            Point<int16_t> last_left_press_position = {};
+        };
+
+        DoubleclickState doubleclick_state;
+
+        // GLFW does not emit double-click events, so synthesize them from
+        // successive left-button presses that happen close together.
+        bool is_doubleclick(Point<int16_t> position)
+        {
+            double now = glfwGetTime();
+            double elapsed = now - doubleclick_state.last_left_press_time;
+            bool in_time_window =
+                doubleclick_state.last_left_press_time >= 0.0 &&
+                elapsed >= 0.0 &&
+                elapsed <= DOUBLECLICK_MAX_INTERVAL_SECONDS;
+
+            Point<int16_t> previous = doubleclick_state.last_left_press_position;
+            bool in_distance_window =
+                std::abs(position.x() - previous.x()) <= DOUBLECLICK_MAX_DISTANCE_PIXELS &&
+                std::abs(position.y() - previous.y()) <= DOUBLECLICK_MAX_DISTANCE_PIXELS;
+
+            doubleclick_state.last_left_press_time = now;
+            doubleclick_state.last_left_press_position = position;
+            return in_time_window && in_distance_window;
+        }
+    }
+
     Window::Window()
     {
         context = nullptr;
@@ -55,7 +92,7 @@ namespace jrc
         UI::get().send_key(key, action != GLFW_RELEASE);
     }
 
-    void mousekey_callback(GLFWwindow*, int button, int action, int)
+    void mousekey_callback(GLFWwindow* window, int button, int action, int)
     {
         switch (button)
         {
@@ -63,8 +100,23 @@ namespace jrc
             switch (action)
             {
             case GLFW_PRESS:
+            {
+                double xpos = 0.0;
+                double ypos = 0.0;
+                glfwGetCursorPos(window, &xpos, &ypos);
+                Point<int16_t> position(
+                    static_cast<int16_t>(xpos),
+                    static_cast<int16_t>(ypos)
+                );
+
                 UI::get().send_cursor(true);
+                if (is_doubleclick(position))
+                {
+                    UI::get().cancel_drag();
+                    UI::get().doubleclick();
+                }
                 break;
+            }
             case GLFW_RELEASE:
                 UI::get().send_cursor(false);
                 break;

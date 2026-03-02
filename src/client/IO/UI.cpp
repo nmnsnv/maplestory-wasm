@@ -137,6 +137,11 @@ namespace jrc
 
     void UI::doubleclick()
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         Point<int16_t> pos = cursor.get_position();
         state->doubleclick(pos);
     }
@@ -168,6 +173,11 @@ namespace jrc
     void UI::send_close()
     {
         state->send_close();
+    }
+
+    void UI::cancel_drag()
+    {
+        state->cancel_drag();
     }
 
     void UI::rightclick()

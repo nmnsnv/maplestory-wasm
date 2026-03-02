@@ -181,6 +181,8 @@ namespace jrc
         UI::get().quit();
     }
 
+    void UIStateLogin::cancel_drag() {}
+
     void UIStateLogin::drag_icon(Icon*) {}
 
     void UIStateLogin::clear_tooltip(Tooltip::Parent) {}

@@ -357,6 +357,17 @@ namespace jrc
         UI::get().quit();
     }
 
+    void UIStateGame::cancel_drag()
+    {
+        if (draggedicon)
+        {
+            // Double-click actions can mutate inventory before mouse-up arrives.
+            // Drop the transient drag state first so release does not use a stale icon pointer.
+            draggedicon->reset();
+            draggedicon = {};
+        }
+    }
+
     void UIStateGame::drag_icon(Icon* drgic)
     {
         draggedicon = drgic;
