@@ -152,6 +152,7 @@ namespace jrc
         chars.update(physics);
         drops.update(physics);
         player.update(physics);
+        handle_held_actions();
         update_directional_context();
 
         portals.update(player.get_position());
@@ -169,6 +170,26 @@ namespace jrc
                 MobAttackResult result = player.damage(attack);
                 TakeDamagePacket(result, TakeDamagePacket::TOUCH).dispatch();
             }
+        }
+    }
+
+    void Stage::handle_held_actions()
+    {
+        if (!playable)
+        {
+            return;
+        }
+
+        // Drive gameplay repeats from the fixed update loop so held jump/attack
+        // behave consistently even when platform key-repeat is absent or uneven.
+        if (player.is_key_down(KeyAction::JUMP))
+        {
+            playable->send_action(KeyAction::JUMP, true);
+        }
+
+        if (player.is_key_down(KeyAction::ATTACK))
+        {
+            combat.use_move(0);
         }
     }
 
@@ -291,8 +312,12 @@ namespace jrc
         switch (type)
         {
         case KeyType::ACTION:
-            handle_directional_context(KeyAction::actionbyid(action), down);
-            if (down)
+        {
+            KeyAction::Id keyaction = KeyAction::actionbyid(action);
+            bool repeated_hold = down && player.is_key_down(keyaction);
+
+            handle_directional_context(keyaction, down);
+            if (down && !repeated_hold)
             {
                 switch (action)
                 {
@@ -310,8 +335,12 @@ namespace jrc
                 }
             }
 
-            playable->send_action(KeyAction::actionbyid(action), down);
+            if (!repeated_hold || (keyaction != KeyAction::ATTACK && keyaction != KeyAction::JUMP))
+            {
+                playable->send_action(keyaction, down);
+            }
             break;
+        }
         case KeyType::SKILL:
             combat.use_move(action);
             break;
