@@ -81,11 +81,24 @@ namespace jrc
         keysdown.clear();
         attacking = false;
         ladder = nullptr;
+        phobj.type = PhysicsObject::NORMAL;
+        phobj.clear_flags();
+        phobj.hspeed = 0.0;
+        phobj.vspeed = 0.0;
+        phobj.hforce = 0.0;
+        phobj.vforce = 0.0;
+        phobj.hacc = 0.0;
+        phobj.vacc = 0.0;
         nullstate.update_state(*this);
     }
 
     void Player::send_action(KeyAction::Id action, bool down)
     {
+        if (state == DIED)
+        {
+            return;
+        }
+
         const PlayerState* pst = get_state(state);
         if (pst)
         {
@@ -177,21 +190,28 @@ namespace jrc
 
     int8_t Player::update(const Physics& physics)
     {
-        const PlayerState* pst = get_state(state);
-        if (pst)
+        if (state == DIED)
         {
-            pst->update(*this);
-            physics.move_object(phobj);
+            Char::update(physics, 1.0f);
+        }
+        else
+        {
+            const PlayerState* pst = get_state(state);
+            if (pst)
+            {
+                pst->update(*this);
+                physics.move_object(phobj);
 
-            bool aniend = Char::update(physics, get_stancespeed());
-            if (aniend && attacking)
-            {
-                attacking = false;
-                nullstate.update_state(*this);
-            }
-            else
-            {
-                pst->update_state(*this);
+                bool aniend = Char::update(physics, get_stancespeed());
+                if (aniend && attacking)
+                {
+                    attacking = false;
+                    nullstate.update_state(*this);
+                }
+                else
+                {
+                    pst->update_state(*this);
+                }
             }
         }
 
@@ -251,11 +271,16 @@ namespace jrc
 
     bool Player::can_attack() const
     {
-        return !attacking && !is_climbing() && !is_sitting() && look.get_equips().has_weapon();
+        return !attacking && !is_dead() && !is_climbing() && !is_sitting() && look.get_equips().has_weapon();
     }
 
     SpecialMove::ForbidReason Player::can_use(const SpecialMove& move) const
     {
+        if (is_dead())
+        {
+            return SpecialMove::FBR_OTHER;
+        }
+
         if (move.is_skill() && state == PRONE)
         {
             return SpecialMove::FBR_OTHER;
@@ -378,6 +403,48 @@ namespace jrc
 
         uint8_t direction = fromleft ? 0 : 1;
         return { attack, damage, direction };
+    }
+
+    void Player::die()
+    {
+        if (state == DIED)
+        {
+            return;
+        }
+
+        keysdown.clear();
+        attacking = false;
+        ladder = nullptr;
+
+        // Freeze the player immediately so no stale movement or key state leaks
+        // through while waiting for the server-driven respawn.
+        phobj.type = PhysicsObject::FIXATED;
+        phobj.clear_flags();
+        phobj.hspeed = 0.0;
+        phobj.vspeed = 0.0;
+        phobj.hforce = 0.0;
+        phobj.vforce = 0.0;
+        phobj.hacc = 0.0;
+        phobj.vacc = 0.0;
+
+        set_state(DIED);
+    }
+
+    void Player::revive()
+    {
+        if (state != DIED)
+        {
+            return;
+        }
+
+        phobj.type = PhysicsObject::NORMAL;
+        phobj.clear_flags();
+        nullstate.update_state(*this);
+    }
+
+    bool Player::is_dead() const
+    {
+        return state == DIED;
     }
 
     void Player::give_buff(Buff buff)

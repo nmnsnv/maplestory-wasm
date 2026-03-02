@@ -87,6 +87,12 @@ namespace jrc
         bool is_invincible() const override;
         /// Handle an attack to the player.
         MobAttackResult damage(const MobAttack& attack);
+        /// Enter the local dead state until the server respawns the player.
+        void die();
+        /// Leave the local dead state after a successful revive or respawn.
+        void revive();
+        /// Return whether the player is currently dead locally.
+        bool is_dead() const;
 
         /// Apply a buff to the player.
         void give_buff(Buff buff);
@@ -176,4 +182,3 @@ namespace jrc
         bool underwater;
     };
 }
-

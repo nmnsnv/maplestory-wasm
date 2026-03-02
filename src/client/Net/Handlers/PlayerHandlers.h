@@ -23,6 +23,8 @@
 
 namespace jrc
 {
+    class Player;
+
     // Parses keymappings and sends them to the Keyboard.
     class KeymapHandler : public PacketHandler
     {
@@ -46,6 +48,7 @@ namespace jrc
 
     private:
         bool handle_stat(Maplestat::Id stat, InPacket& recv) const;
+        void handle_hp_state(Player& player) const;
         bool need_statsinfo_update(Maplestat::Id stat) const;
         bool need_skillbook_update(Maplestat::Id stat) const;
     };

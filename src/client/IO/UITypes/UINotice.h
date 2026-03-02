@@ -73,6 +73,27 @@ namespace jrc
     };
 
 
+    class UIOk : public UINotice
+    {
+    public:
+        UIOk(std::string question, std::function<void()> okhandler);
+
+        void draw(float alpha) const override;
+        void send_key(int32_t keycode, bool pressed, bool escape) override;
+
+    protected:
+        Button::State button_pressed(uint16_t buttonid) override;
+
+    private:
+        enum Buttons : int16_t
+        {
+            OK
+        };
+
+        std::function<void()> okhandler;
+    };
+
+
     class UIEnterNumber : public UINotice
     {
     public:

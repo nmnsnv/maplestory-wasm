@@ -131,6 +131,51 @@ namespace jrc
     }
 
 
+    UIOk::UIOk(std::string q, std::function<void()> oh)
+        : UINotice(q) {
+
+        okhandler = oh;
+
+        int16_t belowtext = UINotice::box2offset();
+
+        nl::node src = nl::nx::ui["Basic.img"];
+
+        buttons[OK] = std::make_unique<MapleButton>(src["BtOK4"], 111, belowtext + 1);
+    }
+
+    void UIOk::draw(float alpha) const
+    {
+        UINotice::draw(false);
+        UIElement::draw(alpha);
+    }
+
+    void UIOk::send_key(int32_t keycode, bool pressed, bool escape)
+    {
+        if (!pressed)
+        {
+            return;
+        }
+
+        if (keycode == KeyAction::RETURN || escape)
+        {
+            okhandler();
+            active = false;
+        }
+    }
+
+    Button::State UIOk::button_pressed(uint16_t buttonid)
+    {
+        if (buttonid == OK)
+        {
+            okhandler();
+        }
+
+        active = false;
+
+        return Button::PRESSED;
+    }
+
+
     UIEnterNumber::UIEnterNumber(std::string q, std::function<void(int32_t)> nh, int32_t mi, int32_t ma, int32_t de)
         : UINotice(q) {
 

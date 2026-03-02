@@ -22,8 +22,10 @@
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
 #include "../../IO/UITypes/UIBuffList.h"
+#include "../../IO/UITypes/UINotice.h"
 #include "../../IO/UITypes/UIStatsInfo.h"
 #include "../../IO/UITypes/UISkillBook.h"
+#include "../../Net/Packets/GameplayPackets.h"
 
 namespace jrc
 {
@@ -137,6 +139,11 @@ namespace jrc
             break;
         }
 
+        if (stat == Maplestat::HP)
+        {
+            handle_hp_state(player);
+        }
+
         bool update_statsinfo = need_statsinfo_update(stat);
         if (update_statsinfo && !recalculate)
         {
@@ -153,6 +160,32 @@ namespace jrc
         }
 
         return recalculate;
+    }
+
+    void ChangeStatsHandler::handle_hp_state(Player& player) const
+    {
+        uint16_t hp = player.get_stats().get_stat(Maplestat::HP);
+        if (hp == 0)
+        {
+            if (!player.is_dead())
+            {
+                player.die();
+
+                UI::get().emplace<UIOk>(
+                    "You have died. Press OK to move to the nearest town.",
+                    [&player]() {
+                        // Cosmic enters its death respawn path only when the
+                        // CHANGE_MAP request carries a non--1 target map id.
+                        ChangeMapPacket(true, player.get_stats().get_mapid(), "", false).dispatch();
+                    }
+                );
+            }
+        }
+        else if (player.is_dead())
+        {
+            player.revive();
+            UI::get().remove(UIElement::NOTICE);
+        }
     }
 
     bool ChangeStatsHandler::need_statsinfo_update(Maplestat::Id stat) const
