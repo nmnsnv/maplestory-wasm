@@ -36,9 +36,6 @@ namespace jrc
         sprites.emplace_back(src["backgrnd"]);
         sprites.emplace_back(src["backgrnd2"]);
         sprites.emplace_back(src["backgrnd3"]);
-        cover0 = Sprite(src["cover0"]);
-        cover1 = Sprite(src["cover1"]);
-
         textures_detail.emplace_back(detail["backgrnd"]);
         textures_detail.emplace_back(detail["backgrnd2"]);
         textures_detail.emplace_back(detail["backgrnd3"]);
@@ -106,12 +103,6 @@ namespace jrc
     void UIStatsinfo::draw(float alpha) const
     {
         UIElement::draw(alpha);
-
-        if (jobId == Job::BEGINNER)
-        {
-            cover0.draw(position, alpha);
-            cover1.draw(position, alpha);
-        }
 
         if (showdetail)
         {
