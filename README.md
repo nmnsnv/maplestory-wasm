@@ -9,29 +9,13 @@ MapleStory WASM brings the classic MapleStory v83 client to modern web browsers 
 
 ---
 
-## 🎯 Built On
-
-This project is made possible by patching and extending the following upstream project:
-
-| Component | Upstream Project | Description |
-|-----------|------------------|-------------|
-| **Client** | [ryantpayton/MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) | A C++ MapleStory v83 client |
-
-This repository builds on that project to provide:
-- **WebAssembly compilation** of the C++ client via Emscripten
-- **Browser networking** through WebSocket proxies
-- **Asset streaming** for `.nx` files used by the browser client
-- **Docker-based build and deployment** paths
-
----
-
 ## 🏗️ Architecture
 
 ```
 ┌───────────────────────────┐       ┌──────────────────────────────────────┐
-│     Web Server (Python)   │       │            Browser (Client)           │
-│     web/server.py         │──────▶│     MapleStory WASM Client Runtime    │
-│     http://localhost:8000 │ HTTP  │        (JS + WASM in browser)         │
+│     Web Server (Python)   │       │            Browser (Client)          │
+│     web/server.py         │──────▶│     MapleStory WASM Client Runtime   │
+│     http://localhost:8000 │ HTTP  │        (JS + WASM in browser)        │
 └───────────────────────────┘       └───────────────┬──────────────┬───────┘
                                                     │              │
                                                     │ WebSocket    │ WebSocket
@@ -283,14 +267,23 @@ This project is for **educational and preservation purposes only**.
 
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
-This means:
-- ✅ You can use, modify, and distribute this software
-- ✅ You can use it for commercial purposes
-- ⚠️ You **must** disclose your source code if you deploy a modified version
-- ⚠️ You **must** license your modifications under AGPL-3.0
-- ⚠️ You **must** provide access to source code for network users
-
 See the [LICENSE](LICENSE) file for full details.
+
+---
+
+## 🎯 Built On
+
+This project is made possible by patching and extending the following upstream project:
+
+| Component | Upstream Project |
+|-----------|------------------|-------------|
+| **Client** | [ryantpayton/MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) |
+
+This repository builds on that project to provide:
+- **WebAssembly compilation** of the C++ client via Emscripten
+- **Browser networking** through WebSocket proxies
+- **Asset streaming** for `.nx` files used by the browser client
+- **Docker-based build and deployment** paths
 
 ---
 
