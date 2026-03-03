@@ -152,11 +152,24 @@ namespace jrc
             PRIEST_TELEPORT = 2301001,
 
             // Hermit
+            DRAIN = 4101005,
             AVENGER = 4111005,
             FLASH_JUMP = 4111006,
 
             // Night Lord
             TRIPLE_THROW = 4121007,
+
+            // Rogue
+            DISORDER = 4001002,
+            LUCKY_SEVEN = 4001344,
+
+            // Chief Bandit
+            ASSAULTER = 4211002,
+            BAND_OF_THIEVES = 4211004,
+
+            // Shadower
+            ASSASSINATE = 4221001,
+            BOOMERANG_STEP = 4221007,
 
             // Bandit
             MESO_EXPLOSION = 4211006

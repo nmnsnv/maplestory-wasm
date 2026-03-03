@@ -227,10 +227,21 @@ namespace jrc
         };
         if (result.bullet)
         {
-            Bullet bullet{
-                move.get_bullet(user, result.bullet),
-                user.get_position(),
-                result.toleft
+            auto bullet_delay = [&](size_t index) {
+                uint16_t delay = user.get_attackdelay(index);
+                if (index > 0 && delay == 0)
+                {
+                    // Regular ranged stances often expose only one attack frame.
+                    // Add a small fallback stagger so multi-star skills remain visible.
+                    delay = static_cast<uint16_t>(user.get_attackdelay(0) + index * 45);
+                }
+                return delay;
+            };
+
+            auto bullet_target = [](Point<int16_t> base, size_t index, size_t count) {
+                int16_t spread = static_cast<int16_t>(index * 12);
+                int16_t center = static_cast<int16_t>((count > 0 ? count - 1 : 0) * 6);
+                return base + Point<int16_t>(0, spread - center);
             };
 
             for (auto& line : result.damagelines)
@@ -252,7 +263,17 @@ namespace jrc
                             oid,
                             move.get_id()
                         };
-                        bulleteffects.emplace(user.get_attackdelay(i), std::move(effect), bullet, head);
+                        Bullet bullet{
+                            move.get_bullet(user, result.bullet),
+                            user.get_position(),
+                            result.toleft
+                        };
+                        bulleteffects.emplace(
+                            bullet_delay(i),
+                            std::move(effect),
+                            bullet,
+                            bullet_target(head, i, numbers.size())
+                        );
                         i++;
                     }
                 }
@@ -272,7 +293,17 @@ namespace jrc
                         0,
                         0
                     };
-                    bulleteffects.emplace(user.get_attackdelay(i), std::move(effect), bullet, target);
+                    Bullet bullet{
+                        move.get_bullet(user, result.bullet),
+                        user.get_position(),
+                        result.toleft
+                    };
+                    bulleteffects.emplace(
+                        bullet_delay(i),
+                        std::move(effect),
+                        bullet,
+                        bullet_target(target, i, result.hitcount)
+                    );
                 }
             }
         }

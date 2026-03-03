@@ -136,7 +136,19 @@ namespace jrc
             //
             { SkillId::FIRE_DEMON, ATTACK },
             { SkillId::PARALYZE, ATTACK | RANGED },
-            { SkillId::METEOR_SHOWER, ATTACK }
+            { SkillId::METEOR_SHOWER, ATTACK },
+            // Rogue
+            { SkillId::DISORDER, ATTACK },
+            { SkillId::LUCKY_SEVEN, ATTACK | RANGED },
+            // Hermit / Night Lord
+            { SkillId::DRAIN, ATTACK },
+            { SkillId::AVENGER, ATTACK | RANGED },
+            { SkillId::TRIPLE_THROW, ATTACK | RANGED },
+            // Chief Bandit / Shadower
+            { SkillId::ASSAULTER, ATTACK },
+            { SkillId::BAND_OF_THIEVES, ATTACK },
+            { SkillId::ASSASSINATE, ATTACK },
+            { SkillId::BOOMERANG_STEP, ATTACK }
         };
 
         auto iter = skill_flags.find(id);
