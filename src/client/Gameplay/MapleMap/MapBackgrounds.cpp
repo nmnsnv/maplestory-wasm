@@ -56,6 +56,15 @@ namespace jrc
             cy = animation.get_dimensions().y();
         }
 
+        // Some maps use an empty background sprite set to mean "solid black".
+        // Treat those as non-renderable so tiled math never divides by zero.
+        if (cx <= 0 || cy <= 0)
+        {
+            htile = 1;
+            vtile = 1;
+            return;
+        }
+
         htile = 1;
         vtile = 1;
         switch (type)
@@ -95,6 +104,11 @@ namespace jrc
 
     void Background::draw(double viewx, double viewy, float alpha) const
     {
+        if (cx <= 0 || cy <= 0)
+        {
+            return;
+        }
+
         int16_t draw_htile = htile > 1 ? static_cast<int16_t>(Constants::viewwidth() / cx + 3) : 1;
         int16_t draw_vtile = vtile > 1 ? static_cast<int16_t>(Constants::viewheight() / cy + 3) : 1;
 
@@ -173,10 +187,19 @@ namespace jrc
 
     MapBackgrounds::MapBackgrounds(nl::node src)
     {
+        black = src["0"]["bS"].get_string().empty();
+
         int16_t no = 0;
         nl::node back = src[std::to_string(no)];
         while (back.size() > 0)
         {
+            if (back["bS"].get_string().empty())
+            {
+                no++;
+                back = src[std::to_string(no)];
+                continue;
+            }
+
             bool front = back["front"].get_bool();
             if (front)
             {
@@ -190,8 +213,6 @@ namespace jrc
             no++;
             back = src[std::to_string(no)];
         }
-
-        black = src["0"]["bS"].get_string().empty();
     }
 
 
