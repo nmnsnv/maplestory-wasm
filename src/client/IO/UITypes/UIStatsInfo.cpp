@@ -57,7 +57,6 @@ namespace jrc
         buttons[BT_DETAILCLOSE] = std::make_unique<MapleButton>(src["BtDetailClose"]);
         buttons[BT_DETAILCLOSE]->set_active(false);
 
-        jobId = stats.get_stat(Maplestat::JOB);
         update_ap();
 
         for (size_t i = 0; i < NUMLABELS; ++i)
@@ -187,15 +186,7 @@ namespace jrc
         switch (stat)
         {
         case Maplestat::JOB:
-            jobId = stats.get_stat(Maplestat::JOB);
             statlabels[JOB].change_text(stats.get_jobname());
-
-            buttons[BT_HP]->set_active(jobId != Job::BEGINNER);
-            buttons[BT_MP]->set_active(jobId != Job::BEGINNER);
-            buttons[BT_STR]->set_active(jobId != Job::BEGINNER);
-            buttons[BT_DEX]->set_active(jobId != Job::BEGINNER);
-            buttons[BT_INT]->set_active(jobId != Job::BEGINNER);
-            buttons[BT_LUK]->set_active(jobId != Job::BEGINNER);
             break;
         case Maplestat::FAME:
             update_simple(FAME, Maplestat::FAME);
@@ -275,6 +266,11 @@ namespace jrc
             buttons[BT_INT]->set_position(Point<int16_t>(-48, 137));
             buttons[BT_LUK]->set_position(Point<int16_t>(-48, 155));
         }
+
+        // Beginner AP assignment is controlled by the server: when starter AP
+        // is manual, Cosmic exposes spendable AP through the normal stat pool.
+        // Keep the buttons available and let the current AP value decide
+        // whether they are usable.
         buttons[BT_HP ]->set_state(newstate);
         buttons[BT_MP ]->set_state(newstate);
         buttons[BT_STR]->set_state(newstate);

@@ -94,7 +94,6 @@ namespace jrc
         bool showdetail;
 
         bool hasap;
-        uint16_t jobId;
 
         Text statlabels[NUMLABELS];
         Point<int16_t> statoffsets[NUMLABELS];
