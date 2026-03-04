@@ -111,7 +111,7 @@ To stop everything:
 * Never write unsafe code.
 * Add meaningful comments
   * Don't just repeat the code in the comment, explain the reasoning behind it.
-
+* Don't have any credit or whatever in the source files (like license, reminder of journey client) in any comment
 
 ## Task Completion
 * Make sure the project builds.
