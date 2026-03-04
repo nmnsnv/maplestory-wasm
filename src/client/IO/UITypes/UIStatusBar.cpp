@@ -215,6 +215,71 @@ namespace jrc
         chatbar.send_line(line, type);
     }
 
+    void UIStatusbar::set_chat_target(UIChatbar::ChatTarget target)
+    {
+        chatbar.set_chat_target(target);
+    }
+
+    void UIStatusbar::cycle_chat_target()
+    {
+        chatbar.cycle_chat_target();
+    }
+
+    void UIStatusbar::set_pending_party_invite(int32_t party_id, const std::string& inviter)
+    {
+        chatbar.set_pending_party_invite(party_id, inviter);
+    }
+
+    void UIStatusbar::clear_pending_party_invite()
+    {
+        chatbar.clear_pending_party_invite();
+    }
+
+    void UIStatusbar::set_party_state(int32_t party_id, int32_t leader_id, const std::vector<UIChatbar::PartyMember>& members)
+    {
+        chatbar.set_party_state(party_id, leader_id, members);
+    }
+
+    void UIStatusbar::clear_party_state()
+    {
+        chatbar.clear_party_state();
+    }
+
+    void UIStatusbar::set_party_leader(int32_t leader_id)
+    {
+        chatbar.set_party_leader(leader_id);
+    }
+
+    void UIStatusbar::update_party_member_hp(int32_t cid, int32_t hp, int32_t max_hp)
+    {
+        chatbar.update_party_member_hp(cid, hp, max_hp);
+    }
+
+    int32_t UIStatusbar::get_party_id() const
+    {
+        return chatbar.get_party_id();
+    }
+
+    int32_t UIStatusbar::get_party_leader_id() const
+    {
+        return chatbar.get_party_leader_id();
+    }
+
+    int32_t UIStatusbar::get_pending_party_invite_id() const
+    {
+        return chatbar.get_pending_party_invite_id();
+    }
+
+    const std::string& UIStatusbar::get_pending_party_inviter() const
+    {
+        return chatbar.get_pending_party_inviter();
+    }
+
+    const std::vector<UIChatbar::PartyMember>& UIStatusbar::get_party_members() const
+    {
+        return chatbar.get_party_members();
+    }
+
     void UIStatusbar::display_message(Messages::Type line, UIChatbar::LineType type)
     {
         if (message_cooldowns[line] > 0)

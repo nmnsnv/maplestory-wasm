@@ -56,6 +56,34 @@ namespace jrc
         void handle(InPacket& recv) const override;
     };
 
+    // Show a multi-chat message (buddy/party/guild/alliance).
+    // Opcode: MULTI_CHAT(134)
+    class MultiChatReceivedHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
+
+    // Handle party operations (invite/join/leave/update/etc.).
+    // Opcode: PARTY_OPERATION(62)
+    class PartyOperationHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
+
+    // Handle party map/door value updates.
+    // Opcode: PARTY_VALUE(91)
+    class PartyValueHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
+
+    // Handle party HP updates.
+    // Opcode: UPDATE_PARTYMEMBER_HP(201)
+    class UpdatePartyMemberHpHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
+
 
     // Shows the effect of a scroll.
     // Opcode: SCROLL_RESULT(167)

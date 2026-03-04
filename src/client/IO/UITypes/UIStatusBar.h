@@ -31,6 +31,8 @@
 #include "../../Graphics/Animation.h"
 #include "../../Graphics/Text.h"
 
+#include <vector>
+
 namespace jrc
 {
     class UIStatusbar : public UIElement
@@ -51,6 +53,19 @@ namespace jrc
 
         void send_chatline(const std::string& line, UIChatbar::LineType type);
         void display_message(Messages::Type line, UIChatbar::LineType type);
+        void set_chat_target(UIChatbar::ChatTarget target);
+        void cycle_chat_target();
+        void set_pending_party_invite(int32_t party_id, const std::string& inviter);
+        void clear_pending_party_invite();
+        void set_party_state(int32_t party_id, int32_t leader_id, const std::vector<UIChatbar::PartyMember>& members);
+        void clear_party_state();
+        void set_party_leader(int32_t leader_id);
+        void update_party_member_hp(int32_t cid, int32_t hp, int32_t max_hp);
+        int32_t get_party_id() const;
+        int32_t get_party_leader_id() const;
+        int32_t get_pending_party_invite_id() const;
+        const std::string& get_pending_party_inviter() const;
+        const std::vector<UIChatbar::PartyMember>& get_party_members() const;
 
     protected:
         Button::State button_pressed(uint16_t buttonid) override;

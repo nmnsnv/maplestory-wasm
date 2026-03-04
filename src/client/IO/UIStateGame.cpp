@@ -26,6 +26,7 @@
 #include "UITypes/UIStatsInfo.h"
 #include "UITypes/UIItemInventory.h"
 #include "UITypes/UIEquipInventory.h"
+#include "UITypes/UIParty.h"
 #include "UITypes/UIMiniMap.h"
 #include "UITypes/UISkillBook.h"
 #include "UITypes/UIKeyConfig.h"
@@ -218,6 +219,33 @@ namespace jrc
                     break;
                 case KeyAction::WORLDMAP:
                     emplace<UIWorldMap>();
+                    break;
+                case KeyAction::CHATALL:
+                    if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                        statusbar->set_chat_target(UIChatbar::CHT_ALL);
+                    break;
+                case KeyAction::CHATPT:
+                    if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                        statusbar->set_chat_target(UIChatbar::CHT_PARTY);
+                    break;
+                case KeyAction::CHATBUDDY:
+                    if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                        statusbar->set_chat_target(UIChatbar::CHT_BUDDY);
+                    break;
+                case KeyAction::CHATGUILD:
+                    if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                        statusbar->set_chat_target(UIChatbar::CHT_GUILD);
+                    break;
+                case KeyAction::CHATALLIANCE:
+                    if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                        statusbar->set_chat_target(UIChatbar::CHT_ALLIANCE);
+                    break;
+                case KeyAction::CHATSQUAD:
+                    if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                        statusbar->set_chat_target(UIChatbar::CHT_SQUAD);
+                    break;
+                case KeyAction::PARTY:
+                    emplace<UIParty>();
                     break;
                 default:
                     break;

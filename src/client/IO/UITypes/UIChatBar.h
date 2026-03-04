@@ -24,6 +24,8 @@
 #include "../../Graphics/Geometry.h"
 #include "../../Graphics/Texture.h"
 
+#include <cstdint>
+#include <string>
 #include <vector>
 #include <unordered_map>
 
@@ -52,6 +54,18 @@ namespace jrc
             YELLOW
         };
 
+        struct PartyMember
+        {
+            int32_t id = 0;
+            std::string name;
+            int32_t job_id = 0;
+            int32_t level = 0;
+            int32_t channel = -2;
+            int32_t map_id = 0;
+            int32_t hp = 0;
+            int32_t max_hp = 0;
+        };
+
         UIChatbar(Point<int16_t> position);
 
         void draw(float inter) const override;
@@ -63,11 +77,29 @@ namespace jrc
         CursorResult send_cursor(bool pressed, Point<int16_t> cursorpos) override;
 
         void send_line(const std::string& line, LineType type);
+        void set_chat_target(ChatTarget target);
+        void cycle_chat_target();
+        void set_pending_party_invite(int32_t party_id, const std::string& inviter);
+        void clear_pending_party_invite();
+        void set_party_state(int32_t party_id, int32_t leader_id, const std::vector<PartyMember>& members);
+        void clear_party_state();
+        void set_party_leader(int32_t leader_id);
+        void update_party_member_hp(int32_t cid, int32_t hp, int32_t max_hp);
+        int32_t get_party_id() const;
+        int32_t get_party_leader_id() const;
+        int32_t get_pending_party_invite_id() const;
+        const std::string& get_pending_party_inviter() const;
+        const std::vector<PartyMember>& get_party_members() const;
 
     protected:
         Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        int32_t resolve_party_member_id(const std::string& token) const;
+        bool handle_party_command(const std::string& message);
+        void send_chat_message(const std::string& message);
+        void send_targeted_message(const std::string& target, const std::string& message);
+        void send_party_message(const std::string& message);
         int16_t getchattop() const;
 
         enum Buttons : uint16_t
@@ -94,6 +126,11 @@ namespace jrc
 
         bool chatopen;
         ChatTarget chattarget;
+        int32_t party_id;
+        int32_t party_leader_id;
+        int32_t pending_party_invite_id;
+        std::string pending_party_inviter;
+        std::vector<PartyMember> party_members;
 
         std::vector<std::string> lastentered;
         size_t lastpos;

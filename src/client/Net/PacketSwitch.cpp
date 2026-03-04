@@ -73,6 +73,7 @@ namespace jrc
 
         // Player 3
         UPDATE_GENDER   = 58,
+        PARTY_OPERATION = 62,
         BUDDY_LIST      = 63,
         GUILD_OPERATION = 65,
 
@@ -80,6 +81,7 @@ namespace jrc
         SERVER_MESSAGE     = 68,
         WEEK_EVENT_MESSAGE = 77,
 
+        PARTY_VALUE             = 91,
         FIELD_SET_VARIABLE      = 92,
         FAMILY_INFO_RESULT      = 95,
         FAMILY_PRIV_LIST        = 100,
@@ -88,6 +90,7 @@ namespace jrc
         RECEIVE_POLICE          = 123,
         SKILL_MACROS            = 124,
         SET_FIELD               = 125,
+        MULTI_CHAT              = 134,
         FIELD_EFFECT            = 138,
         CLOCK                   = 147,
         LEGACY_FIELD_OBJECT     = 159,
@@ -113,6 +116,7 @@ namespace jrc
         SHOW_CHAIR            = 196,
         UPDATE_CHARLOOK       = 197,
         SHOW_FOREIGN_EFFECT   = 198,
+        UPDATE_PARTYMEMBER_HP = 201,
         SHOW_ITEM_GAIN_INCHAT = 206, // this is terribly named
         LOCK_UI               = 221,
         TOGGLE_UI             = 222,
@@ -197,10 +201,14 @@ namespace jrc
 
         // Messaging handlers
         emplace<SHOW_STATUS_INFO, ShowStatusInfoHandler>();
+        emplace<PARTY_OPERATION, PartyOperationHandler>();
+        emplace<PARTY_VALUE, PartyValueHandler>();
         emplace<CHAT_RECEIVED, ChatReceivedHandler>();
+        emplace<MULTI_CHAT, MultiChatReceivedHandler>();
         emplace<SCROLL_RESULT, ScrollResultHandler>();
         emplace<SERVER_MESSAGE, ServerMessageHandler>();
         emplace<WEEK_EVENT_MESSAGE, WeekEventMessageHandler>();
+        emplace<UPDATE_PARTYMEMBER_HP, UpdatePartyMemberHpHandler>();
         emplace<SHOW_ITEM_GAIN_INCHAT, ShowItemGainInChatHandler>();
 
         // Inventory Handlers

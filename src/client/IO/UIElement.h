@@ -71,6 +71,7 @@ namespace jrc
             EQUIPINVENTORY,
             SKILLBOOK,
             KEYCONFIG,
+            PARTY,
             MINIMAP,
             WORLDMAP,
             NUM_TYPES

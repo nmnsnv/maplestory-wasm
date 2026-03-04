@@ -204,6 +204,7 @@ namespace jrc
                 UIElement::ITEMINVENTORY,
                 UIElement::EQUIPINVENTORY,
                 UIElement::SKILLBOOK,
+                UIElement::PARTY,
                 UIElement::STATSINFO,
                 UIElement::NOTICE
             };
@@ -254,6 +255,12 @@ namespace jrc
             if (mapping.type)
             {
                 state->send_key(mapping.type, mapping.action, pressed, escape);
+            }
+            else if (pressed && keycode == GLFW_KEY_P)
+            {
+                // Some server keymaps leave Party unbound; keep the expected
+                // default hotkey behavior for opening the Party UI.
+                state->send_key(KeyType::MENU, KeyAction::PARTY, true, false);
             }
         }
 

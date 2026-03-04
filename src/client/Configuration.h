@@ -250,6 +250,11 @@ namespace jrc
         PosKEYCONFIG() : PointEntry("PosKEYCONFIG", "(144,144)") {}
     };
 
+    struct PosPARTY : public Configuration::PointEntry
+    {
+        PosPARTY() : PointEntry("PosPARTY", "(160,120)") {}
+    };
+
     struct PosMAP : public Configuration::PointEntry
     {
         PosMAP() : PointEntry("PosMAP", "(124,2)") {}

@@ -92,6 +92,8 @@ namespace jrc
 
         // Messaging
         GENERAL_CHAT = 49,
+        MULTI_CHAT   = 119,
+        SPOUSE_CHAT  = 121,
 
         // Npc Interaction
         TALK_TO_NPC     = 58,
@@ -114,10 +116,11 @@ namespace jrc
         USE_SKILL = 91,
 
         // Gameplay 2
-        PARTY_OPERATION = 124,
-        MOVE_MONSTER    = 188,
-        PICKUP_ITEM     = 202,
-        PLAYER_UPDATE   = 0xCF,
+        PARTY_OPERATION    = 124,
+        DENY_PARTY_REQUEST = 125,
+        MOVE_MONSTER       = 188,
+        PICKUP_ITEM        = 202,
+        PLAYER_UPDATE      = 0xCF,
 
         // Custom
         HASH_CHECK = 30000

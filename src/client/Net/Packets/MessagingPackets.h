@@ -18,6 +18,8 @@
 #pragma once
 #include "../OutPacket.h"
 
+#include <list>
+
 namespace jrc
 {
     // Packet which sends a message to general chat.
@@ -29,6 +31,44 @@ namespace jrc
         {
             write_string(message);
             write_byte(show);
+        }
+    };
+
+    // Packet which sends a message to different chats.
+    // Opcode: MULTI_CHAT(119)
+    class MultiChatPacket : public OutPacket
+    {
+    public:
+        enum Type : uint8_t
+        {
+            BUDDY,
+            PARTY,
+            GUILD,
+            ALLIANCE
+        };
+
+        MultiChatPacket(Type type, const std::list<int32_t>& recipients, const std::string& message) : OutPacket(MULTI_CHAT)
+        {
+            write_byte(type);
+            write_byte(static_cast<int8_t>(recipients.size()));
+
+            for (int32_t recipient : recipients)
+            {
+                write_int(recipient);
+            }
+
+            write_string(message);
+        }
+    };
+
+    // Packet which sends a message to a spouse.
+    // Opcode: SPOUSE_CHAT(121)
+    class SpouseChatPacket : public OutPacket
+    {
+    public:
+        SpouseChatPacket(const std::string& message) : OutPacket(SPOUSE_CHAT)
+        {
+            write_string(message);
         }
     };
 }

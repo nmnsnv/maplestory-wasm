@@ -139,6 +139,19 @@ namespace jrc
         }
     };
 
+    /// Denies a pending party invitation.
+    /// Opcode: DENY_PARTY_REQUEST(125)
+    class DenyPartyInvitePacket : public OutPacket
+    {
+    public:
+        DenyPartyInvitePacket(const std::string& inviter) : OutPacket(DENY_PARTY_REQUEST)
+        {
+            // v83 packet layout starts with an unused byte, followed by inviter name.
+            write_byte(0);
+            write_string(inviter);
+        }
+    };
+
 
     /// Updates a mob's position with the server.
     /// Opcode: MOVE_MONSTER(188)

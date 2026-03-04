@@ -22,11 +22,131 @@
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
 #include "../../IO/Messages.h"
+#include "../../IO/UITypes/UIParty.h"
 #include "../../IO/UITypes/UIStatusMessenger.h"
 #include "../../IO/UITypes/UIStatusBar.h"
 
+#include <array>
+#include <vector>
+
 namespace jrc
 {
+    namespace
+    {
+        constexpr size_t PARTY_SIZE = 6;
+
+        struct RawPartyMember
+        {
+            int32_t id = 0;
+            std::string name;
+            int32_t job_id = 0;
+            int32_t level = 0;
+            int32_t channel = -2;
+            int32_t map_id = 0;
+        };
+
+        void read_party_status(InPacket& recv, int32_t& leader_id, std::vector<UIChatbar::PartyMember>& members)
+        {
+            std::array<RawPartyMember, PARTY_SIZE> raw;
+
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                raw[i].id = recv.read_int();
+            }
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                raw[i].name = recv.read_padded_string(13);
+            }
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                raw[i].job_id = recv.read_int();
+            }
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                raw[i].level = recv.read_int();
+            }
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                raw[i].channel = recv.read_int();
+            }
+
+            leader_id = recv.read_int();
+
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                raw[i].map_id = recv.read_int();
+            }
+
+            // Town door data (town map, target map, x, y) for each slot.
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                recv.read_int();
+                recv.read_int();
+                recv.read_int();
+                recv.read_int();
+            }
+
+            members.clear();
+            members.reserve(PARTY_SIZE);
+            for (size_t i = 0; i < PARTY_SIZE; i++)
+            {
+                if (raw[i].id <= 0)
+                {
+                    continue;
+                }
+
+                UIChatbar::PartyMember member;
+                member.id = raw[i].id;
+                member.name = raw[i].name;
+                member.job_id = raw[i].job_id;
+                member.level = raw[i].level;
+                member.channel = raw[i].channel;
+                member.map_id = raw[i].map_id;
+                members.push_back(member);
+            }
+        }
+
+        std::string party_status_message(int8_t mode, const std::string& name)
+        {
+            switch (mode)
+            {
+            case 1:
+            case 5:
+            case 6:
+            case 11:
+            case 14:
+                return "[Party] Request failed due to an unexpected error.";
+            case 10:
+                return "[Party] Beginners cannot create a party.";
+            case 12:
+                return "[Party] You left as leader, so the party was disbanded.";
+            case 13:
+                return "[Party] You are not currently in a party.";
+            case 16:
+                return "[Party] That character is already in a party.";
+            case 17:
+                return "[Party] The party is already full.";
+            case 19:
+                return "[Party] Unable to find the requested character in this channel.";
+            case 21:
+                return "[Party] " + name + " is blocking party invitations.";
+            case 22:
+                return "[Party] " + name + " is handling another invitation.";
+            case 23:
+                return "[Party] " + name + " denied the party invitation.";
+            case 25:
+                return "[Party] You cannot kick that player in this map.";
+            case 28:
+            case 29:
+                return "[Party] Leadership can only be transferred to nearby party members.";
+            case 30:
+                return "[Party] Leadership can only be transferred on the same channel.";
+            default:
+                return "";
+            }
+        }
+    }
+
     // Modes:
     // 0 - Item(0) or Meso(1)
     // 3 - Exp gain
@@ -167,6 +287,239 @@ namespace jrc
         auto linetype = static_cast<UIChatbar::LineType>(type);
         if (auto statusbar = UI::get().get_element<UIStatusbar>())
             statusbar->send_chatline(message, linetype);
+    }
+
+    void MultiChatReceivedHandler::handle(InPacket& recv) const
+    {
+        int8_t mode = recv.read_byte();
+        std::string name = recv.read_string();
+        std::string message = recv.read_string();
+
+        std::string channel_name;
+        UIChatbar::LineType line_type = UIChatbar::WHITE;
+
+        switch (mode)
+        {
+        case 0:
+            channel_name = "Buddy";
+            line_type = UIChatbar::BLUE;
+            break;
+        case 1:
+            channel_name = "Party";
+            line_type = UIChatbar::BLUE;
+            break;
+        case 2:
+            channel_name = "Guild";
+            break;
+        case 3:
+            channel_name = "Alliance";
+            break;
+        default:
+            channel_name = "Chat";
+            break;
+        }
+
+        if (auto statusbar = UI::get().get_element<UIStatusbar>())
+        {
+            statusbar->send_chatline("[" + channel_name + "] " + name + ": " + message, line_type);
+        }
+    }
+
+    void PartyOperationHandler::handle(InPacket& recv) const
+    {
+        int8_t mode = recv.read_byte();
+
+        auto statusbar = UI::get().get_element<UIStatusbar>();
+        auto party_window = UI::get().get_element<UIParty>();
+        if (!statusbar)
+        {
+            if (recv.available())
+            {
+                recv.skip(recv.length());
+            }
+            return;
+        }
+
+        switch (mode)
+        {
+        case 4:
+        {
+            int32_t invite_party_id = recv.read_int();
+            std::string inviter = recv.read_string();
+            recv.read_byte(); // always zero in v83
+
+            statusbar->set_pending_party_invite(invite_party_id, inviter);
+            if (party_window)
+            {
+                party_window->set_pending_party_invite(invite_party_id, inviter);
+            }
+            statusbar->send_chatline("[Party] " + inviter + " invited you. Use /party accept or /party deny.", UIChatbar::YELLOW);
+            break;
+        }
+        case 7:
+        {
+            int32_t party_id = recv.read_int();
+            int32_t leader_id = -1;
+            std::vector<UIChatbar::PartyMember> members;
+            read_party_status(recv, leader_id, members);
+            statusbar->set_party_state(party_id, leader_id, members);
+            if (party_window)
+            {
+                party_window->set_party_state(party_id, leader_id, members);
+            }
+            break;
+        }
+        case 8:
+        {
+            int32_t party_id = recv.read_int();
+            recv.read_int();
+            recv.read_int();
+            recv.read_int();
+            recv.read_int();
+
+            statusbar->set_party_state(party_id, -1, {});
+            if (party_window)
+            {
+                party_window->set_party_state(party_id, -1, {});
+            }
+            statusbar->send_chatline("[Party] Party created.", UIChatbar::YELLOW);
+            break;
+        }
+        case 0x0C:
+        {
+            int32_t party_id = recv.read_int();
+            int32_t target_id = recv.read_int();
+            int8_t disband = recv.read_byte();
+
+            if (disband == 0)
+            {
+                recv.read_int(); // party id again
+                statusbar->clear_party_state();
+                if (party_window)
+                {
+                    party_window->clear_party_state();
+                }
+                statusbar->send_chatline("[Party] Party disbanded.", UIChatbar::YELLOW);
+            }
+            else
+            {
+                int8_t expelled = recv.read_byte();
+                std::string target_name = recv.read_string();
+
+                int32_t leader_id = -1;
+                std::vector<UIChatbar::PartyMember> members;
+                read_party_status(recv, leader_id, members);
+
+                if (Stage::get().is_player(target_id))
+                {
+                    statusbar->clear_party_state();
+                    if (party_window)
+                    {
+                        party_window->clear_party_state();
+                    }
+                }
+                else
+                {
+                    statusbar->set_party_state(party_id, leader_id, members);
+                    if (party_window)
+                    {
+                        party_window->set_party_state(party_id, leader_id, members);
+                    }
+                }
+
+                std::string action = expelled ? "was expelled from" : "left";
+                statusbar->send_chatline("[Party] " + target_name + " " + action + " the party.", UIChatbar::YELLOW);
+            }
+            break;
+        }
+        case 0x0F:
+        {
+            int32_t party_id = recv.read_int();
+            std::string joined_name = recv.read_string();
+
+            int32_t leader_id = -1;
+            std::vector<UIChatbar::PartyMember> members;
+            read_party_status(recv, leader_id, members);
+            statusbar->set_party_state(party_id, leader_id, members);
+            if (party_window)
+            {
+                party_window->set_party_state(party_id, leader_id, members);
+            }
+            statusbar->send_chatline("[Party] " + joined_name + " joined the party.", UIChatbar::YELLOW);
+            break;
+        }
+        case 0x1B:
+        {
+            int32_t leader_id = recv.read_int();
+            recv.read_byte();
+            statusbar->set_party_leader(leader_id);
+            if (party_window)
+            {
+                party_window->set_party_leader(leader_id);
+            }
+            statusbar->send_chatline("[Party] Party leader changed.", UIChatbar::YELLOW);
+            break;
+        }
+        case 0x23:
+        {
+            // Party portal updates are not rendered in this client build yet.
+            recv.read_byte();
+            recv.read_int();
+            recv.read_int();
+            recv.read_point();
+            break;
+        }
+        default:
+        {
+            std::string name;
+            if (mode == 21 || mode == 22 || mode == 23)
+            {
+                name = recv.read_string();
+            }
+
+            std::string message = party_status_message(mode, name);
+            if (!message.empty())
+            {
+                statusbar->send_chatline(message, UIChatbar::YELLOW);
+            }
+            else
+            {
+                statusbar->send_chatline("[Party] Unhandled operation code: " + std::to_string(mode), UIChatbar::RED);
+                if (recv.available())
+                {
+                    recv.skip(recv.length());
+                }
+            }
+            break;
+        }
+        }
+    }
+
+    void PartyValueHandler::handle(InPacket& recv) const
+    {
+        // This packet carries map/door-related party values that are not yet
+        // visualized by this UI. Consume it to keep packet parsing in sync.
+        if (recv.available())
+        {
+            recv.skip(recv.length());
+        }
+    }
+
+    void UpdatePartyMemberHpHandler::handle(InPacket& recv) const
+    {
+        int32_t cid = recv.read_int();
+        int32_t hp = recv.read_int();
+        int32_t max_hp = recv.read_int();
+
+        if (auto statusbar = UI::get().get_element<UIStatusbar>())
+        {
+            statusbar->update_party_member_hp(cid, hp, max_hp);
+        }
+
+        if (auto party_window = UI::get().get_element<UIParty>())
+        {
+            party_window->update_party_member_hp(cid, hp, max_hp);
+        }
     }
 
 
