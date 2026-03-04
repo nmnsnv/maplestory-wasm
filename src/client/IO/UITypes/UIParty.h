@@ -21,7 +21,7 @@ namespace jrc
     {
     public:
         static constexpr Type TYPE = UIElement::PARTY;
-        static constexpr bool FOCUSED = true;
+        static constexpr bool FOCUSED = false;
         static constexpr bool TOGGLED = true;
 
         UIParty();
