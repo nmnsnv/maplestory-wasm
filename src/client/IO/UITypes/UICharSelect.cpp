@@ -154,9 +154,9 @@ namespace jrc
             nametags[index].draw(charpos);
         }
 
-        if (selected_relative < charcount_relative)
+        if (selected_absolute < charcount_absolute)
         {
-            const StatsEntry& stats = characters[selected_relative].stats;
+            const StatsEntry& stats = characters[selected_absolute].stats;
 
             std::string levelstr = std::to_string(stats.stats[Maplestat::LEVEL]);
             int16_t lvx = levelset.draw(levelstr, charinfopos + Point<int16_t>(23, -93));
@@ -236,7 +236,7 @@ namespace jrc
 
     void UICharSelect::update_selection()
     {
-        if (selected_relative >= charcount_relative)
+        if (selected_absolute >= charcount_absolute || selected_relative >= charcount_relative)
         {
             return;
         }
@@ -245,7 +245,7 @@ namespace jrc
         nametags[selected_absolute].set_selected(true);
 
         buttons[BT_CHAR0 + selected_relative]->set_state(Button::PRESSED);
-        namelabel.change_text(characters[selected_relative].stats.name);
+        namelabel.change_text(characters[selected_absolute].stats.name);
 
         for (size_t i = 0; i < NUM_LABELS; ++i)
         {
@@ -454,10 +454,25 @@ namespace jrc
     void UICharSelect::add_character(CharEntry&& character)
     {
         characters.emplace_back(std::forward<CharEntry>(character));
-        charlooks.emplace_back(character.look);
-        nametags.emplace_back(nametag, Text::A13M, Text::WHITE, character.stats.name);
+        const CharEntry& created_character = characters.back();
+        charlooks.emplace_back(created_character.look);
+        nametags.emplace_back(nametag, Text::A13M, Text::WHITE, created_character.stats.name);
+
+        if (selected_absolute < charlooks.size() - 1)
+        {
+            charlooks[selected_absolute].set_stance(Stance::STAND1);
+            nametags[selected_absolute].set_selected(false);
+
+            if (selected_relative < PAGESIZE)
+            {
+                buttons[BT_CHAR0 + selected_relative]->set_state(Button::NORMAL);
+            }
+        }
+
         charcount_absolute++;
-        charcount_relative++;
+        selected_absolute = charcount_absolute - 1;
+        page = selected_absolute / PAGESIZE;
+        selected_relative = selected_absolute % PAGESIZE;
 
         update_counts();
         update_selection();
@@ -512,7 +527,7 @@ namespace jrc
 
     std::string UICharSelect::get_label_string(size_t label) const
     {
-        const StatsEntry& stats = characters[selected_relative].stats;
+        const StatsEntry& stats = characters[selected_absolute].stats;
         switch (label)
         {
         case JOB:
