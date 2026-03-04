@@ -1,6 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-//////////////////////////////////////////////////////////////////////////////
 #include "UIParty.h"
 
 #include "../Components/MapleButton.h"
@@ -37,11 +34,24 @@ namespace jrc
 				statusbar->send_chatline(message, UIChatbar::YELLOW);
 			}
 		}
+
+		std::string resolve_leader_name(int32_t leader_id, const std::vector<UIChatbar::PartyMember>& members)
+		{
+			for (const UIChatbar::PartyMember& member : members)
+			{
+				if (member.id == leader_id && !member.name.empty())
+				{
+					return member.name;
+				}
+			}
+
+			return "Unknown";
+		}
 	}
 
 	UIParty::UIParty()
 		: UIDragElement<PosPARTY>(Point<int16_t>(300, 22)), background(300, 230, Geometry::BLACK, 0.80f), header(300, 22, Geometry::WHITE, 0.12f), divider(260, 1, Geometry::WHITE, 0.25f), title(Text::A12B, Text::LEFT, Text::WHITE, "Party"), party_info(Text::A11M, Text::LEFT, Text::WHITE, ""), invite_info(Text::A11M, Text::LEFT, Text::YELLOW, ""), invite_label(Text::A11M, Text::LEFT, Text::WHITE, "Invite:"),
-		  help_info(Text::A11M, Text::LEFT, Text::LIGHTGREY, "Tip: /party list, /party leader <name|id>"), party_id(-1), party_leader_id(-1), pending_party_invite_id(-1)
+		  help_info(Text::A11M, Text::LEFT, Text::LIGHTGREY, "Tip: /party list, /party leader <name>"), party_id(-1), party_leader_id(-1), pending_party_invite_id(-1)
 	{
 		dimension = Point<int16_t>(300, 230);
 
@@ -283,7 +293,8 @@ namespace jrc
 	{
 		if (party_id > 0)
 		{
-			party_info.change_text("Party #" + std::to_string(party_id) + "  Leader ID: " + std::to_string(party_leader_id));
+			std::string leader_name = resolve_leader_name(party_leader_id, party_members);
+			party_info.change_text("Leader: " + leader_name + "  Members: " + std::to_string(party_members.size()));
 		}
 		else
 		{
@@ -292,7 +303,7 @@ namespace jrc
 
 		if (pending_party_invite_id > 0)
 		{
-			invite_info.change_text("Pending invite: " + pending_party_inviter + " (#" + std::to_string(pending_party_invite_id) + ")");
+			invite_info.change_text("Pending invite: " + pending_party_inviter);
 		}
 		else
 		{
