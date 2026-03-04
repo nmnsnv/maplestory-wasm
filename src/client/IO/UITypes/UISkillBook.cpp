@@ -432,7 +432,7 @@ namespace jrc
     {
         if (skill_id / 10000 == job.get_id())
         {
-            change_tab(tab);
+            change_tab(tab, true);
         }
     }
 
@@ -489,8 +489,10 @@ namespace jrc
         splabel.change_text(std::to_string(get_available_sp()));
     }
 
-    void UISkillbook::change_tab(uint16_t new_tab)
+    void UISkillbook::change_tab(uint16_t new_tab, bool preserve_offset)
     {
+        uint16_t preserved_offset = preserve_offset ? offset : 0;
+
         buttons[BT_TAB0 + tab    ]->set_state(Button::NORMAL);
         buttons[BT_TAB0 + new_tab]->set_state(Button::PRESSED);
         tab = new_tab;
@@ -521,9 +523,12 @@ namespace jrc
             skillcount++;
         }
 
-        slider.setrows(ROWS, skillcount);
+        uint16_t max_offset = skillcount > ROWS ? skillcount - ROWS : 0;
+        uint16_t restored_offset = preserved_offset < max_offset ? preserved_offset : max_offset;
+
+        slider.setrows(restored_offset, ROWS, skillcount);
         update_sp_label();
-        change_offset(0);
+        change_offset(restored_offset);
     }
 
     void UISkillbook::change_offset(uint16_t new_offset)

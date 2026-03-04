@@ -90,7 +90,7 @@ namespace jrc
         void update_sp_label();
         int16_t get_beginner_sp() const;
         int16_t get_available_sp() const;
-        void change_tab(uint16_t new_tab);
+        void change_tab(uint16_t new_tab, bool preserve_offset = false);
         void change_offset(uint16_t new_offset);
 
         void show_skill(int32_t skill_id);
