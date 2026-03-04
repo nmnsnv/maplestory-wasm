@@ -1,22 +1,6 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #include "Char.h"
 
+#include <algorithm>
 #include <math.h>
 
 #include "../Constants.h"
@@ -29,9 +13,11 @@
 namespace jrc
 {
     Char::Char(int32_t o, const CharLook& lk, const std::string& name)
-        : MapObject(o),
+        : LivingObject(o, { false, true, true }),
           look(lk),
-          namelabel({ Text::A13M, Text::CENTER, Text::WHITE, Text::NAMETAG, name }) {}
+          namelabel({ Text::A13M, Text::CENTER, Text::WHITE, Text::NAMETAG, name }),
+          partyhp(-1),
+          partymaxhp(0) {}
 
     void Char::draw(double viewx, double viewy, float alpha) const
     {
@@ -68,6 +54,13 @@ namespace jrc
             {
                 pet.draw(viewx, viewy, alpha);
             }
+        }
+
+        if (partymaxhp > 0 && partyhp >= 0)
+        {
+            int32_t clamped_hp = std::clamp(partyhp, 0, partymaxhp);
+            int16_t hp_percent = static_cast<int16_t>((100 * clamped_hp) / partymaxhp);
+            partyhpbar.draw(absp + Point<int16_t>(0, -55), hp_percent);
         }
 
         namelabel.draw(absp);
@@ -194,6 +187,24 @@ namespace jrc
     void Char::speak(const std::string& line)
     {
         chatballoon.change_text(line);
+    }
+
+    void Char::set_party_hp(int32_t hp, int32_t max_hp)
+    {
+        if (max_hp <= 0)
+        {
+            clear_party_hp();
+            return;
+        }
+
+        partymaxhp = max_hp;
+        partyhp = std::clamp(hp, 0, max_hp);
+    }
+
+    void Char::clear_party_hp()
+    {
+        partyhp = -1;
+        partymaxhp = 0;
     }
 
     void Char::change_look(Maplestat::Id stat, int32_t id)

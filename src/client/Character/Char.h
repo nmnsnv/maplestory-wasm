@@ -1,20 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http:///www.gnu.org/licenses/>.   //
-//////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "CharEffect.h"
 #include "Inventory/Weapon.h"
@@ -23,8 +6,9 @@
 #include "Look/PetLook.h"
 
 #include "../Gameplay/Combat/DamageNumber.h"
-#include "../Gameplay/MapleMap/MapObject.h"
+#include "../Gameplay/MapleMap/LivingObject.h"
 #include "../Graphics/EffectLayer.h"
+#include "../Graphics/Geometry.h"
 #include "../IO/Components/ChatBalloon.h"
 #include "../Template/EnumMap.h"
 #include "../Template/Rectangle.h"
@@ -34,7 +18,7 @@
 namespace jrc
 {
     /// Base for characters, e.g. the player and other clients on the same map.
-    class Char : public MapObject
+    class Char : public LivingObject
     {
     public:
         /// Player states which determine animation and state.
@@ -104,6 +88,10 @@ namespace jrc
         void show_damage(int32_t damage);
         /// Display a chat bubble with the specified line in it.
         void speak(const std::string& line);
+        /// Update overhead party hp information for this character.
+        void set_party_hp(int32_t hp, int32_t max_hp);
+        /// Hide the overhead party hp bar for this character.
+        void clear_party_hp();
         /// Change a part of the character's look.
         void change_look(Maplestat::Id stat, int32_t id);
         /// Change the character's state by id.
@@ -171,6 +159,9 @@ namespace jrc
         TimedBool invincible;
         TimedBool ironbody;
         std::list<DamageNumber> damagenumbers;
+        PartyHpBar partyhpbar;
+        int32_t partyhp;
+        int32_t partymaxhp;
 
         static EnumMap<CharEffect::Id, Animation> chareffects;
     };

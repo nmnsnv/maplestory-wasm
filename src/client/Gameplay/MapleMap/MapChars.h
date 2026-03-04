@@ -1,20 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "MapObjects.h"
 
@@ -47,6 +30,10 @@ namespace jrc
         void send_movement(int32_t cid, const std::vector<Movement>& movements);
         // Update a characters look.
         void update_look(int32_t cid, const LookEntry& look);
+        // Update a party member hp bar for an on-map character.
+        void update_party_member_hp(int32_t cid, int32_t hp, int32_t max_hp);
+        // Hide all on-map party member hp bars.
+        void clear_party_member_hp();
 
         Optional<OtherChar> get_char(int32_t cid);
 

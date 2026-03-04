@@ -1,20 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #include "MapChars.h"
 
 namespace jrc
@@ -77,6 +60,26 @@ namespace jrc
         if (Optional<OtherChar> otherchar = get_char(cid))
         {
             otherchar->update_look(look);
+        }
+    }
+
+    void MapChars::update_party_member_hp(int32_t cid, int32_t hp, int32_t max_hp)
+    {
+        if (Optional<OtherChar> otherchar = get_char(cid))
+        {
+            otherchar->set_party_hp(hp, max_hp);
+        }
+    }
+
+    void MapChars::clear_party_member_hp()
+    {
+        for (auto& iter : chars)
+        {
+            Optional<OtherChar> otherchar = iter.second.get();
+            if (otherchar)
+            {
+                otherchar->clear_party_hp();
+            }
         }
     }
 

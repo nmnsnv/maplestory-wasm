@@ -1,20 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #include "MessagingHandlers.h"
 
 #include "../../Character/Char.h"
@@ -144,6 +127,11 @@ namespace jrc
             default:
                 return "";
             }
+        }
+
+        void clear_party_member_bars()
+        {
+            Stage::get().get_chars().clear_party_member_hp();
         }
     }
 
@@ -363,6 +351,7 @@ namespace jrc
             std::vector<UIChatbar::PartyMember> members;
             read_party_status(recv, leader_id, members);
             statusbar->set_party_state(party_id, leader_id, members);
+            clear_party_member_bars();
             if (party_window)
             {
                 party_window->set_party_state(party_id, leader_id, members);
@@ -378,6 +367,7 @@ namespace jrc
             recv.read_int();
 
             statusbar->set_party_state(party_id, -1, {});
+            clear_party_member_bars();
             if (party_window)
             {
                 party_window->set_party_state(party_id, -1, {});
@@ -395,6 +385,7 @@ namespace jrc
             {
                 recv.read_int(); // party id again
                 statusbar->clear_party_state();
+                clear_party_member_bars();
                 if (party_window)
                 {
                     party_window->clear_party_state();
@@ -413,6 +404,7 @@ namespace jrc
                 if (Stage::get().is_player(target_id))
                 {
                     statusbar->clear_party_state();
+                    clear_party_member_bars();
                     if (party_window)
                     {
                         party_window->clear_party_state();
@@ -421,6 +413,7 @@ namespace jrc
                 else
                 {
                     statusbar->set_party_state(party_id, leader_id, members);
+                    clear_party_member_bars();
                     if (party_window)
                     {
                         party_window->set_party_state(party_id, leader_id, members);
@@ -441,6 +434,7 @@ namespace jrc
             std::vector<UIChatbar::PartyMember> members;
             read_party_status(recv, leader_id, members);
             statusbar->set_party_state(party_id, leader_id, members);
+            clear_party_member_bars();
             if (party_window)
             {
                 party_window->set_party_state(party_id, leader_id, members);
@@ -520,6 +514,8 @@ namespace jrc
         {
             party_window->update_party_member_hp(cid, hp, max_hp);
         }
+
+        Stage::get().get_chars().update_party_member_hp(cid, hp, max_hp);
     }
 
 

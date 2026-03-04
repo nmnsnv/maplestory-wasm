@@ -1,20 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "DrawArgument.h"
 
@@ -27,7 +10,7 @@ namespace jrc
     class Geometry
     {
     public:
-        static const size_t NUM_COLORS = 5;
+        static const size_t NUM_COLORS = 7;
         enum Color
         {
             // Common
@@ -37,7 +20,9 @@ namespace jrc
             // Mob hp bar
             HPBAR_LIGHTGREEN,
             HPBAR_GREEN,
-            HPBAR_DARKGREEN
+            HPBAR_DARKGREEN,
+            HPBAR_LIGHTRED,
+            HPBAR_DARKRED
         };
 
         virtual ~Geometry() {}
@@ -88,6 +73,16 @@ namespace jrc
 
 
     class MobHpBar : public Geometry
+    {
+    public:
+        void draw(Point<int16_t> position, int16_t hppercent) const;
+
+    private:
+        static const int16_t WIDTH = 50;
+        static const int16_t HEIGHT = 10;
+    };
+
+    class PartyHpBar : public Geometry
     {
     public:
         void draw(Point<int16_t> position, int16_t hppercent) const;
