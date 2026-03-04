@@ -35,7 +35,7 @@ namespace jrc
     Mob::Mob(int32_t        oid,
              int32_t        mid,
              int8_t         mode,
-             uint8_t        stance,
+             uint8_t        stancebyte,
              uint16_t       fh,
              bool           newspawn,
              int8_t         tm,
@@ -122,8 +122,8 @@ namespace jrc
         dead         = false;
         fading       = false;
         awaitdeath   = false;
-        stance       = MOVE;
-        set_stance(stance);
+        this->stance = STAND;
+        set_stance(stancebyte);
         flydirection = STRAIGHT;
         counter      = 0;
 
