@@ -1,20 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #include "UIChatBar.h"
 
 #include "../UI.h"
@@ -23,6 +6,9 @@
 
 #include "../../Net/Packets/GameplayPackets.h"
 #include "../../Net/Packets/MessagingPackets.h"
+
+#include "UIParty.h"
+#include "UIStatusMessenger.h"
 
 #include "nlnx/nx.hpp"
 
@@ -396,12 +382,27 @@ namespace jrc
     {
         pending_party_invite_id = in_party_id;
         pending_party_inviter = inviter;
+
+        if (auto messenger = UI::get().get_element<UIStatusMessenger>())
+        {
+            messenger->show_party_invite(in_party_id, inviter);
+        }
     }
 
     void UIChatbar::clear_pending_party_invite()
     {
         pending_party_invite_id = -1;
         pending_party_inviter.clear();
+
+        if (auto party_window = UI::get().get_element<UIParty>())
+        {
+            party_window->clear_pending_party_invite();
+        }
+
+        if (auto messenger = UI::get().get_element<UIStatusMessenger>())
+        {
+            messenger->clear_party_invite();
+        }
     }
 
     void UIChatbar::set_party_state(int32_t in_party_id, int32_t leader_id, const std::vector<PartyMember>& members)
@@ -614,6 +615,7 @@ namespace jrc
 
             JoinPartyPacket(pending_party_invite_id).dispatch();
             send_line("[Party] Sent invitation accept request.", YELLOW);
+            clear_pending_party_invite();
             return true;
         }
 

@@ -247,6 +247,10 @@ namespace jrc
 				{
 					JoinPartyPacket(pending_party_invite_id).dispatch();
 					send_status_line("[Party] Sent invitation accept request.");
+					if (auto statusbar = UI::get().get_element<UIStatusbar>())
+					{
+						statusbar->clear_pending_party_invite();
+					}
 				}
 				else
 				{
@@ -258,7 +262,10 @@ namespace jrc
 				{
 					DenyPartyInvitePacket(pending_party_inviter).dispatch();
 					send_status_line("[Party] Declined invitation from " + pending_party_inviter + ".");
-					clear_pending_party_invite();
+					if (auto statusbar = UI::get().get_element<UIStatusbar>())
+					{
+						statusbar->clear_pending_party_invite();
+					}
 				}
 				else
 				{

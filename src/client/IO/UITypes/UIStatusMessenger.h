@@ -1,27 +1,14 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "../UIElement.h"
 
+#include "../../Graphics/Geometry.h"
 #include "../../Graphics/Text.h"
 #include "../../Template/Interpolated.h"
 
+#include <cstdint>
 #include <deque>
+#include <map>
+#include <string>
 
 namespace jrc
 {
@@ -57,9 +44,45 @@ namespace jrc
         void update_screen(int16_t new_width, int16_t new_height) override;
 
         void show_status(Text::Color color, const std::string& message);
+        void show_party_invite(int32_t party_id, const std::string& inviter);
+        void clear_party_invite();
+
+        bool is_in_range(Point<int16_t> cursorpos) const override;
+        bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
+
+    protected:
+        Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        void update_layout();
+        void draw_party_invite(float alpha) const;
+        void draw_button_labels() const;
+
+        enum Buttons : uint16_t
+        {
+            BT_ACCEPT,
+            BT_DECLINE
+        };
+
+        static constexpr int16_t INVITE_WIDTH = 300;
+        static constexpr int16_t INVITE_HEIGHT = 96;
+        static constexpr int16_t STATUSBAR_HEIGHT = 80;
+        static constexpr int16_t SCREEN_PADDING = 12;
         static constexpr size_t MAX_MESSAGES = 5;
+
+        Point<int16_t> status_anchor;
+        int16_t screen_width;
+        int16_t screen_height;
+
+        bool has_party_invite;
+        int32_t pending_party_invite_id;
+        std::string pending_party_inviter;
+        ColorBox invite_background;
+        ColorBox invite_header;
+        ColorLine invite_divider;
+        Text invite_title;
+        Text invite_message;
+        std::map<uint16_t, Text> button_labels;
 
         std::deque<StatusInfo> statusinfos;
     };
