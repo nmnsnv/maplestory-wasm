@@ -91,7 +91,9 @@ namespace jrc
                 }
             }
 
-            return { clicked ? Cursor::CLICKING : Cursor::IDLE, false };
+            // Keep click/drag active only when a button or drag area captured
+            // the press. This blocks press-then-hover from triggering controls.
+            return { Cursor::IDLE, false };
         }
 
     protected:

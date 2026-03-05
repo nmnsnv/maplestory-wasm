@@ -169,7 +169,10 @@ namespace jrc
             }
         }
 
-        return { down ? Cursor::CLICKING : Cursor::IDLE, false };
+        // Do not keep a synthetic "pressed" cursor when no control handled
+        // the current press. Otherwise, dragging onto a button while holding
+        // the mouse can incorrectly fire that button.
+        return { Cursor::IDLE, false };
     }
 
     void UIElement::send_scroll(double)
