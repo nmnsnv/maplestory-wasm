@@ -94,6 +94,7 @@ namespace jrc
                 hair->draw(interstance, Hair::BACK, interframe, args);
                 break;
             case CharEquips::HEADBAND:
+            case CharEquips::HAIRPIN:
                 equips.draw(Equipslot::CAP, interstance, Clothing::CAP, interframe, args);
                 hair->draw(interstance, Hair::BACK, interframe, args);
                 break;
@@ -103,9 +104,6 @@ namespace jrc
                 break;
             case CharEquips::FULLCOVER:
                 equips.draw(Equipslot::CAP, interstance, Clothing::CAP, interframe, args);
-                break;
-            case CharEquips::HAIRPIN:
-                // TODO
                 break;
             }
 
@@ -154,6 +152,7 @@ namespace jrc
                 hair->draw(interstance, Hair::OVERHEAD, interframe, args);
                 break;
             case CharEquips::HEADBAND:
+            case CharEquips::HAIRPIN:
                 equips.draw(Equipslot::CAP, interstance, Clothing::CAP, interframe, args);
                 hair->draw(interstance, Hair::DEFAULT, interframe, args);
                 hair->draw(interstance, Hair::OVERHEAD, interframe, args);
