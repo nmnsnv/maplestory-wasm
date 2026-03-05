@@ -11,13 +11,12 @@ if(EMSCRIPTEN)
     add_compile_definitions(MS_PLATFORM_WASM=1)
     add_compile_options("-fmacro-prefix-map=${CMAKE_SOURCE_DIR}/=/")
     add_compile_options(
-        -sUSE_GLFW=3 
-        -sUSE_WEBGL2=1
-        -sUSE_FREETYPE=1 
+        --use-port=freetype
         -Wno-c++11-narrowing
         -Wno-deprecated-declarations
         -fexceptions
     )
+    # Emscripten -s flags are linker settings; passing them at compile time emits warnings.
     add_link_options(
         -sUSE_GLFW=3 
         -sUSE_WEBGL2=1 
@@ -27,7 +26,7 @@ if(EMSCRIPTEN)
         -sFORCE_FILESYSTEM=1
         -fexceptions
         -sUSE_ZLIB=1
-        -sUSE_FREETYPE=1 
+        --use-port=freetype
         -lwebsocket.js 
         -sASYNCIFY=1
         -sASYNCIFY_IMPORTS=['emscripten_asm_const_int','emscripten_asm_const_double','emscripten_sleep']
