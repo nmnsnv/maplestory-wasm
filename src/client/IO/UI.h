@@ -68,6 +68,7 @@ namespace jrc
 
         void set_scrollnotice(const std::string& notice);
         void focus_textfield(Textfield* textfield);
+        void blur_textfield(Textfield* textfield);
         void remove_textfield();
         void drag_icon(Icon* icon);
         Keyboard& get_keyboard();

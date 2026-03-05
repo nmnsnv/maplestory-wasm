@@ -103,9 +103,6 @@ namespace jrc
         buttons[BT_SCROLLDOWN] = std::make_unique<MapleButton>(mainbar["scrollDown"]);
         buttons[BT_CHATTARGETS] = std::make_unique<MapleButton>(mainbar["chatTarget"]["base"]);
 
-        buttons[chatopen ? BT_OPENCHAT : BT_CLOSECHAT]->set_active(false);
-        buttons[BT_CHATTARGETS]->set_active(chatopen);
-
         chatspace[false] = mainbar["chatSpace"];
         chatspace[true] = mainbar["chatEnter"];
         chatenter = mainbar["chatSpace2"];
@@ -126,7 +123,7 @@ namespace jrc
         chatbox = { 502, 1 + chatrows * CHATROWHEIGHT, Geometry::BLACK, 0.6f };
 
         chatfield = { Text::A11M, Text::LEFT, Text::BLACK, { { -435, -58 }, { -40, -35} }, 0 };
-        chatfield.set_state(chatopen ? Textfield::NORMAL : Textfield::DISABLED);
+        set_chat_open(chatopen);
         chatfield.set_enter_callback([&](std::string msg) {
             msg = trim(msg);
             if (msg.empty())
@@ -156,6 +153,9 @@ namespace jrc
                 chatfield.change_text(lastentered[lastpos]);
             }
         });
+        chatfield.set_key_callback(KeyAction::RETURN, [&](){
+            chatfield.set_state(Textfield::NORMAL);
+        });
 
         slider = {11, Range<int16_t>(0, CHATROWHEIGHT * chatrows - 14), -22, chatrows, 1,
             [&](bool up) {
@@ -165,6 +165,25 @@ namespace jrc
             if (next >= 0 && next <= rowmax)
                 rowpos = next;
         } };
+    }
+
+    void UIChatbar::set_chat_open(bool open)
+    {
+        chatopen = open;
+        buttons[BT_OPENCHAT]->set_active(!open);
+        buttons[BT_CLOSECHAT]->set_active(open);
+        buttons[BT_CHATTARGETS]->set_active(open);
+        chatfield.set_state(open ? Textfield::NORMAL : Textfield::DISABLED);
+    }
+
+    void UIChatbar::focus_chatfield()
+    {
+        if (!chatopen)
+        {
+            set_chat_open(true);
+        }
+
+        chatfield.set_state(Textfield::FOCUSED);
     }
 
     void UIChatbar::draw(float inter) const
@@ -228,18 +247,10 @@ namespace jrc
         switch (id)
         {
         case BT_OPENCHAT:
-            chatopen = true;
-            buttons[BT_OPENCHAT]->set_active(false);
-            buttons[BT_CLOSECHAT]->set_active(true);
-            buttons[BT_CHATTARGETS]->set_active(true);
-            chatfield.set_state(Textfield::NORMAL);
+            set_chat_open(true);
             break;
         case BT_CLOSECHAT:
-            chatopen = false;
-            buttons[BT_OPENCHAT]->set_active(true);
-            buttons[BT_CLOSECHAT]->set_active(false);
-            buttons[BT_CHATTARGETS]->set_active(false);
-            chatfield.set_state(Textfield::DISABLED);
+            set_chat_open(false);
             break;
         case BT_CHATTARGETS:
             cycle_chat_target();

@@ -224,7 +224,9 @@ namespace jrc
 
         if (focusedtextfield)
         {
-            bool ctrl = is_key_down[keyboard.ctrlcode()];
+            bool ctrl =
+                is_key_down[keyboard.ctrlcode()] ||
+                is_key_down[GLFW_KEY_RIGHT_CONTROL];
             if (ctrl)
             {
                 if (!pressed)
@@ -243,7 +245,9 @@ namespace jrc
             }
             else
             {
-                bool shift = is_key_down[keyboard.shiftcode()];
+                bool shift =
+                    is_key_down[keyboard.shiftcode()] ||
+                    is_key_down[GLFW_KEY_RIGHT_SHIFT];
                 Keyboard::Mapping mapping = keyboard.get_text_mapping(keycode, shift);
                 focusedtextfield->send_key(mapping.type, mapping.action, pressed);
             }
@@ -285,6 +289,14 @@ namespace jrc
         }
 
         focusedtextfield = tofocus;
+    }
+
+    void UI::blur_textfield(Textfield* textfield)
+    {
+        if (focusedtextfield && focusedtextfield.get() == textfield)
+        {
+            focusedtextfield = {};
+        }
     }
 
     void UI::remove_textfield()

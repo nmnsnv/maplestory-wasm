@@ -77,6 +77,7 @@ namespace jrc
         CursorResult send_cursor(bool pressed, Point<int16_t> cursorpos) override;
 
         void send_line(const std::string& line, LineType type);
+        void focus_chatfield();
         void set_chat_target(ChatTarget target);
         void cycle_chat_target();
         void set_pending_party_invite(int32_t party_id, const std::string& inviter);
@@ -95,6 +96,7 @@ namespace jrc
         Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        void set_chat_open(bool open);
         int32_t resolve_party_member_id(const std::string& token) const;
         bool handle_party_command(const std::string& message);
         void send_chat_message(const std::string& message);

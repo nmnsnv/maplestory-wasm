@@ -172,6 +172,15 @@ namespace jrc
             focused = UIElement::NONE;
         }
 
+        if (pressed && type == KeyType::ACTION && action == KeyAction::RETURN)
+        {
+            if (auto statusbar = UI::get().get_element<UIStatusbar>())
+            {
+                statusbar->focus_chatfield();
+            }
+            return;
+        }
+
         switch (type)
         {
         case KeyType::MENU:

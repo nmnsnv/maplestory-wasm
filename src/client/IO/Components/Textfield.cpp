@@ -80,6 +80,7 @@ namespace jrc
     {
         if (state != st)
         {
+            State previous = state;
             state      = st;
             elapsed    = 0;
             showmarker = true;
@@ -87,6 +88,10 @@ namespace jrc
             if (state == FOCUSED)
             {
                 UI::get().focus_textfield(this);
+            }
+            else if (previous == FOCUSED)
+            {
+                UI::get().blur_textfield(this);
             }
         }
     }
@@ -137,6 +142,10 @@ namespace jrc
                         text = "";
                         markerpos = 0;
                         modifytext(text);
+                    }
+                    else if (callbacks.count(KeyAction::RETURN))
+                    {
+                        callbacks.at(KeyAction::RETURN)();
                     }
                     break;
                 case KeyAction::SPACE:

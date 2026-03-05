@@ -215,6 +215,11 @@ namespace jrc
         chatbar.send_line(line, type);
     }
 
+    void UIStatusbar::focus_chatfield()
+    {
+        chatbar.focus_chatfield();
+    }
+
     void UIStatusbar::set_chat_target(UIChatbar::ChatTarget target)
     {
         chatbar.set_chat_target(target);

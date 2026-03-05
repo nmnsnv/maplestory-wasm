@@ -22,6 +22,14 @@
 
 namespace jrc
 {
+    namespace
+    {
+        Keyboard::Mapping make_text_char_mapping(char ch)
+        {
+            return { KeyType::NUMBER, static_cast<unsigned char>(ch) };
+        }
+    }
+
     constexpr int32_t Keytable[90] =
     {
         0, 0,
@@ -48,6 +56,8 @@ namespace jrc
         keymap[GLFW_KEY_RIGHT] = { KeyType::ACTION, KeyAction::RIGHT };
         keymap[GLFW_KEY_UP]    = { KeyType::ACTION, KeyAction::UP    };
         keymap[GLFW_KEY_DOWN]  = { KeyType::ACTION, KeyAction::DOWN  };
+        keymap[GLFW_KEY_ENTER] = { KeyType::ACTION, KeyAction::RETURN };
+        keymap[GLFW_KEY_KP_ENTER] = { KeyType::ACTION, KeyAction::RETURN };
         // Fallback defaults until keymap packet arrives.
         keymap[GLFW_KEY_Z]     = { KeyType::ACTION, KeyAction::PICKUP };
 
@@ -119,26 +129,54 @@ namespace jrc
         {
             return { KeyType::ACTION, textactions.at(keycode) };
         }
-        else if (keycode > 47 && keycode < 65)
+
+        if (keycode >= GLFW_KEY_0 && keycode <= GLFW_KEY_9)
         {
-            return { KeyType::NUMBER, keycode - (shift ? 15 : 0) };
+            static constexpr char DIGITS[] = "0123456789";
+            static constexpr char SHIFT_DIGITS[] = ")!@#$%^&*(";
+            int32_t index = keycode - GLFW_KEY_0;
+            return make_text_char_mapping(shift ? SHIFT_DIGITS[index] : DIGITS[index]);
         }
-        else if (keycode > 64 && keycode < 91)
+
+        if (keycode >= GLFW_KEY_A && keycode <= GLFW_KEY_Z)
         {
             return { KeyType::LETTER, keycode + (shift ? 0 : 32) };
         }
-        else
+
+        switch (keycode)
         {
-            switch (keycode)
-            {
-            case GLFW_KEY_LEFT:
-            case GLFW_KEY_RIGHT:
-            case GLFW_KEY_UP:
-            case GLFW_KEY_DOWN:
-                return keymap.at(keycode);
-            default:
-                return { KeyType::NONE, 0 };
-            }
+        case GLFW_KEY_GRAVE_ACCENT:
+            return make_text_char_mapping(shift ? '~' : '`');
+        case GLFW_KEY_MINUS:
+            return make_text_char_mapping(shift ? '_' : '-');
+        case GLFW_KEY_EQUAL:
+            return make_text_char_mapping(shift ? '+' : '=');
+        case GLFW_KEY_LEFT_BRACKET:
+            return make_text_char_mapping(shift ? '{' : '[');
+        case GLFW_KEY_RIGHT_BRACKET:
+            return make_text_char_mapping(shift ? '}' : ']');
+        case GLFW_KEY_BACKSLASH:
+            return make_text_char_mapping(shift ? '|' : '\\');
+        case GLFW_KEY_SEMICOLON:
+            return make_text_char_mapping(shift ? ':' : ';');
+        case GLFW_KEY_APOSTROPHE:
+            return make_text_char_mapping(shift ? '"' : '\'');
+        case GLFW_KEY_COMMA:
+            return make_text_char_mapping(shift ? '<' : ',');
+        case GLFW_KEY_PERIOD:
+            return make_text_char_mapping(shift ? '>' : '.');
+        case GLFW_KEY_SLASH:
+            return make_text_char_mapping(shift ? '?' : '/');
+        case GLFW_KEY_LEFT:
+        case GLFW_KEY_RIGHT:
+        case GLFW_KEY_UP:
+        case GLFW_KEY_DOWN:
+        {
+            auto iter = keymap.find(keycode);
+            return iter != keymap.end() ? iter->second : Mapping{};
+        }
+        default:
+            return {};
         }
     }
 

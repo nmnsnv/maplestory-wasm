@@ -52,6 +52,7 @@ namespace jrc
         CursorResult send_cursor(bool pressed, Point<int16_t> cursorpos) override;
 
         void send_chatline(const std::string& line, UIChatbar::LineType type);
+        void focus_chatfield();
         void display_message(Messages::Type line, UIChatbar::LineType type);
         void set_chat_target(UIChatbar::ChatTarget target);
         void cycle_chat_target();
