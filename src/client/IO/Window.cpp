@@ -280,14 +280,41 @@ namespace jrc
         GraphicsGL::get().reinit();
 
 #ifdef MS_PLATFORM_WASM
-        // Prevent default browser behavior for Tab and Arrow keys
+        // Keep browser default-prevention rules configurable from JS so the input list is easy to extend.
         EM_ASM({
-            window.addEventListener("keydown", function(e) {
-                // Tab (9), Left (37), Up (38), Right (39), Down (40), F11 (122)
-                if ([9, 37, 38, 39, 40, 122].indexOf(e.keyCode) > -1) {
-                    e.preventDefault();
-                }
-            }, false);
+            window.MapleWasmInputGuard = window.MapleWasmInputGuard || {};
+            var guard = window.MapleWasmInputGuard;
+
+            if (!Array.isArray(guard.preventedKeys)) {
+                guard.preventedKeys =
+                    "Tab|Alt|Escape|ArrowLeft|ArrowUp|ArrowRight|ArrowDown|F11".split("|");
+            }
+
+            if (!Array.isArray(guard.preventedMouseButtons)) {
+                // Right mouse button.
+                guard.preventedMouseButtons = [];
+                guard.preventedMouseButtons.push(2);
+            }
+
+            if (!guard.installed) {
+                var preventKeyDefaults = function(event) {
+                    if (guard.preventedKeys.indexOf(event.key) !== -1) {
+                        event.preventDefault();
+                    }
+                };
+
+                var preventMouseDefaults = function(event) {
+                    if (guard.preventedMouseButtons.indexOf(event.button) !== -1) {
+                        event.preventDefault();
+                    }
+                };
+
+                window.addEventListener("keydown", preventKeyDefaults, false);
+                window.addEventListener("keyup", preventKeyDefaults, false);
+                window.addEventListener("mousedown", preventMouseDefaults, false);
+                window.addEventListener("contextmenu", preventMouseDefaults, false);
+                guard.installed = true;
+            }
         });
 
         // Ask JS side to sync canvas size with the current viewport/fullscreen state.
@@ -297,7 +324,6 @@ namespace jrc
             }
         });
 #endif
-
         return Error::NONE;
     }
 
