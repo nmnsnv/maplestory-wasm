@@ -250,6 +250,8 @@ namespace jrc
                         UseItemPacket(slot, item_id).dispatch();
                     }
                     break;
+                default:
+                    break;
                 }
             }
         }
@@ -530,6 +532,8 @@ namespace jrc
             break;
         case InventoryType::USE:
             ScrollEquipPacket(source, eqslot).dispatch();
+            break;
+        default:
             break;
         }
     }

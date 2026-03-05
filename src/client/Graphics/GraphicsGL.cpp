@@ -790,6 +790,8 @@ namespace jrc
 
         switch (background)
         {
+        case Text::NONE:
+            break;
         case Text::NAMETAG:
             for (const Text::Layout::Line& line : layout)
             {
@@ -803,6 +805,8 @@ namespace jrc
                 quads.emplace_back(left - 1, left, top + 1, bottom - 1, nulloffset, ntcolor, 0.0f);
                 quads.emplace_back(right, right + 1, top + 1, bottom - 1, nulloffset, ntcolor, 0.0f);
             }
+            break;
+        default:
             break;
         }
 

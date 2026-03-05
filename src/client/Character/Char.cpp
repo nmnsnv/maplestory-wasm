@@ -220,6 +220,8 @@ namespace jrc
         case Maplestat::HAIR:
             look.set_hair(id);
             break;
+        default:
+            break;
         }
     }
 

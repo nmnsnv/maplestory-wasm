@@ -178,6 +178,8 @@ namespace jrc
                 }
             }
             break;
+        default:
+            break;
         }
     }
 

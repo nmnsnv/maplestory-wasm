@@ -114,6 +114,8 @@ namespace jrc
             case Button::MOUSEOVER:
                 button->set_state(Button::NORMAL);
                 break;
+            default:
+                break;
             }
         }
         return false;

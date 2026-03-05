@@ -126,6 +126,8 @@ namespace jrc
             case Cursor::IDLE:
                 focusedtextfield = {};
                 break;
+            default:
+                break;
             }
         }
     }
@@ -239,6 +241,8 @@ namespace jrc
                         break;
                     case KeyAction::PASTE:
                         focusedtextfield->add_string(Window::get().getclipboard());
+                        break;
+                    default:
                         break;
                     }
                 }
