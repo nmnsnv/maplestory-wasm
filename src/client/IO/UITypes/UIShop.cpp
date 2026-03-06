@@ -46,6 +46,16 @@ namespace jrc
         buttons[BUY_ITEM]  = std::make_unique<MapleButton>(src["BtBuy"]);
         buttons[SELL_ITEM] = std::make_unique<MapleButton>(src["BtSell"]);
         buttons[EXIT]      = std::make_unique<MapleButton>(src["BtExit"]);
+        if (nl::node rechargenode = src["BtRecharge"])
+        {
+            for (uint16_t i = RECHARGE0; i <= RECHARGE4; ++i)
+            {
+                auto recharge = std::make_unique<MapleButton>(rechargenode);
+                recharge->set_position({ 398, static_cast<int16_t>(133 + 42 * (i - RECHARGE0)) });
+                recharge->set_active(false);
+                buttons[i] = std::move(recharge);
+            }
+        }
 
         nl::node sellen  = src2["TabSell"]["enabled"];
         nl::node selldis = src2["TabSell"]["disabled"];
@@ -139,9 +149,19 @@ namespace jrc
     {
         clear_tooltip();
 
+        constexpr Range<uint16_t> recharge(RECHARGE0, RECHARGE4);
         constexpr Range<uint16_t> buy(BUY0, BUY4);
         constexpr Range<uint16_t> sell(SELL0, SELL4);
-        if (buy.contains(buttonid))
+        if (recharge.contains(buttonid))
+        {
+            int16_t selected = buttonid - RECHARGE0;
+            sellstate.selection = selected + sellstate.offset;
+            sellstate.recharge_at(selected);
+            update_recharge_buttons();
+
+            return Button::NORMAL;
+        }
+        else if (buy.contains(buttonid))
         {
             int16_t selected = buttonid - BUY0;
             buystate.select(selected);
@@ -152,6 +172,7 @@ namespace jrc
         {
             int16_t selected = buttonid - SELL0;
             sellstate.select(selected);
+            update_recharge_buttons();
 
             return Button::NORMAL;
         }
@@ -226,6 +247,7 @@ namespace jrc
             Cursor::State sstate = sellslider.send_cursor(cursoroffset, clicked);
             if (sstate != Cursor::IDLE)
             {
+                update_recharge_buttons();
                 clear_tooltip();
                 return { sstate, true };
             }
@@ -272,6 +294,7 @@ namespace jrc
         else if (sellslider.isenabled() && xoff >= 241 && xoff <= 454)
         {
             sellslider.send_scroll(yoffset);
+            update_recharge_buttons();
         }
     }
 
@@ -289,6 +312,7 @@ namespace jrc
             clear_tooltip();
             buystate.selection = -1;
             sellstate.selection = slot + sellstate.offset;
+            update_recharge_buttons();
             sellstate.sell();
         }
     }
@@ -338,6 +362,32 @@ namespace jrc
         sellstate.change_tab(inventory, type, meso);
 
         sellslider.setrows(5, sellstate.lastslot);
+        update_recharge_buttons();
+    }
+
+    void UIShop::update_recharge_buttons()
+    {
+        for (uint16_t i = RECHARGE0; i <= RECHARGE4; ++i)
+        {
+            auto iter = buttons.find(i);
+            if (iter == buttons.end())
+            {
+                continue;
+            }
+
+            Button* recharge = iter->second.get();
+            int16_t visibleslot = i - RECHARGE0;
+            if (sellstate.can_recharge_at(visibleslot))
+            {
+                recharge->set_active(true);
+                recharge->set_state(Button::NORMAL);
+            }
+            else
+            {
+                recharge->set_active(false);
+                recharge->set_state(Button::NORMAL);
+            }
+        }
     }
 
     void UIShop::reset(int32_t npcid)
@@ -493,6 +543,7 @@ namespace jrc
         id        = item_id;
         sellable  = count;
         slot      = s;
+        rechargable = item_id / 10000 == 207 || item_id / 10000 == 233;
         showcount = sc;
         currency  = cur;
 
@@ -534,6 +585,11 @@ namespace jrc
     int16_t UIShop::SellItem::get_sellable() const
     {
         return sellable;
+    }
+
+    bool UIShop::SellItem::is_rechargable() const
+    {
+        return rechargable;
     }
 
     void UIShop::BuyState::reset()
@@ -700,6 +756,30 @@ namespace jrc
             int32_t itemid = items[absslot].get_id();
             UI::get().show_item(Tooltip::SHOP, itemid);
         }
+    }
+
+    bool UIShop::SellState::can_recharge_at(int16_t visibleslot) const
+    {
+        if (tab != InventoryType::USE)
+        {
+            return false;
+        }
+
+        int16_t absslot = visibleslot + offset;
+        return absslot >= 0 &&
+            absslot < lastslot &&
+            items[absslot].is_rechargable();
+    }
+
+    void UIShop::SellState::recharge_at(int16_t visibleslot) const
+    {
+        int16_t absslot = visibleslot + offset;
+        if (!can_recharge_at(visibleslot))
+        {
+            return;
+        }
+
+        NpcShopActionPacket(items[absslot].get_slot()).dispatch();
     }
 
     void UIShop::SellState::sell() const

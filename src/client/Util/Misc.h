@@ -93,13 +93,14 @@ namespace jrc
 #ifdef MS_PLATFORM_WASM
     inline std::string getBrowserHostname()
     {
+        // Pass a dummy variadic argument to avoid pedantic zero-arg variadic macro warnings.
         char* hostname = (char*)EM_ASM_PTR({
             var hostname = window.location.hostname;
             var len = lengthBytesUTF8(hostname) + 1;
             var ptr = _malloc(len);
             stringToUTF8(hostname, ptr, len);
             return ptr;
-        });
+        }, 0);
         std::string result;
         if (hostname && strlen(hostname) > 0) {
             result = hostname;

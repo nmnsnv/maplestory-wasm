@@ -60,6 +60,7 @@ namespace jrc
         void clear_tooltip();
         void show_item(int16_t slot, bool sale);
         void changeselltab(InventoryType::Id tab);
+        void update_recharge_buttons();
         int16_t slot_by_position(int16_t y);
         uint16_t tabbyinventory(InventoryType::Id type);
 
@@ -73,10 +74,12 @@ namespace jrc
             ETC = 5,
             SETUP = 6,
             CASH = 7,
-            BUY0 = 8,
-            BUY4 = 12,
-            SELL0 = 13,
-            SELL4 = 17
+            RECHARGE0 = 8,
+            RECHARGE4 = 12,
+            BUY0 = 13,
+            BUY4 = 17,
+            SELL0 = 18,
+            SELL4 = 22
         };
 
         const CharLook& charlook;
@@ -124,6 +127,7 @@ namespace jrc
             int32_t get_id() const;
             int16_t get_slot() const;
             int16_t get_sellable() const;
+            bool is_rechargable() const;
 
         private:
             Texture icon;
@@ -131,6 +135,7 @@ namespace jrc
             int32_t id;
             int16_t slot;
             int16_t sellable;
+            bool rechargable;
             bool showcount;
             Text namelabel;
             Text pricelabel;
@@ -164,6 +169,8 @@ namespace jrc
             void change_tab(const Inventory& inventory, InventoryType::Id type, Texture meso);
             void draw(Point<int16_t> position, const Texture& selected) const;
             void show_item(int16_t slot);
+            bool can_recharge_at(int16_t visibleslot) const;
+            void recharge_at(int16_t visibleslot) const;
             void sell() const;
             void select(int16_t selected);
         };
