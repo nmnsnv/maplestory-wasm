@@ -115,3 +115,7 @@ To stop everything:
 
 ## Task Completion
 * Make sure the project builds.
+* Build should have no warnings.
+
+## Documentation
+* Check `docs/ms-network-protocol.md` for the network protocol.
