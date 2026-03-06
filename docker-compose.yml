@@ -61,6 +61,9 @@ services:
       dockerfile: docker/builder.Dockerfile
     volumes:
       - .:/app
+      # Persist Emscripten system library cache (zlib/freetype/etc.) between
+      # one-off `docker compose run --rm wasm-builder ...` invocations.
+      - emscripten-cache:/emsdk/upstream/emscripten/cache
     networks:
       - maplestory-network
     profiles: ["tools"]
@@ -68,3 +71,6 @@ services:
 networks:
   maplestory-network:
     external: true
+
+volumes:
+  emscripten-cache:
