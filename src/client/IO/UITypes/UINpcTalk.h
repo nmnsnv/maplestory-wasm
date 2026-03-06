@@ -78,6 +78,7 @@ namespace jrc
         bool slider;
 
         int8_t type;
+        bool end_confirms_dialogue;
         std::string prompttext;
         std::vector<std::string> selection_texts;
         std::vector<Text> selection_labels;

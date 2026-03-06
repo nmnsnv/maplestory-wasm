@@ -82,6 +82,7 @@ namespace jrc
         buttons[NO] = std::make_unique<MapleButton>(src["BtNo"]);
 
         active = false;
+        end_confirms_dialogue = false;
     }
 
     void UINpcTalk::draw(float inter) const
@@ -217,7 +218,7 @@ namespace jrc
             }
             break;
         case END:
-            NpcTalkMorePacket(type, 0).dispatch();
+            NpcTalkMorePacket(type, end_confirms_dialogue ? 1 : 0).dispatch();
             active = false;
             break;
         }
@@ -233,6 +234,7 @@ namespace jrc
         selection_labels.clear();
         selected = 0;
         hovered_selection = -1;
+        end_confirms_dialogue = false;
 
         if (msgtype == SELECTION_DIALOGUE_TYPE)
         {
@@ -311,7 +313,12 @@ namespace jrc
             if (has_prev)
                 place_button_from_right(PREV);
             if (!has_prev && !has_next)
+            {
+                // Vanilla sendOk flow: in this case END should also confirm as a
+                // fallback, because some clients/UI skins fail to render BtOK.
+                end_confirms_dialogue = true;
                 place_button_from_right(OK);
+            }
             break;
         }
         case 1:
@@ -330,6 +337,30 @@ namespace jrc
             place_button_from_right(OK);
             break;
         }
+
+        auto has_visible_action_button = [&](Buttons id) {
+            return buttons[id]->is_active() && buttons[id]->width() > 0 && buttons[id]->height() > 0;
+        };
+
+        // If text-only dialogue effectively has no visible action button besides
+        // END, treat END as confirm to avoid trapping the player in mode=0 exits.
+        if (msgtype == 0 &&
+            !has_visible_action_button(OK) &&
+            !has_visible_action_button(NEXT) &&
+            !has_visible_action_button(PREV))
+        {
+            end_confirms_dialogue = true;
+        }
+
+        // Same fallback for accept/decline prompts when YES/NO buttons fail
+        // to render in some WZ/UI variants: END acts as accept so flow advances.
+        if ((msgtype == 1 || msgtype == 12) &&
+            !has_visible_action_button(YES) &&
+            !has_visible_action_button(NO))
+        {
+            end_confirms_dialogue = true;
+        }
+
         type = msgtype;
 
         dimension = { top.width(), static_cast<int16_t>(top.height() + height + bottom.height()) };
