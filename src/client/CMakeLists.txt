@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(DEBUG_SYMBOLS "Enable debug symbols (-g)" OFF)
+option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
+option(ERROR_ON_UNUSED_VARIABLES "Fail the build on unused variable warnings" ON)
+option(ENFORCE_UNUSED_INCLUDES "Run include-what-you-use to catch unused includes" ON)
 
 if(EMSCRIPTEN)
     add_compile_definitions(MS_PLATFORM_WASM=1)
@@ -75,6 +78,36 @@ list(APPEND SOURCES
 )
 
 add_executable(JourneyClient ${SOURCES})
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    if(WARNINGS_AS_ERRORS)
+        target_compile_options(JourneyClient PRIVATE
+            $<$<COMPILE_LANGUAGE:C>:-Werror>
+            $<$<COMPILE_LANGUAGE:CXX>:-Werror>
+        )
+    endif()
+
+    if(ERROR_ON_UNUSED_VARIABLES)
+        target_compile_options(JourneyClient PRIVATE
+            $<$<COMPILE_LANGUAGE:C>:-Werror=unused-variable>
+            $<$<COMPILE_LANGUAGE:CXX>:-Werror=unused-variable>
+            $<$<COMPILE_LANGUAGE:C>:-Werror=unused-but-set-variable>
+            $<$<COMPILE_LANGUAGE:CXX>:-Werror=unused-but-set-variable>
+            $<$<COMPILE_LANGUAGE:CXX>:-Werror=unused-const-variable>
+        )
+    endif()
+endif()
+
+if(ENFORCE_UNUSED_INCLUDES)
+    find_program(IWYU_EXECUTABLE NAMES include-what-you-use iwyu)
+    if(IWYU_EXECUTABLE)
+        set_target_properties(JourneyClient PROPERTIES
+            CXX_INCLUDE_WHAT_YOU_USE "${IWYU_EXECUTABLE};-Xiwyu;--error=1"
+        )
+    else()
+        message(STATUS "ENFORCE_UNUSED_INCLUDES is ON, but include-what-you-use is not installed. Unused include checks are skipped.")
+    endif()
+endif()
 
 # Include directories
 include_directories(".")

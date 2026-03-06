@@ -157,8 +157,6 @@ namespace jrc
             }
             else if (period)
             {
-                int64_t fps = (samples * 1000000) / period;
-                // std::cout << "FPS: " << fps << std::endl;
                 period = 0;
                 samples = 0;
             }

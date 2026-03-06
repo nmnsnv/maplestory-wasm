@@ -157,10 +157,12 @@ namespace jrc
 
         bool morphed = recv.read_int() == 2;
         int32_t buffmask1 = recv.read_int();
-        int16_t buffvalue = 0;
         if (buffmask1 != 0)
         {
-            buffvalue = morphed ? recv.read_short() : recv.read_byte();
+            if (morphed)
+                recv.read_short();
+            else
+                recv.read_byte();
         }
         recv.read_int(); // buffmask 2
 

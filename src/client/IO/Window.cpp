@@ -245,11 +245,8 @@ namespace jrc
 
         glfwMakeContextCurrent(glwnd);
 #endif
-
-
-
-        bool vsync = Setting<VSync>::get().load();
 #ifndef MS_PLATFORM_WASM
+        bool vsync = Setting<VSync>::get().load();
         glfwSwapInterval(vsync ? 1 : 0);
 #endif
 

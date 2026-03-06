@@ -91,7 +91,7 @@ namespace jrc
 
         vslot = info["vslot"].get_string();
 
-        switch (int32_t standno = info["stand"])
+        switch (static_cast<int32_t>(info["stand"]))
         {
         case 1:
             stand = Stance::STAND1;
@@ -104,7 +104,7 @@ namespace jrc
             break;
         }
 
-        switch (int32_t walkno = info["walk"])
+        switch (static_cast<int32_t>(info["walk"]))
         {
         case 1:
             walk = Stance::WALK1;
@@ -162,7 +162,6 @@ namespace jrc
                         }
                     }
 
-                    nl::node mapnode = partnode["map"];
                     Point<int16_t> shift;
                     switch (eqslot)
                     {

@@ -426,7 +426,9 @@ namespace jrc
 
     void Music::play() const
     {
+#ifndef MS_PLATFORM_WASM
         static HSTREAM stream = 0;
+#endif
         static std::string bgmpath;
 
         if (path == bgmpath)
