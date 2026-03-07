@@ -5,6 +5,11 @@
 This file tells agents how to build and run this repository without guessing.
 Prefer the local workflow first. Use Docker when the local workflow is not possible or the required local toolchain is unavailable.
 
+**IMPORTANT**
+This is a client only project. You cannot change the server behavior in any way.
+Assume the server is working as expected.
+Any issues or new features should utilize server existing infra and modify the client only.
+
 ## Hard Rules
 
 - Never modify anything under `assets/`.
