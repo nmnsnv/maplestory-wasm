@@ -28,6 +28,14 @@ namespace jrc
             Point<int16_t> end_offset = {};
         };
 
+        struct SceneSound
+        {
+            std::string path;
+            int32_t start_ms = 0;
+            int32_t index = 0;
+            bool played = false;
+        };
+
         void draw_scene() const;
         void update_scene();
 
@@ -38,5 +46,6 @@ namespace jrc
         Point<int16_t> position;
         Point<int16_t> scene_origin;
         std::vector<SceneVisual> scene_visuals;
+        std::vector<SceneSound> scene_sounds;
     };
 }

@@ -1,5 +1,6 @@
 #include "MapEffect.h"
 
+#include "../../Audio/Audio.h"
 #include "../../Console.h"
 #include "../../Constants.h"
 
@@ -208,6 +209,50 @@ namespace jrc
             return has_animation_frames(node) ? node : nl::node{};
         }
 
+        nl::node resolve_sound_node(const std::string& path)
+        {
+            if (path.empty())
+            {
+                return {};
+            }
+
+            static constexpr const char* SOUND_PREFIX = "Sound/";
+            static constexpr size_t SOUND_PREFIX_LENGTH = 6;
+            if (path.compare(0, SOUND_PREFIX_LENGTH, SOUND_PREFIX) == 0)
+            {
+                nl::node node = nl::nx::sound.resolve(path.substr(SOUND_PREFIX_LENGTH));
+                if (node.data_type() == nl::node::type::audio)
+                {
+                    return node;
+                }
+            }
+
+            static constexpr const char* EFFECT_PREFIX = "Effect/";
+            static constexpr size_t EFFECT_PREFIX_LENGTH = 7;
+            if (path.compare(0, EFFECT_PREFIX_LENGTH, EFFECT_PREFIX) == 0)
+            {
+                nl::node node = nl::nx::effect.resolve(path.substr(EFFECT_PREFIX_LENGTH));
+                if (node.data_type() == nl::node::type::audio)
+                {
+                    return node;
+                }
+            }
+
+            nl::node effect_node = resolve_effect_node(path);
+            if (effect_node.data_type() == nl::node::type::audio)
+            {
+                return effect_node;
+            }
+
+            nl::node sound_node = nl::nx::sound.resolve(path);
+            if (sound_node.data_type() == nl::node::type::audio)
+            {
+                return sound_node;
+            }
+
+            return {};
+        }
+
         bool has_integer_field(nl::node node, const char* field_name)
         {
             return node[field_name].data_type() == nl::node::type::integer;
@@ -260,6 +305,13 @@ namespace jrc
             Point<int16_t> start_offset = {};
             Point<int16_t> end_offset = {};
             nl::node animation_node = {};
+        };
+
+        struct SceneSoundSpec
+        {
+            std::string path;
+            int32_t start_ms = 0;
+            int32_t index = 0;
         };
 
         bool parse_scene_visuals(nl::node scene_node, std::vector<SceneVisualSpec>& output)
@@ -338,6 +390,46 @@ namespace jrc
 
             return !output.empty();
         }
+
+        void parse_scene_sounds(nl::node scene_node, std::vector<SceneSoundSpec>& output)
+        {
+            output.clear();
+
+            for (auto action : scene_node)
+            {
+                int32_t action_index = INT32_MAX;
+                if (!try_parse_int(action.name(), action_index))
+                {
+                    continue;
+                }
+
+                std::string sound_path = action["sound"];
+                if (sound_path.empty())
+                {
+                    continue;
+                }
+
+                output.push_back(
+                    {
+                        sound_path,
+                        std::max<int32_t>(0, action["start"]),
+                        action_index
+                    }
+                );
+            }
+
+            std::sort(
+                output.begin(),
+                output.end(),
+                [](const SceneSoundSpec& left, const SceneSoundSpec& right) {
+                    if (left.start_ms != right.start_ms)
+                    {
+                        return left.start_ms < right.start_ms;
+                    }
+                    return left.index < right.index;
+                }
+            );
+        }
     }
 
     MapEffect::MapEffect(const std::string& path)
@@ -374,6 +466,21 @@ namespace jrc
                     scene_visuals.push_back(std::move(visual));
                 }
 
+                std::vector<SceneSoundSpec> scene_sound_specs;
+                parse_scene_sounds(effect_node, scene_sound_specs);
+                scene_sounds.clear();
+                scene_sounds.reserve(scene_sound_specs.size());
+                for (const SceneSoundSpec& sound_spec : scene_sound_specs)
+                {
+                    scene_sounds.push_back(
+                        {
+                            sound_spec.path,
+                            sound_spec.start_ms,
+                            sound_spec.index,
+                            false
+                        }
+                    );
+                }
                 scene_mode = true;
                 return;
             }
@@ -460,12 +567,12 @@ namespace jrc
 
     void MapEffect::update_scene()
     {
-        bool has_active_or_future_visual = false;
+        bool has_active_or_future_activity = false;
         for (SceneVisual& visual : scene_visuals)
         {
             if (elapsed_ms < visual.start_ms)
             {
-                has_active_or_future_visual = true;
+                has_active_or_future_activity = true;
                 continue;
             }
 
@@ -475,12 +582,39 @@ namespace jrc
                 continue;
             }
 
-            has_active_or_future_visual = true;
+            has_active_or_future_activity = true;
             visual.animation.update(Constants::TIMESTEP);
         }
 
+        for (SceneSound& sound_event : scene_sounds)
+        {
+            if (sound_event.played)
+            {
+                continue;
+            }
+
+            if (elapsed_ms >= sound_event.start_ms)
+            {
+                nl::node sound_node = resolve_sound_node(sound_event.path);
+                if (sound_node.data_type() == nl::node::type::audio)
+                {
+                    Sound(sound_node).play();
+                }
+                else
+                {
+                    Console::get().print(
+                        "[MapEffect] Intro scene sound could not be resolved: " + sound_event.path
+                    );
+                }
+                sound_event.played = true;
+                continue;
+            }
+
+            has_active_or_future_activity = true;
+        }
+
         elapsed_ms += Constants::TIMESTEP;
-        finished = !has_active_or_future_visual;
+        finished = !has_active_or_future_activity;
     }
 
     void MapEffect::update()
