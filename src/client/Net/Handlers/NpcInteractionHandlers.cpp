@@ -17,12 +17,55 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "NpcInteractionHandlers.h"
 
+#include "../../Console.h"
 #include "../../IO/UI.h"
 #include "../../IO/UITypes/UINpcTalk.h"
 #include "../../IO/UITypes/UIShop.h"
 
 namespace jrc
 {
+    namespace
+    {
+        constexpr size_t NPC_DIALOGUE_PREVIEW_LIMIT = 120;
+
+        int32_t next_npc_handler_debug_sequence()
+        {
+            static int32_t sequence = 0;
+            return ++sequence;
+        }
+
+        std::string format_dialogue_preview(const std::string& source)
+        {
+            std::string preview;
+            preview.reserve(NPC_DIALOGUE_PREVIEW_LIMIT + 3);
+
+            for (size_t i = 0; i < source.size(); ++i)
+            {
+                if (preview.size() >= NPC_DIALOGUE_PREVIEW_LIMIT)
+                {
+                    break;
+                }
+
+                char ch = source[i];
+                if (ch == '\n' || ch == '\r' || ch == '\t')
+                {
+                    preview.push_back(' ');
+                }
+                else
+                {
+                    preview.push_back(ch);
+                }
+            }
+
+            if (source.size() > NPC_DIALOGUE_PREVIEW_LIMIT)
+            {
+                preview += "...";
+            }
+
+            return preview;
+        }
+    }
+
     void NpcDialogueHandler::handle(InPacket& recv) const
     {
         recv.skip(1);
@@ -35,6 +78,17 @@ namespace jrc
         int16_t style = 0;
         if (msgtype == 0 && recv.length() > 0)
             style = recv.read_short();
+
+        Console::get().print(
+            "[npc-debug] S->C NPC_DIALOGUE seq=" + std::to_string(next_npc_handler_debug_sequence()) +
+            " npcid=" + std::to_string(npcid) +
+            " msgtype=" + std::to_string(msgtype) +
+            " speaker=" + std::to_string(speaker) +
+            " style=" + std::to_string(style) +
+            " text_len=" + std::to_string(text.size()) +
+            " trailing=" + std::to_string(recv.length()) +
+            " preview=\"" + format_dialogue_preview(text) + "\""
+        );
 
         UI::get().emplace<UINpcTalk>();
         UI::get().enable();
@@ -57,6 +111,11 @@ namespace jrc
         shop.reset(npcid);
 
         int16_t size = recv.read_short();
+        Console::get().print(
+            "[npc-debug] S->C OPEN_NPC_SHOP seq=" + std::to_string(next_npc_handler_debug_sequence()) +
+            " npcid=" + std::to_string(npcid) +
+            " item_count=" + std::to_string(size)
+        );
         for (int16_t i = 0; i < size; i++)
         {
             int32_t itemid = recv.read_int();

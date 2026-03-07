@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <iostream>
 
 
 namespace jrc
@@ -45,37 +44,150 @@ namespace jrc
         undead      = info["undead"].get_bool();
         noflip      = info["noFlip"].get_bool();
         notattack   = info["notAttack"].get_bool();
-        // Some mob entries only provide stats and link animations to another mob id.
-        std::string linkid = info["link"];
-        nl::node linksrc = linkid.empty() ? nl::node() : nl::nx::mob[linkid + ".img"];
-        nl::node animsrc = linksrc ? linksrc : src;
+        auto resolve_mob_node = [](std::string rawid) -> nl::node {
+            auto try_node = [](const std::string& candidate) -> nl::node {
+                if (candidate.empty())
+                {
+                    return {};
+                }
 
-        canjump     =  animsrc["jump"].size() > 0;
-        canfly      =  animsrc["fly"].size()  > 0;
-        canmove     =  animsrc["move"].size() > 0 || canfly;
+                return nl::nx::mob[candidate + ".img"];
+            };
+
+            if (rawid.size() > 4 && rawid.substr(rawid.size() - 4) == ".img")
+            {
+                rawid = rawid.substr(0, rawid.size() - 4);
+            }
+
+            nl::node resolved = try_node(rawid);
+            if (resolved)
+            {
+                return resolved;
+            }
+
+            size_t first_non_zero = rawid.find_first_not_of('0');
+            std::string trimmed = first_non_zero == std::string::npos ? std::string() : rawid.substr(first_non_zero);
+            resolved = try_node(trimmed);
+            if (resolved)
+            {
+                return resolved;
+            }
+
+            int64_t numeric = 0;
+            try
+            {
+                std::string numeric_source = trimmed.empty() ? rawid : trimmed;
+                numeric = std::stoll(numeric_source);
+            }
+            catch (...)
+            {
+                numeric = 0;
+            }
+
+            if (numeric > 0)
+            {
+                resolved = try_node(std::to_string(numeric));
+                if (resolved)
+                {
+                    return resolved;
+                }
+
+                resolved = try_node(string_format::extend_id(static_cast<int32_t>(numeric), 7));
+                if (resolved)
+                {
+                    return resolved;
+                }
+            }
+
+            return {};
+        };
+
+        auto has_mob_animations = [](const nl::node& node) {
+            return node["stand"].size() > 0 || node["move"].size() > 0 || node["fly"].size() > 0;
+        };
+
+        // Some mob entries only carry combat stats and link to another id for visuals.
+        std::string linkid = info["link"].get_string();
+        nl::node linksrc = resolve_mob_node(linkid);
+        if (!linksrc)
+        {
+            int64_t linknum = info["link"].get_integer(0);
+            if (linknum > 0)
+            {
+                linksrc = resolve_mob_node(std::to_string(linknum));
+            }
+        }
+
+        nl::node animsrc = linksrc ? linksrc : src;
+        if (!has_mob_animations(animsrc) && has_mob_animations(src))
+        {
+            animsrc = src;
+        }
+
+        nl::node flysrc = animsrc["fly"].size() > 0 ? animsrc["fly"] : src["fly"];
+        nl::node standsrc = animsrc["stand"].size() > 0 ? animsrc["stand"] : src["stand"];
+        nl::node movesrc = animsrc["move"].size() > 0 ? animsrc["move"] : src["move"];
+        nl::node jumpsrc = animsrc["jump"].size() > 0 ? animsrc["jump"] : src["jump"];
+        nl::node hitsrc = animsrc["hit1"].size() > 0 ? animsrc["hit1"] : src["hit1"];
+        nl::node diesrc = animsrc["die1"].size() > 0 ? animsrc["die1"] : src["die1"];
+
+        canfly = flysrc.size() > 0;
+        canjump = jumpsrc.size() > 0;
+        canmove = movesrc.size() > 0 || canfly;
 
         if (canfly)
         {
-            animations[STAND] = animsrc["fly"];
-            animations[MOVE]  = animsrc["fly"];
+            animations[STAND] = flysrc;
+            animations[MOVE]  = flysrc;
         }
         else
         {
-            animations[STAND] = animsrc["stand"];
-            animations[MOVE]  = animsrc["move"];
+            if (standsrc.size() > 0)
+            {
+                animations[STAND] = standsrc;
+            }
+            if (movesrc.size() > 0)
+            {
+                animations[MOVE] = movesrc;
+            }
         }
-        animations[JUMP] = animsrc["jump"];
-        animations[HIT]  = animsrc["hit1"];
-        animations[DIE]  = animsrc["die1"];
+
+        if (animations.find(STAND) == animations.end() && animations.find(MOVE) != animations.end())
+        {
+            animations[STAND] = animations[MOVE];
+        }
+        if (animations.find(MOVE) == animations.end() && animations.find(STAND) != animations.end())
+        {
+            animations[MOVE] = animations[STAND];
+        }
+
+        if (jumpsrc.size() > 0)
+        {
+            animations[JUMP] = jumpsrc;
+        }
+        if (hitsrc.size() > 0)
+        {
+            animations[HIT] = hitsrc;
+        }
+        if (diesrc.size() > 0)
+        {
+            animations[DIE] = diesrc;
+        }
+
+        if (animations.find(JUMP) == animations.end() && animations.find(MOVE) != animations.end())
+        {
+            animations[JUMP] = animations[MOVE];
+        }
+        if (animations.find(HIT) == animations.end() && animations.find(MOVE) != animations.end())
+        {
+            animations[HIT] = animations[MOVE];
+        }
+        if (animations.find(DIE) == animations.end() && animations.find(MOVE) != animations.end())
+        {
+            animations[DIE] = animations[MOVE];
+        }
 
         name = nl::nx::string["Mob.img"][std::to_string(mid)]["name"].get_string();
-        int haslinksrc = linksrc.size() > 0 ? 1 : 0;
-        std::cout << "[MobDebug] Mob ctor: oid=" << oid
-                  << " mobid=" << mid
-                  << " name=\"" << name << "\""
-                  << " link=\"" << linkid << "\""
-                  << " hasLinkSrc=" << haslinksrc
-                  << std::endl;
 
         nl::node sndsrc = nl::nx::sound["Mob.img"][strid];
 

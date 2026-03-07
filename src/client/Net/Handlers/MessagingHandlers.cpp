@@ -1,6 +1,7 @@
 #include "MessagingHandlers.h"
 
 #include "../../Character/Char.h"
+#include "../../Console.h"
 #include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
@@ -9,7 +10,12 @@
 #include "../../IO/UITypes/UIStatusMessenger.h"
 #include "../../IO/UITypes/UIStatusBar.h"
 
+#include "nlnx/nx.hpp"
+
+#include <algorithm>
 #include <array>
+#include <cctype>
+#include <climits>
 #include <vector>
 
 namespace jrc
@@ -17,6 +23,251 @@ namespace jrc
     namespace
     {
         constexpr size_t PARTY_SIZE = 6;
+
+        std::vector<std::string> split_path(const std::string& path)
+        {
+            std::vector<std::string> parts;
+            std::string current;
+            for (char ch : path)
+            {
+                if (ch == '/')
+                {
+                    if (!current.empty())
+                    {
+                        parts.push_back(current);
+                        current.clear();
+                    }
+                    continue;
+                }
+                current.push_back(ch);
+            }
+            if (!current.empty())
+            {
+                parts.push_back(current);
+            }
+            return parts;
+        }
+
+        std::vector<std::string> token_variants(const std::string& token)
+        {
+            std::vector<std::string> variants;
+            variants.reserve(4);
+            variants.push_back(token);
+
+            constexpr size_t IMG_SUFFIX_LENGTH = 4;
+            if (token.size() > IMG_SUFFIX_LENGTH &&
+                token.compare(token.size() - IMG_SUFFIX_LENGTH, IMG_SUFFIX_LENGTH, ".img") == 0)
+            {
+                variants.push_back(token.substr(0, token.size() - IMG_SUFFIX_LENGTH));
+            }
+            else
+            {
+                variants.push_back(token + ".img");
+            }
+
+            if (token == "Effect")
+            {
+                variants.push_back("effect");
+            }
+            else if (token == "effect")
+            {
+                variants.push_back("Effect");
+            }
+
+            return variants;
+        }
+
+        nl::node resolve_tokens(nl::node root, const std::vector<std::string>& tokens)
+        {
+            std::vector<nl::node> candidates;
+            candidates.push_back(root);
+
+            for (const std::string& token : tokens)
+            {
+                std::vector<nl::node> next_candidates;
+                std::vector<std::string> options = token_variants(token);
+                for (const nl::node& candidate : candidates)
+                {
+                    for (const std::string& option : options)
+                    {
+                        nl::node child = candidate[option];
+                        if (child)
+                        {
+                            next_candidates.push_back(child);
+                        }
+                    }
+                }
+
+                if (next_candidates.empty())
+                {
+                    return {};
+                }
+
+                candidates.swap(next_candidates);
+            }
+
+            for (const nl::node& candidate : candidates)
+            {
+                if (candidate)
+                {
+                    return candidate;
+                }
+            }
+
+            return {};
+        }
+
+        nl::node resolve_effect_node(const std::string& path)
+        {
+            std::vector<std::string> tokens = split_path(path);
+            if (tokens.empty())
+            {
+                return {};
+            }
+
+            std::vector<std::vector<std::string>> token_sets;
+            token_sets.push_back(tokens);
+
+            if (tokens.front() == "Effect")
+            {
+                std::vector<std::string> without_prefix(tokens.begin() + 1, tokens.end());
+                if (!without_prefix.empty())
+                {
+                    token_sets.push_back(without_prefix);
+                }
+            }
+            else
+            {
+                std::vector<std::string> with_prefix;
+                with_prefix.push_back("Effect");
+                with_prefix.insert(with_prefix.end(), tokens.begin(), tokens.end());
+                token_sets.push_back(with_prefix);
+            }
+
+            for (const std::vector<std::string>& token_set : token_sets)
+            {
+                nl::node node = resolve_tokens(nl::nx::effect, token_set);
+                if (node)
+                {
+                    return node;
+                }
+
+                node = resolve_tokens(nl::nx::map["Effect.img"], token_set);
+                if (node)
+                {
+                    return node;
+                }
+            }
+
+            return {};
+        }
+
+        bool try_parse_int(const std::string& token, int32_t& value)
+        {
+            if (token.empty())
+            {
+                return false;
+            }
+
+            size_t index = 0;
+            if (token[0] == '+' || token[0] == '-')
+            {
+                index = 1;
+            }
+
+            if (index >= token.size())
+            {
+                return false;
+            }
+
+            for (; index < token.size(); ++index)
+            {
+                if (!std::isdigit(static_cast<unsigned char>(token[index])))
+                {
+                    return false;
+                }
+            }
+
+            try
+            {
+                value = std::stoi(token);
+            }
+            catch (...)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        bool extract_intro_scene_warp(nl::node scene_node, int32_t& target_mapid, int32_t& delay_ms)
+        {
+            int32_t best_start = INT32_MAX;
+            int32_t best_index = INT32_MAX;
+            int32_t best_field = -1;
+
+            for (auto action : scene_node)
+            {
+                int32_t action_index = INT32_MAX;
+                if (!try_parse_int(action.name(), action_index))
+                {
+                    continue;
+                }
+
+                int32_t type = action["type"];
+                if (type != 2)
+                {
+                    continue;
+                }
+
+                int32_t field = action["field"];
+                if (field <= 0)
+                {
+                    continue;
+                }
+
+                int32_t start = action["start"];
+                if (start < best_start || (start == best_start && action_index < best_index))
+                {
+                    best_start = start;
+                    best_index = action_index;
+                    best_field = field;
+                }
+            }
+
+            if (best_field <= 0)
+            {
+                return false;
+            }
+
+            target_mapid = best_field;
+            delay_ms = std::max<int32_t>(0, best_start);
+            return true;
+        }
+
+        void schedule_intro_warp_from_path(const std::string& path)
+        {
+            nl::node scene = resolve_effect_node(path);
+            if (!scene)
+            {
+                Console::get().print(
+                    "[intro-debug] unable to resolve intro scene for warp actions: \"" + path + "\""
+                );
+                return;
+            }
+
+            int32_t target_mapid = -1;
+            int32_t delay_ms = 0;
+            if (!extract_intro_scene_warp(scene, target_mapid, delay_ms))
+            {
+                Console::get().print(
+                    "[intro-debug] no scene warp action found in intro path: \"" + path + "\""
+                );
+                return;
+            }
+
+            Stage::get().schedule_intro_warp(target_mapid, delay_ms);
+        }
 
         struct RawPartyMember
         {
@@ -590,12 +841,22 @@ namespace jrc
         }
         else if (mode1 == 18) // intro effect
         {
-            recv.read_string(); // path
+            std::string path = recv.read_string();
+            Console::get().print(
+                "[intro-debug] SHOW_ITEM_GAIN_INCHAT mode=18 path=\"" + path + "\""
+            );
+            Stage::get().add_effect(path);
+            schedule_intro_warp_from_path(path);
         }
         else if (mode1 == 23) // info
         {
-            recv.read_string(); // path
-            recv.read_int(); // some int
+            std::string path = recv.read_string();
+            int32_t parameter = recv.read_int();
+            Console::get().print(
+                "[intro-debug] SHOW_ITEM_GAIN_INCHAT mode=23 path=\"" + path +
+                "\" arg=" + std::to_string(parameter)
+            );
+            Stage::get().add_effect(path);
         }
         else // buff effect
         {

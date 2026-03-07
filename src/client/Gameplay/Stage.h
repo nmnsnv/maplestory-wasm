@@ -64,6 +64,8 @@ namespace jrc
         void show_character_effect(int32_t cid, CharEffect::Id effect);
         // Show a map-level field effect.
         void add_effect(const std::string& path);
+        // Schedule a timed map-warp request used by intro scene scripts.
+        void schedule_intro_warp(int32_t mapid, int32_t delay_ms);
 
         // Send key input to the stage.
         void send_key(KeyType::Id keytype, int32_t keycode, bool pressed);
@@ -103,6 +105,7 @@ namespace jrc
         void handle_directional_context(KeyAction::Id action, bool down);
         void update_directional_context();
         void check_drops();
+        void update_intro_warp();
 
         enum State
         {
@@ -133,5 +136,7 @@ namespace jrc
         MapEffect effect;
 
         Combat combat;
+        int32_t pending_intro_warp_mapid;
+        int32_t pending_intro_warp_delay_ms;
     };
 }

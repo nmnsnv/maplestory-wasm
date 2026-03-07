@@ -20,6 +20,7 @@
 #include "../Components/MapleButton.h"
 
 #include "../../Constants.h"
+#include "../../Console.h"
 #include "../../Graphics/GraphicsGL.h"
 #include "../../Net/Packets/NpcInteractionPackets.h"
 #include "../../Util/Misc.h"
@@ -44,6 +45,12 @@ namespace jrc
         constexpr int16_t OPTION_VERTICAL_GAP = 2;
         constexpr int16_t HOVER_UNDERLINE_THICKNESS = 1;
         constexpr int8_t SELECTION_DIALOGUE_TYPE = 4;
+
+        int32_t next_npc_ui_debug_sequence()
+        {
+            static int32_t sequence = 0;
+            return ++sequence;
+        }
 
         bool try_parse_int32(const std::string& token, int32_t& value)
         {
@@ -157,17 +164,36 @@ namespace jrc
 
     Button::State UINpcTalk::button_pressed(uint16_t buttonid)
     {
+        Console::get().print(
+            "[npc-debug] ui button pressed seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+            " button=" + std::to_string(buttonid) +
+            " type=" + std::to_string(type) +
+            " end_confirms=" + std::to_string(end_confirms_dialogue ? 1 : 0) +
+            " selected_index=" + std::to_string(selected) +
+            " selection_count=" + std::to_string(selections.size())
+        );
+
         switch (buttonid)
         {
         case OK:
             if (type == SELECTION_DIALOGUE_TYPE)
             {
                 int32_t selection = selections.empty() ? 0 : selections[selected];
+                Console::get().print(
+                    "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " source=OK(selection) lastmsg=4 response=1 selection=" +
+                    std::to_string(selection)
+                );
                 NpcTalkMorePacket(selection).dispatch();
                 active = false;
             }
             else
             {
+                Console::get().print(
+                    "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " source=OK lastmsg=" + std::to_string(type) +
+                    " response=1"
+                );
                 NpcTalkMorePacket(type, 1).dispatch();
                 active = false;
             }
@@ -178,13 +204,29 @@ namespace jrc
                 if (!selections.empty())
                 {
                     selected = (selected + 1) % static_cast<int32_t>(selections.size());
+                    Console::get().print(
+                        "[npc-debug] selection cursor moved seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                        " direction=next selected_index=" + std::to_string(selected) +
+                        " selection=" + std::to_string(selections[selected])
+                    );
                     refresh_selection_styles();
                 }
             }
             else if (type == 0)
             {
+                Console::get().print(
+                    "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " source=NEXT lastmsg=0 response=1"
+                );
                 NpcTalkMorePacket(type, 1).dispatch();
                 active = false;
+            }
+            else
+            {
+                Console::get().print(
+                    "[npc-debug] NEXT ignored seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " type=" + std::to_string(type)
+                );
             }
             break;
         case PREV:
@@ -194,30 +236,75 @@ namespace jrc
                 {
                     selected = (selected + static_cast<int32_t>(selections.size()) - 1)
                         % static_cast<int32_t>(selections.size());
+                    Console::get().print(
+                        "[npc-debug] selection cursor moved seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                        " direction=prev selected_index=" + std::to_string(selected) +
+                        " selection=" + std::to_string(selections[selected])
+                    );
                     refresh_selection_styles();
                 }
             }
             else if (type == 0)
             {
+                Console::get().print(
+                    "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " source=PREV lastmsg=0 response=0"
+                );
                 NpcTalkMorePacket(type, 0).dispatch();
                 active = false;
+            }
+            else
+            {
+                Console::get().print(
+                    "[npc-debug] PREV ignored seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " type=" + std::to_string(type)
+                );
             }
             break;
         case YES:
             if (type == 1 || type == 12)
             {
+                Console::get().print(
+                    "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " source=YES lastmsg=" + std::to_string(type) +
+                    " response=1"
+                );
                 NpcTalkMorePacket(type, 1).dispatch();
                 active = false;
+            }
+            else
+            {
+                Console::get().print(
+                    "[npc-debug] YES ignored seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " type=" + std::to_string(type)
+                );
             }
             break;
         case NO:
             if (type == 1 || type == 12)
             {
+                Console::get().print(
+                    "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " source=NO lastmsg=" + std::to_string(type) +
+                    " response=0"
+                );
                 NpcTalkMorePacket(type, 0).dispatch();
                 active = false;
             }
+            else
+            {
+                Console::get().print(
+                    "[npc-debug] NO ignored seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                    " type=" + std::to_string(type)
+                );
+            }
             break;
         case END:
+            Console::get().print(
+                "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+                " source=END lastmsg=" + std::to_string(type) +
+                " response=" + std::to_string(end_confirms_dialogue ? 1 : 0)
+            );
             NpcTalkMorePacket(type, end_confirms_dialogue ? 1 : 0).dispatch();
             active = false;
             break;
@@ -368,6 +455,23 @@ namespace jrc
             static_cast<int16_t>(Constants::viewwidth() / 2 - dimension.x() / 2),
             static_cast<int16_t>(Constants::viewheight() / 2 - dimension.y() / 2)
         };
+
+        Console::get().print(
+            "[npc-debug] dialogue layout seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+            " npcid=" + std::to_string(npcid) +
+            " msgtype=" + std::to_string(msgtype) +
+            " style=" + std::to_string(style) +
+            " speaker=" + std::to_string(speakerbyte) +
+            " prompt_len=" + std::to_string(prompttext.size()) +
+            " options=" + std::to_string(selections.size()) +
+            " buttons(ok=" + std::to_string(buttons[OK]->is_active() ? 1 : 0) +
+            ",next=" + std::to_string(buttons[NEXT]->is_active() ? 1 : 0) +
+            ",prev=" + std::to_string(buttons[PREV]->is_active() ? 1 : 0) +
+            ",end=" + std::to_string(buttons[END]->is_active() ? 1 : 0) +
+            ",yes=" + std::to_string(buttons[YES]->is_active() ? 1 : 0) +
+            ",no=" + std::to_string(buttons[NO]->is_active() ? 1 : 0) +
+            ") end_confirms=" + std::to_string(end_confirms_dialogue ? 1 : 0)
+        );
     }
 
     void UINpcTalk::send_key(int32_t, bool pressed, bool escape)
@@ -378,6 +482,11 @@ namespace jrc
         }
 
         active = false;
+        Console::get().print(
+            "[npc-debug] C->S NPC_TALK_MORE seq=" + std::to_string(next_npc_ui_debug_sequence()) +
+            " source=ESC lastmsg=" + std::to_string(type) +
+            " response=0"
+        );
         NpcTalkMorePacket(type, 0).dispatch();
     }
 
