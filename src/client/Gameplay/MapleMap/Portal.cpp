@@ -28,7 +28,7 @@ namespace jrc
                    int32_t          tid,
                    std::string      tnm)
         : animation(a), type(t), name(nm), position(p),
-          warpinfo(tid, intramap, tnm, nm)
+          warpinfo(tid, t, intramap, tnm, nm)
     {
         touched = false;
     }

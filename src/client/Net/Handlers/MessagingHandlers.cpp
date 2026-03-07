@@ -1,6 +1,7 @@
 #include "MessagingHandlers.h"
 
 #include "../../Character/Char.h"
+#include "../../Console.h"
 #include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
@@ -15,6 +16,7 @@
 #include <array>
 #include <cctype>
 #include <climits>
+#include <unordered_set>
 #include <vector>
 
 namespace jrc
@@ -45,6 +47,26 @@ namespace jrc
                 parts.push_back(current);
             }
             return parts;
+        }
+
+        bool can_read_string(InPacket& recv)
+        {
+            if (recv.length() < sizeof(uint16_t))
+            {
+                return false;
+            }
+
+            uint16_t str_length = static_cast<uint16_t>(recv.inspect_short());
+            return recv.length() >= sizeof(uint16_t) + str_length;
+        }
+
+        void log_show_item_gain_once(const std::string& key, const std::string& message)
+        {
+            static std::unordered_set<std::string> logged;
+            if (logged.insert(key).second)
+            {
+                Console::get().print(message);
+            }
         }
 
         std::vector<std::string> token_variants(const std::string& token)
@@ -824,12 +846,39 @@ namespace jrc
 
     void ShowItemGainInChatHandler::handle(InPacket& recv) const
     {
+        if (!recv.available())
+        {
+            log_show_item_gain_once(
+                "empty_payload",
+                "[ShowItemGainInChatHandler] Received empty payload."
+            );
+            return;
+        }
+
         int8_t mode1 = recv.read_byte();
         if (mode1 == 3)
         {
+            if (recv.length() < sizeof(int8_t))
+            {
+                log_show_item_gain_once(
+                    "mode3_missing_subtype",
+                    "[ShowItemGainInChatHandler] Mode 3 payload is missing subtype."
+                );
+                return;
+            }
+
             int8_t mode2 = recv.read_byte();
             if (mode2 == 1) // this actually is 'item gain in chat'
             {
+                if (recv.length() < sizeof(int32_t) * 2)
+                {
+                    log_show_item_gain_once(
+                        "mode3_item_gain_truncated",
+                        "[ShowItemGainInChatHandler] Mode 3 subtype 1 payload is truncated."
+                    );
+                    return;
+                }
+
                 int32_t itemid = recv.read_int();
                 int32_t qty = recv.read_int();
 
@@ -844,30 +893,90 @@ namespace jrc
                 if (auto statusbar = UI::get().get_element<UIStatusbar>())
                     statusbar->send_chatline(message, UIChatbar::BLUE);
             }
+            else
+            {
+                log_show_item_gain_once(
+                    "mode3_unknown_subtype_" + std::to_string(static_cast<int>(mode2)),
+                    "[ShowItemGainInChatHandler] Unhandled mode 3 subtype: " +
+                    std::to_string(static_cast<int>(mode2))
+                );
+            }
+
+            return;
         }
-        else if (mode1 == 13) // card effect
+
+        if (mode1 == 13) // card effect
         {
             Stage::get()
                 .get_player()
                 .show_effect_id(CharEffect::MONSTER_CARD);
+            return;
         }
-        else if (mode1 == 18) // intro effect
+
+        if (mode1 == 18) // intro effect
         {
+            if (!can_read_string(recv))
+            {
+                log_show_item_gain_once(
+                    "mode18_truncated_string",
+                    "[ShowItemGainInChatHandler] Mode 18 payload is missing effect path."
+                );
+                return;
+            }
+
             std::string path = recv.read_string();
             Stage::get().add_effect(path);
             schedule_intro_warp_from_path(path);
+            return;
         }
-        else if (mode1 == 23) // info
+
+        if (mode1 == 23) // info
         {
+            if (!can_read_string(recv))
+            {
+                log_show_item_gain_once(
+                    "mode23_truncated_string",
+                    "[ShowItemGainInChatHandler] Mode 23 payload is missing info path."
+                );
+                return;
+            }
+
             std::string path = recv.read_string();
+
+            if (recv.length() < sizeof(int32_t))
+            {
+                log_show_item_gain_once(
+                    "mode23_missing_parameter",
+                    "[ShowItemGainInChatHandler] Mode 23 payload is missing parameter."
+                );
+                return;
+            }
+
             recv.read_int(); // parameter
             Stage::get().add_effect(path);
+            return;
         }
-        else // buff effect
+
+        log_show_item_gain_once(
+            "mode_fallback_" + std::to_string(static_cast<int>(mode1)),
+            "[ShowItemGainInChatHandler] Treating mode " +
+            std::to_string(static_cast<int>(mode1)) + " as buff effect."
+        );
+
+        if (recv.length() < sizeof(int32_t))
         {
-            int32_t skillid = recv.read_int();
-            // more bytes, but we don't need them
-            Stage::get().get_combat().show_player_buff(skillid);
+            log_show_item_gain_once(
+                "mode_fallback_truncated_" + std::to_string(static_cast<int>(mode1)),
+                "[ShowItemGainInChatHandler] Mode " +
+                std::to_string(static_cast<int>(mode1)) +
+                " payload is too short for buff parsing."
+            );
+            return;
         }
+
+        // buff effect
+        int32_t skillid = recv.read_int();
+        // more bytes, but we don't need them
+        Stage::get().get_combat().show_player_buff(skillid);
     }
 }

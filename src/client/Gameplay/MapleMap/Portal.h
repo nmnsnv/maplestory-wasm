@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <map>
+#include <utility>
 
 
 namespace jrc
@@ -54,20 +55,32 @@ namespace jrc
 
         struct WarpInfo
         {
+            static constexpr int32_t INVALID_MAP_ID = 999999999;
+
             int32_t mapid;
             std::string toname;
             std::string name;
             bool intramap;
             bool valid;
 
-            WarpInfo(int32_t m, bool i, std::string tn, std::string n)
-                : mapid(m), toname(tn), name(n), intramap(i)
+            bool has_target_map() const
             {
-                valid = mapid < 999999999;
+                return mapid >= 0 && mapid < INVALID_MAP_ID;
+            }
+
+            WarpInfo(int32_t m, Type portal_type, bool i, std::string tn, std::string n)
+                : mapid(m), toname(std::move(tn)), name(std::move(n)), intramap(i), valid(false)
+            {
+                bool scripted = portal_type == SCRIPTED ||
+                    portal_type == SCRIPTED_INVISIBLE ||
+                    portal_type == SCRIPTED_TOUCH ||
+                    portal_type == SCRIPTED_HIDDEN;
+
+                valid = has_target_map() || scripted;
             }
 
             WarpInfo()
-                : WarpInfo(999999999, false, {}, {}) {}
+                : WarpInfo(INVALID_MAP_ID, SPAWN, false, {}, {}) {}
         };
 
         Portal(const Animation* animation,
@@ -98,4 +111,3 @@ namespace jrc
         bool touched;
     };
 }
-

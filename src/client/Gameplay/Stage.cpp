@@ -255,7 +255,10 @@ namespace jrc
         else if (warpinfo.valid)
         {
             ChangeMapPacket(false, -1, warpinfo.name, false).dispatch();
-            player.get_stats().set_mapid(warpinfo.mapid);
+            if (warpinfo.has_target_map())
+            {
+                player.get_stats().set_mapid(warpinfo.mapid);
+            }
             Sound(Sound::PORTAL).play();
         }
     }
