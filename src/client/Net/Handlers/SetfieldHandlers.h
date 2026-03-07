@@ -31,7 +31,7 @@ namespace jrc
 
     private:
         void transition(int32_t mapid, uint8_t portalid) const;
-        void change_map(InPacket& recv, int32_t map_id) const;
+        void change_map(InPacket& recv) const;
         void set_field(InPacket& recv) const;
 
         void parse_inventory(InPacket& recv, Inventory& inventory) const;

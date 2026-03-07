@@ -21,7 +21,6 @@
 #include "Helpers/ItemParser.h"
 #include "Helpers/LoginParser.h"
 
-#include "../../Configuration.h"
 #include "../../Console.h"
 #include "../../Constants.h"
 #include "../../Timer.h"
@@ -35,23 +34,8 @@
 
 namespace jrc
 {
-    namespace
-    {
-        int32_t next_setfield_debug_sequence()
-        {
-            static int32_t sequence = 0;
-            return ++sequence;
-        }
-    }
-
     void SetfieldHandler::transition(int32_t mapid, uint8_t portalid) const
     {
-        Console::get().print(
-            "[setfield-debug] transition seq=" + std::to_string(next_setfield_debug_sequence()) +
-            " mapid=" + std::to_string(mapid) +
-            " portal=" + std::to_string(portalid)
-        );
-
         float fadestep = 0.025f;
         Window::get().fadeout(fadestep, [mapid, portalid](){
             GraphicsGL::get().clear();
@@ -68,21 +52,13 @@ namespace jrc
 
     void SetfieldHandler::handle(InPacket& recv) const
     {
-        int32_t channel = recv.read_int();
+        recv.read_int(); // channel
         int8_t  mode1   = recv.read_byte();
         int8_t  mode2   = recv.read_byte();
 
-        Console::get().print(
-            "[setfield-debug] SET_FIELD seq=" + std::to_string(next_setfield_debug_sequence()) +
-            " channel=" + std::to_string(channel) +
-            " mode1=" + std::to_string(mode1) +
-            " mode2=" + std::to_string(mode2) +
-            " payload_remaining=" + std::to_string(recv.length())
-        );
-
         if (mode1 == 0 && mode2 == 0)
         {
-            change_map(recv, channel);
+            change_map(recv);
         }
         else
         {
@@ -90,20 +66,12 @@ namespace jrc
         }
     }
 
-    void SetfieldHandler::change_map(InPacket& recv, int32_t channel) const
+    void SetfieldHandler::change_map(InPacket& recv) const
     {
         recv.skip(3);
 
         int32_t mapid = recv.read_int();
         auto portalid = static_cast<uint8_t>(recv.read_byte());
-
-        Console::get().print(
-            "[setfield-debug] change_map seq=" + std::to_string(next_setfield_debug_sequence()) +
-            " channel=" + std::to_string(channel) +
-            " mapid=" + std::to_string(mapid) +
-            " portal=" + std::to_string(portalid) +
-            " trailing=" + std::to_string(recv.length())
-        );
 
         transition(mapid, portalid);
 
@@ -119,21 +87,12 @@ namespace jrc
         auto charselect = UI::get().get_element<UICharSelect>();
         if (!charselect)
         {
-            Console::get().print(
-                "[setfield-debug] set_field aborted seq=" + std::to_string(next_setfield_debug_sequence()) +
-                " reason=missing-charselect cid=" + std::to_string(cid)
-            );
             return;
         }
 
         const CharEntry& playerentry = charselect->get_character(cid);
         if (playerentry.cid != cid)
         {
-            Console::get().print(
-                "[setfield-debug] set_field aborted seq=" + std::to_string(next_setfield_debug_sequence()) +
-                " reason=char-entry-mismatch cid=" + std::to_string(cid) +
-                " selected_cid=" + std::to_string(playerentry.cid)
-            );
             return;
         }
 
@@ -166,14 +125,6 @@ namespace jrc
 
         uint8_t portalid = player.get_stats().get_portal();
         int32_t mapid    = player.get_stats().get_mapid();
-
-        Console::get().print(
-            "[setfield-debug] set_field parsed seq=" + std::to_string(next_setfield_debug_sequence()) +
-            " cid=" + std::to_string(cid) +
-            " mapid=" + std::to_string(mapid) +
-            " portal=" + std::to_string(portalid) +
-            " trailing=" + std::to_string(recv.length())
-        );
 
         transition(mapid, portalid);
 

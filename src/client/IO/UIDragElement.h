@@ -18,7 +18,6 @@
 #pragma once
 #include "UIElement.h"
 
-#include "../Console.h"
 #include "../Configuration.h"
 
 namespace jrc
@@ -70,21 +69,6 @@ namespace jrc
             {
                 if (indragrange(cursorpos))
                 {
-                    for (const auto& btit : buttons)
-                    {
-                        const Button* button = btit.second.get();
-                        if (button && button->is_active() && button->bounds(position).contains(cursorpos))
-                        {
-                            Console::get().print(
-                                "[ui-debug] drag consumed title-bar click: type=" +
-                                std::to_string(static_cast<int32_t>(get_type())) +
-                                " button=" + std::to_string(btit.first) +
-                                " cursor=(" + std::to_string(cursorpos.x()) +
-                                "," + std::to_string(cursorpos.y()) + ")"
-                            );
-                        }
-                    }
-
                     cursoroffset = cursorpos - position;
                     dragged = true;
                     return { Cursor::CLICKING, true };

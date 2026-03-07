@@ -1,7 +1,6 @@
 #include "MessagingHandlers.h"
 
 #include "../../Character/Char.h"
-#include "../../Console.h"
 #include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
@@ -269,9 +268,6 @@ namespace jrc
             nl::node scene = resolve_effect_node(path);
             if (!scene)
             {
-                Console::get().print(
-                    "[intro-debug] unable to resolve intro scene for warp actions: \"" + path + "\""
-                );
                 return;
             }
 
@@ -279,9 +275,6 @@ namespace jrc
             int32_t delay_ms = 0;
             if (!extract_intro_scene_warp(scene, target_mapid, delay_ms))
             {
-                Console::get().print(
-                    "[intro-debug] no scene warp action found in intro path: \"" + path + "\""
-                );
                 return;
             }
 
@@ -861,20 +854,13 @@ namespace jrc
         else if (mode1 == 18) // intro effect
         {
             std::string path = recv.read_string();
-            Console::get().print(
-                "[intro-debug] SHOW_ITEM_GAIN_INCHAT mode=18 path=\"" + path + "\""
-            );
             Stage::get().add_effect(path);
             schedule_intro_warp_from_path(path);
         }
         else if (mode1 == 23) // info
         {
             std::string path = recv.read_string();
-            int32_t parameter = recv.read_int();
-            Console::get().print(
-                "[intro-debug] SHOW_ITEM_GAIN_INCHAT mode=23 path=\"" + path +
-                "\" arg=" + std::to_string(parameter)
-            );
+            recv.read_int(); // parameter
             Stage::get().add_effect(path);
         }
         else // buff effect

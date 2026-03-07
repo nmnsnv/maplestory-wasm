@@ -22,7 +22,6 @@
 #include "Helpers/MovementParser.h"
 
 #include "../../Audio/Audio.h"
-#include "../../Console.h"
 #include "../../Gameplay/Stage.h"
 #include "../../Gameplay/Spawn.h"
 
@@ -30,12 +29,6 @@ namespace jrc
 {
     namespace
     {
-        int32_t next_mapobject_debug_sequence()
-        {
-            static int32_t sequence = 0;
-            return ++sequence;
-        }
-
         bool has_mob_temporary_status(
             const std::array<int32_t, MobTemporaryStatMasks::MASK_COUNT>& masks,
             const MobTemporaryStatMasks::Descriptor& status)
@@ -141,19 +134,6 @@ namespace jrc
             {
                 recv.skip(4); // item effect
             }
-
-            Console::get().print(
-                "[mapobj-debug] SPAWN_MOB seq=" + std::to_string(next_mapobject_debug_sequence()) +
-                " mode=" + std::to_string(mode) +
-                " oid=" + std::to_string(oid) +
-                " mobid=" + std::to_string(id) +
-                " pos=(" + std::to_string(position.x()) + "," + std::to_string(position.y()) + ")" +
-                " stance=" + std::to_string(stance) +
-                " foothold=" + std::to_string(fh) +
-                " effect=" + std::to_string(effect) +
-                " team=" + std::to_string(team) +
-                " trailing=" + std::to_string(recv.length())
-            );
 
             Stage::get().get_mobs().spawn({
                 oid, id, mode, stance, fh, effect == -2, team, position
@@ -350,12 +330,6 @@ namespace jrc
         int32_t oid = recv.read_int();
         int8_t animation = recv.read_byte();
 
-        Console::get().print(
-            "[mapobj-debug] KILL_MOB seq=" + std::to_string(next_mapobject_debug_sequence()) +
-            " oid=" + std::to_string(oid) +
-            " animation=" + std::to_string(animation)
-        );
-
         Stage::get().get_mobs().remove(oid, animation);
     }
 
@@ -366,10 +340,6 @@ namespace jrc
         int32_t oid = recv.read_int();
         if (mode == 0)
         {
-            Console::get().print(
-                "[mapobj-debug] MOB_CONTROLLER seq=" + std::to_string(next_mapobject_debug_sequence()) +
-                " mode=0 oid=" + std::to_string(oid)
-            );
             Stage::get().get_mobs().set_control(oid, false);
         }
         else
@@ -379,13 +349,6 @@ namespace jrc
                 recv.skip(1);
 
                 int32_t id = recv.read_int();
-                Console::get().print(
-                    "[mapobj-debug] MOB_CONTROLLER seq=" + std::to_string(next_mapobject_debug_sequence()) +
-                    " mode=" + std::to_string(mode) +
-                    " oid=" + std::to_string(oid) +
-                    " mobid=" + std::to_string(id) +
-                    " payload_remaining=" + std::to_string(recv.length())
-                );
                 spawn_mob_from_packet(recv, oid, id, mode);
             }
             else
@@ -436,16 +399,6 @@ namespace jrc
         recv.read_short(); // 'rx'
         recv.read_short(); // 'ry'
 
-        Console::get().print(
-            "[mapobj-debug] SPAWN_NPC seq=" + std::to_string(next_mapobject_debug_sequence()) +
-            " oid=" + std::to_string(oid) +
-            " npcid=" + std::to_string(id) +
-            " pos=(" + std::to_string(position.x()) + "," + std::to_string(position.y()) + ")" +
-            " flip=" + std::to_string(flip ? 1 : 0) +
-            " foothold=" + std::to_string(fh) +
-            " trailing=" + std::to_string(recv.length())
-        );
-
         Stage::get().get_npcs().spawn({
             oid, id, position, flip, fh
         });
@@ -459,10 +412,6 @@ namespace jrc
 
         if (mode == 0)
         {
-            Console::get().print(
-                "[mapobj-debug] NPC_CONTROLLER seq=" + std::to_string(next_mapobject_debug_sequence()) +
-                " mode=0 oid=" + std::to_string(oid)
-            );
             Stage::get().get_npcs().remove(oid);
         }
         else
@@ -475,17 +424,6 @@ namespace jrc
             recv.read_short(); // 'rx'
             recv.read_short(); // 'ry'
             recv.read_bool(); // 'minimap'
-
-            Console::get().print(
-                "[mapobj-debug] NPC_CONTROLLER seq=" + std::to_string(next_mapobject_debug_sequence()) +
-                " mode=" + std::to_string(mode) +
-                " oid=" + std::to_string(oid) +
-                " npcid=" + std::to_string(id) +
-                " pos=(" + std::to_string(position.x()) + "," + std::to_string(position.y()) + ")" +
-                " flip=" + std::to_string(flip ? 1 : 0) +
-                " foothold=" + std::to_string(fh) +
-                " trailing=" + std::to_string(recv.length())
-            );
 
             Stage::get().get_npcs().spawn({
                 oid, id, position, flip, fh

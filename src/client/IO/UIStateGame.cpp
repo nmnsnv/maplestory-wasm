@@ -32,7 +32,6 @@
 #include "UITypes/UIKeyConfig.h"
 #include "UITypes/UIWorldMap.h"
 
-#include "../Console.h"
 #include "../Constants.h"
 #include "../Gameplay/Stage.h"
 
@@ -210,7 +209,6 @@ namespace jrc
                     );
                     break;
                 case KeyAction::KEYCONFIG:
-                    Console::get().print("[ui] dispatching KEYCONFIG window open");
                     emplace<UIKeyConfig>(
                         Stage::get().get_player().get_inventory(),
                         Stage::get().get_player().get_skills()

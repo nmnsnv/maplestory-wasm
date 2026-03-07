@@ -6,7 +6,6 @@
 #include "UINotice.h"
 
 #include "../UI.h"
-#include "../../Console.h"
 #include "../Components/MapleButton.h"
 
 #include "../../Data/ItemData.h"
@@ -591,18 +590,6 @@ namespace jrc
         if (!updates.empty())
         {
             ChangeKeyMapPacket(updates).dispatch();
-        }
-
-        Console::get().print(
-            "[keyconfig] apply updates=" + std::to_string(updates.size())
-        );
-        for (size_t i = 0; i < updates.size() && i < 8; ++i)
-        {
-            Console::get().print(
-                "[keyconfig] update[" + std::to_string(i) + "] key=" + std::to_string(std::get<0>(updates[i])) +
-                " type=" + std::to_string(std::get<1>(updates[i])) +
-                " action=" + std::to_string(std::get<2>(updates[i]))
-            );
         }
 
         for (const auto& update : updates)

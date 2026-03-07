@@ -16,44 +16,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "Session.h"
-#include "OutPacket.h"
 
 #include "../Configuration.h"
 #include "../Console.h"
 #ifdef MS_PLATFORM_WASM
 #include "../Util/Misc.h"
 #endif
-#include <iomanip>
-#include <sstream>
 
 namespace jrc
 {
     namespace
     {
-        int32_t next_net_debug_sequence()
-        {
-            static int32_t sequence = 0;
-            return ++sequence;
-        }
-
-        uint16_t read_uint16_le(const int8_t* bytes, size_t offset)
-        {
-            return static_cast<uint16_t>(
-                static_cast<uint16_t>(static_cast<uint8_t>(bytes[offset])) |
-                (static_cast<uint16_t>(static_cast<uint8_t>(bytes[offset + 1])) << 8)
-            );
-        }
-
-        int32_t read_int32_le(const int8_t* bytes, size_t offset)
-        {
-            return static_cast<int32_t>(
-                static_cast<uint32_t>(static_cast<uint8_t>(bytes[offset])) |
-                (static_cast<uint32_t>(static_cast<uint8_t>(bytes[offset + 1])) << 8) |
-                (static_cast<uint32_t>(static_cast<uint8_t>(bytes[offset + 2])) << 16) |
-                (static_cast<uint32_t>(static_cast<uint8_t>(bytes[offset + 3])) << 24)
-            );
-        }
-
         bool is_local_channel_address(const std::string& address)
         {
             return address == "127.0.0.1" || address == "0.0.0.0" || address == "localhost";
@@ -214,73 +187,6 @@ namespace jrc
         if (!connected)
         {
             return;
-        }
-
-        if (packet_length >= 2)
-        {
-            uint16_t opcode =
-                static_cast<uint16_t>(static_cast<uint8_t>(packet_bytes[0])) |
-                (static_cast<uint16_t>(static_cast<uint8_t>(packet_bytes[1])) << 8);
-
-            if (opcode == OutPacket::TALK_TO_NPC && packet_length >= 6)
-            {
-                int32_t oid = read_int32_le(packet_bytes, 2);
-                Console::get().print(
-                    "[npc-debug] C->S TALK_TO_NPC seq=" + std::to_string(next_net_debug_sequence()) +
-                    " oid=" + std::to_string(oid) +
-                    " len=" + std::to_string(packet_length)
-                );
-            }
-            else if (opcode == OutPacket::NPC_TALK_MORE && packet_length >= 4)
-            {
-                int8_t lastmsg = packet_bytes[2];
-                int8_t response = packet_bytes[3];
-                std::string details;
-
-                if (lastmsg == 4 && packet_length >= 8)
-                {
-                    int32_t selection = read_int32_le(packet_bytes, 4);
-                    details = " selection=" + std::to_string(selection);
-                }
-                else if (lastmsg == 2 && packet_length >= 6)
-                {
-                    uint16_t text_length = read_uint16_le(packet_bytes, 4);
-                    details = " text_len=" + std::to_string(text_length);
-                }
-
-                Console::get().print(
-                    "[npc-debug] C->S NPC_TALK_MORE(seq=" + std::to_string(next_net_debug_sequence()) +
-                    ") lastmsg=" + std::to_string(lastmsg) +
-                    " response=" + std::to_string(response) +
-                    " len=" + std::to_string(packet_length) +
-                    details
-                );
-            }
-            else if (opcode == OutPacket::NPC_SHOP_ACTION && packet_length >= 3)
-            {
-                int8_t mode = packet_bytes[2];
-                Console::get().print(
-                    "[npc-debug] C->S NPC_SHOP_ACTION seq=" + std::to_string(next_net_debug_sequence()) +
-                    " mode=" + std::to_string(mode) +
-                    " len=" + std::to_string(packet_length)
-                );
-            }
-
-            if (opcode == OutPacket::CREATE_CHAR)
-            {
-                std::ostringstream hex;
-                hex << std::uppercase << std::hex << std::setfill('0');
-                for (size_t i = 0; i < packet_length; ++i)
-                {
-                    hex << std::setw(2)
-                        << static_cast<unsigned int>(static_cast<uint8_t>(packet_bytes[i]));
-                }
-
-                Console::get().print(
-                    "[NET] CREATE_CHAR len=" + std::to_string(packet_length) +
-                    " payload=" + hex.str()
-                );
-            }
         }
 
         int8_t header[HEADER_LENGTH];

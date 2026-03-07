@@ -32,15 +32,6 @@
 
 namespace jrc
 {
-    namespace
-    {
-        int32_t next_packet_debug_sequence()
-        {
-            static int32_t sequence = 0;
-            return ++sequence;
-        }
-    }
-
     // Opcodes for InPackets.
     enum PacketSwitch::Opcode : uint16_t
     {
@@ -265,15 +256,6 @@ namespace jrc
         InPacket recv = { bytes, length };
         // Read the opcode to determine handler responsible.
         auto opcode = static_cast<uint16_t>(recv.read_short());
-
-        if (opcode == FIELD_OBSTACLE_ONOFF || opcode == FIELD_OBSTACLE_LIST || opcode == FIELD_OBSTACLE_RESET)
-        {
-            Console::get().print(
-                "[field-obstacle-debug] recv seq=" + std::to_string(next_packet_debug_sequence()) +
-                " opcode=" + std::to_string(opcode) +
-                " payload_len=" + std::to_string(recv.length())
-            );
-        }
 
         if (opcode < NUM_HANDLERS)
         {

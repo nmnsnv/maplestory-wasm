@@ -19,7 +19,6 @@
 #include "UI.h"
 
 #include "../Constants.h"
-#include "../Console.h"
 #include "../Audio/Audio.h"
 
 namespace jrc
@@ -144,14 +143,6 @@ namespace jrc
                     }
 
                     Sound(Sound::BUTTONCLICK).play();
-
-                    Console::get().print(
-                        "[ui-debug] button dispatch: type=" +
-                        std::to_string(static_cast<int32_t>(get_type())) +
-                        " button=" + std::to_string(btit.first) +
-                        " cursor=(" + std::to_string(pos.x()) +
-                        "," + std::to_string(pos.y()) + ")"
-                    );
 
                     btit.second->set_state(button_pressed(btit.first));
                     return { Cursor::CLICKING, true };

@@ -19,7 +19,6 @@
 
 #include "../Audio/Audio.h"
 #include "../Character/SkillId.h"
-#include "../Console.h"
 #include "../IO/KeyAction.h"
 #include "../IO/Messages.h"
 #include "../Net/Packets/GameplayPackets.h"
@@ -516,12 +515,6 @@ namespace jrc
     {
         pending_intro_warp_mapid = target_mapid;
         pending_intro_warp_delay_ms = std::max<int32_t>(0, delay_ms);
-
-        Console::get().print(
-            "[intro-debug] scheduled client intro warp target=" +
-            std::to_string(pending_intro_warp_mapid) +
-            " delay_ms=" + std::to_string(pending_intro_warp_delay_ms)
-        );
     }
 
     void Stage::update_intro_warp()
@@ -536,11 +529,6 @@ namespace jrc
         {
             return;
         }
-
-        Console::get().print(
-            "[intro-debug] C->S CHANGEMAP from intro target=" +
-            std::to_string(pending_intro_warp_mapid)
-        );
 
         ChangeMapPacket(false, pending_intro_warp_mapid, "", false).dispatch();
         pending_intro_warp_mapid = -1;
