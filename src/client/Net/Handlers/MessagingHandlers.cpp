@@ -205,6 +205,7 @@ namespace jrc
             int32_t best_start = INT32_MAX;
             int32_t best_index = INT32_MAX;
             int32_t best_field = -1;
+            int32_t visual_end_ms = 0;
 
             for (auto action : scene_node)
             {
@@ -215,6 +216,25 @@ namespace jrc
                 }
 
                 int32_t type = action["type"];
+                int32_t start = std::max<int32_t>(0, action["start"]);
+
+                if (type == 0)
+                {
+                    int32_t end = start;
+                    nl::node duration_node = action["duration"];
+                    if (duration_node.data_type() == nl::node::type::integer)
+                    {
+                        int32_t duration = duration_node;
+                        if (duration > 0)
+                        {
+                            end = start + duration;
+                        }
+                    }
+
+                    visual_end_ms = std::max(visual_end_ms, end);
+                    continue;
+                }
+
                 if (type != 2)
                 {
                     continue;
@@ -226,7 +246,6 @@ namespace jrc
                     continue;
                 }
 
-                int32_t start = action["start"];
                 if (start < best_start || (start == best_start && action_index < best_index))
                 {
                     best_start = start;
@@ -241,7 +260,7 @@ namespace jrc
             }
 
             target_mapid = best_field;
-            delay_ms = std::max<int32_t>(0, best_start);
+            delay_ms = std::max<int32_t>(best_start, visual_end_ms);
             return true;
         }
 
