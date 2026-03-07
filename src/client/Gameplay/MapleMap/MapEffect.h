@@ -15,6 +15,7 @@ namespace jrc
 
         void draw() const;
         void update();
+        bool blocks_player_input() const;
 
     private:
         struct SceneVisual

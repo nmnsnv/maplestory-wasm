@@ -106,6 +106,8 @@ namespace jrc
         void update_directional_context();
         void check_drops();
         void update_intro_warp();
+        bool is_intro_input_locked() const;
+        void release_intro_locked_actions();
 
         enum State
         {

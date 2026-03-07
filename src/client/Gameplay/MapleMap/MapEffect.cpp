@@ -403,7 +403,8 @@ namespace jrc
     MapEffect::MapEffect()
         : finished(true),
           scene_mode(false),
-          elapsed_ms(0)
+          elapsed_ms(0),
+          scene_origin(Constants::viewwidth() / 2, Constants::viewheight() / 2)
     {}
 
     void MapEffect::draw_scene() const
@@ -496,5 +497,10 @@ namespace jrc
         }
 
         finished = effect.update(6);
+    }
+
+    bool MapEffect::blocks_player_input() const
+    {
+        return scene_mode && !finished;
     }
 }
