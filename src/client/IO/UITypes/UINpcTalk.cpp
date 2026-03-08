@@ -19,6 +19,7 @@
 
 #include "../Components/MapleButton.h"
 
+#include "../../Console.h"
 #include "../../Constants.h"
 #include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
@@ -31,6 +32,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <unordered_set>
 
 namespace jrc
 {
@@ -188,6 +190,33 @@ namespace jrc
             }
 
             return try_get_map_name(id);
+        }
+
+        void log_unresolved_npc_token(const std::string& token)
+        {
+            static std::unordered_set<std::string> logged_tokens;
+            static bool emitted_log_limit_message = false;
+            constexpr size_t MAX_UNRESOLVED_TOKEN_LOGS = 20;
+
+            if (logged_tokens.find(token) != logged_tokens.end())
+            {
+                return;
+            }
+
+            if (logged_tokens.size() >= MAX_UNRESOLVED_TOKEN_LOGS)
+            {
+                if (!emitted_log_limit_message)
+                {
+                    Console::get().print(
+                        "[npc] unresolved token log limit reached; suppressing additional unique token logs."
+                    );
+                    emitted_log_limit_message = true;
+                }
+                return;
+            }
+
+            logged_tokens.insert(token);
+            Console::get().print("[npc] unresolved dialogue token: " + token);
         }
     }
 
@@ -796,13 +825,15 @@ namespace jrc
                 if (try_parse_delimited_number(source, cursor + 2, token_end, id))
                 {
                     std::string replacement = resolve_prefixed_reference(token, id);
+                    std::string token_text = source.substr(cursor, token_end + 1 - cursor);
                     if (!replacement.empty())
                     {
                         result += replacement;
                     }
                     else
                     {
-                        result += source.substr(cursor, token_end + 1 - cursor);
+                        log_unresolved_npc_token(token_text);
+                        result += token_text;
                     }
 
                     cursor = token_end + 1;
@@ -817,13 +848,15 @@ namespace jrc
                 if (try_parse_delimited_number(source, cursor + 1, token_end, id))
                 {
                     std::string replacement = resolve_numeric_reference(id);
+                    std::string token_text = source.substr(cursor, token_end + 1 - cursor);
                     if (!replacement.empty())
                     {
                         result += replacement;
                     }
                     else
                     {
-                        result += source.substr(cursor, token_end + 1 - cursor);
+                        log_unresolved_npc_token(token_text);
+                        result += token_text;
                     }
 
                     cursor = token_end + 1;
