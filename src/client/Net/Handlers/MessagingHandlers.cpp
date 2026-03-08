@@ -504,9 +504,15 @@ namespace jrc
     void ServerMessageHandler::handle(InPacket& recv) const
     {
         int8_t type = recv.read_byte();
-        bool servermessage = recv.inspect_bool();
+        bool servermessage = type == 4 && recv.available() && recv.inspect_bool();
         if (servermessage)
             recv.skip(1);
+
+        if (!can_read_string(recv))
+        {
+            return;
+        }
+
         std::string message = recv.read_string();
 
         if (type == 3)
@@ -520,6 +526,16 @@ namespace jrc
         }
         else if (type == 5)
         {
+            if (auto statusbar = UI::get().get_element<UIStatusbar>())
+                statusbar->send_chatline(message, UIChatbar::WHITE);
+        }
+        else if (type == 6)
+        {
+            if (recv.length() >= sizeof(int32_t))
+            {
+                recv.read_int(); // unknown field, always 0 in Cosmic
+            }
+
             if (auto statusbar = UI::get().get_element<UIStatusbar>())
                 statusbar->send_chatline(message, UIChatbar::WHITE);
         }

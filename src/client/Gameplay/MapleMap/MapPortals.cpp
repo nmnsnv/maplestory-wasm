@@ -40,7 +40,12 @@ namespace jrc
             int32_t target_id = sub["tm"];
             Point<int16_t> position = { sub["x"], sub["y"] };
 
-            const Animation* animation = &animations[type];
+            const Animation* animation = nullptr;
+            auto animation_iter = animations.find(type);
+            if (animation_iter != animations.end())
+            {
+                animation = &animation_iter->second;
+            }
             bool intramap = target_id == mapid;
 
             portals_by_id.emplace(
@@ -71,6 +76,8 @@ namespace jrc
             {
             case Portal::HIDDEN:
             case Portal::TOUCH:
+            case Portal::SCRIPTED_HIDDEN:
+            case Portal::SCRIPTED_TOUCH:
                 portal.update(playerpos);
                 break;
             default:
@@ -147,6 +154,10 @@ namespace jrc
 
         animations[Portal::HIDDEN]  = src["ph"]["default"]["portalContinue"];
         animations[Portal::REGULAR] = regular["default"] ? regular["default"] : regular;
+        // Scripted portals are used for portal scripts and should use the
+        // same visuals as their non-scripted counterparts.
+        animations[Portal::SCRIPTED] = animations[Portal::REGULAR];
+        animations[Portal::SCRIPTED_HIDDEN] = animations[Portal::HIDDEN];
     }
 
     std::unordered_map<Portal::Type, Animation> MapPortals::animations;

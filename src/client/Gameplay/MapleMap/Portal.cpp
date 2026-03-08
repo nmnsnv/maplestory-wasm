@@ -43,7 +43,8 @@ namespace jrc
 
     void Portal::draw(Point<int16_t> viewpos, float inter) const
     {
-        if (!animation || (type == HIDDEN && !touched))
+        bool hidden_until_touched = (type == HIDDEN || type == SCRIPTED_HIDDEN) && !touched;
+        if (!animation || hidden_until_touched)
         {
             return;
         }
