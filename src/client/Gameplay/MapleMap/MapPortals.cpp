@@ -68,6 +68,8 @@ namespace jrc
     {
         animations[Portal::REGULAR].update(Constants::TIMESTEP);
         animations[Portal::HIDDEN].update(Constants::TIMESTEP);
+        animations[Portal::SCRIPTED].update(Constants::TIMESTEP);
+        animations[Portal::SCRIPTED_HIDDEN].update(Constants::TIMESTEP);
 
         for (auto& iter : portals_by_id)
         {
