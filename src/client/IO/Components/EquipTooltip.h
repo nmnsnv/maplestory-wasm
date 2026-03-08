@@ -29,16 +29,24 @@
 
 namespace jrc
 {
+    class CharStats;
+    class EquipData;
+
     class EquipTooltip : public Tooltip
     {
     public:
         EquipTooltip();
 
         void set_equip(Parent parent, int16_t invpos);
+        void set_item(Parent parent, int32_t itemid);
         void draw(Point<int16_t> position) const override;
 
     private:
+        void load(const Equip& equip, const EquipData& equipdata, const CharStats& stats);
+
         int16_t invpos;
+        Parent source_parent;
+        int32_t source_itemid;
         int16_t height;
         bool hasdesc;
         bool hasslots;

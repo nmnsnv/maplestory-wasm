@@ -124,6 +124,11 @@ namespace jrc
         return defstats[stat];
     }
 
+    uint8_t EquipData::get_slots() const
+    {
+        return slots;
+    }
+
     Equipslot::Id EquipData::get_eqslot() const
     {
         return eqslot;

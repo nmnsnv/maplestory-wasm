@@ -40,6 +40,8 @@ namespace jrc
         int16_t get_reqstat(Maplestat::Id stat) const;
         // Returns a default stat.
         int16_t get_defstat(Equipstat::Id stat) const;
+        // Returns base upgrade slots for this equip.
+        uint8_t get_slots() const;
         // Returns the equip slot.
         Equipslot::Id get_eqslot() const;
         // Returns the category name.

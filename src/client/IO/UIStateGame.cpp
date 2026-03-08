@@ -33,6 +33,7 @@
 #include "UITypes/UIWorldMap.h"
 
 #include "../Constants.h"
+#include "../Character/Inventory/InventoryType.h"
 #include "../Gameplay/Stage.h"
 
 #include <algorithm>
@@ -451,6 +452,18 @@ namespace jrc
 
     void UIStateGame::show_item(Tooltip::Parent parent, int32_t itemid)
     {
+        if (parent == Tooltip::SHOP && InventoryType::by_item_id(itemid) == InventoryType::EQUIP)
+        {
+            eqtooltip.set_item(parent, itemid);
+
+            if (itemid)
+            {
+                tooltip       = eqtooltip;
+                tooltipparent = parent;
+            }
+            return;
+        }
+
         ittooltip.set_item(itemid);
 
         if (itemid)

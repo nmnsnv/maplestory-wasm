@@ -17,6 +17,8 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "EquipTooltip.h"
 
+#include "../../Character/CharStats.h"
+#include "../../Character/Inventory/InventoryType.h"
 #include "../../Gameplay/Stage.h"
 #include "../../Data/EquipData.h"
 #include "../../Data/WeaponData.h"
@@ -88,14 +90,21 @@ namespace jrc
         jobs[true][5]  = itemtt["Equip"]["Job"]["enable"]["5"];
 
         invpos = 0;
+        source_parent = Tooltip::NONE;
+        source_itemid = 0;
     }
 
     void EquipTooltip::set_equip(Parent parent, int16_t ivp)
     {
-        if (ivp == invpos)
+        if (source_parent == parent && source_itemid == 0 && ivp == invpos)
             return;
 
+        source_parent = parent;
+        source_itemid = 0;
         invpos = ivp;
+
+        if (ivp == 0)
+            return;
 
         const Player& player = Stage::get().get_player();
 
@@ -115,15 +124,54 @@ namespace jrc
 
         auto oequip = player.get_inventory().get_equip(invtype, ivp);
         if (!oequip)
+        {
+            invpos = 0;
             return;
+        }
 
         const Equip& equip = *oequip;
+        const EquipData& equipdata = EquipData::get(equip.get_item_id());
+        load(equip, equipdata, player.get_stats());
+    }
 
+    void EquipTooltip::set_item(Parent parent, int32_t itemid)
+    {
+        if (source_parent == parent && source_itemid == itemid && invpos == -1)
+            return;
+
+        source_parent = parent;
+        source_itemid = itemid;
+        invpos = -1;
+
+        if (itemid == 0 || InventoryType::by_item_id(itemid) != InventoryType::EQUIP)
+        {
+            invpos = 0;
+            return;
+        }
+
+        const EquipData& equipdata = EquipData::get(itemid);
+        if (!equipdata)
+        {
+            invpos = 0;
+            return;
+        }
+
+        EnumMap<Equipstat::Id, uint16_t> stats;
+        for (Equipstat::Id es = Equipstat::STR; es <= Equipstat::JUMP; es = static_cast<Equipstat::Id>(es + 1))
+        {
+            int16_t defstat = equipdata.get_defstat(es);
+            stats[es] = defstat > 0 ? static_cast<uint16_t>(defstat) : 0;
+        }
+
+        // Shop preview only has static item data, so we render a synthetic equip with base stats.
+        Equip preview(itemid, 0, "", 0, equipdata.get_slots(), 0, stats, 0, 0, 0);
+        load(preview, equipdata, Stage::get().get_player().get_stats());
+    }
+
+    void EquipTooltip::load(const Equip& equip, const EquipData& equipdata, const CharStats& stats)
+    {
         int32_t item_id = equip.get_item_id();
-
-        const EquipData& equipdata = EquipData::get(item_id);
         const ItemData& itemdata = equipdata.get_itemdata();
-        const CharStats& stats = player.get_stats();
 
         height = 500;
 
