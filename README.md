@@ -50,7 +50,7 @@ MapleStory WASM brings the classic MapleStory v83 client to modern web browsers 
 
 ### 1. Client Assets (`.nx` files)
 Place the `.nx` files into the `assets/` directory at the project root.
-- These are the same `.nx` files required by the [MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) repository.
+- These are the same `.nx` files required by the upstream v83 C++ client codebase.
 - **Location:** `maplestory-wasm/assets/*.nx`
 - Treat `assets/` as read-only. Do not modify files in this directory.
 
@@ -60,7 +60,19 @@ Place the `.nx` files into the `assets/` directory at the project root.
 
 ### Client Build
 
-Prefer the local build first:
+#### Prefer the docker build first:
+
+```bash
+./scripts/docker_build_wasm.sh
+```
+
+Useful variants:
+
+./scripts/docker_build_wasm.sh --debug
+./scripts/docker_build_wasm.sh --jobs 4
+```
+
+#### If the local Emscripten and CMake toolchain is available, you can use the local build:
 
 ```bash
 ./scripts/build_wasm.sh
@@ -73,13 +85,7 @@ Useful variants:
 ./scripts/build_wasm.sh --jobs 4
 ```
 
-If the local Emscripten or CMake toolchain is unavailable, use the Docker fallback:
-
-```bash
-./scripts/docker_build_wasm.sh
-./scripts/docker_build_wasm.sh --debug
-./scripts/docker_build_wasm.sh --jobs 4
-```
+#### Output:
 
 The client build output is written to `build/`.
 
@@ -243,26 +249,6 @@ Contributions are welcome! Please read the guidelines below before submitting.
 
 ---
 
-## 🙏 Acknowledgments
-
-This project would not be possible without the incredible work of:
-
-### Core Dependencies
-
-| Project | Author | Contribution |
-|---------|--------|--------------|
-| [MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) | [@ryantpayton](https://github.com/ryantpayton) | The C++ client that we patch and compile to WASM |
-
-### Inspiration & Tools
-
-- **[HeavenClient/HeavenClient](https://github.com/HeavenClient/HeavenClient)** - Foundational work that inspired the client
-- **[Emscripten](https://emscripten.org/)** - The toolchain making C++ in the browser possible
-- **The MapleStory Community** - For keeping the nostalgia alive after all these years
-
-**Special thanks to [@ryantpayton](https://github.com/ryantpayton)** for maintaining the client and server projects that form the foundation of this work.
-
----
-
 ## ⚠️ Disclaimer
 
 This project is for **educational and preservation purposes only**.
@@ -282,22 +268,6 @@ This project is for **educational and preservation purposes only**.
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
 See the [LICENSE](LICENSE) file for full details.
-
----
-
-## 🎯 Built On
-
-This project is made possible by patching and extending the following upstream project:
-
-| Component | Upstream Project |
-|-----------|------------------|-------------|
-| **Client** | [ryantpayton/MapleStory-Client](https://github.com/ryantpayton/MapleStory-Client) |
-
-This repository builds on that project to provide:
-- **WebAssembly compilation** of the C++ client via Emscripten
-- **Browser networking** through WebSocket proxies
-- **Asset streaming** for `.nx` files used by the browser client
-- **Docker-based build and deployment** paths
 
 ---
 
