@@ -26,6 +26,8 @@
 
 namespace jrc
 {
+    class Drop;
+
     class MapDrops
     {
     public:
@@ -51,6 +53,9 @@ namespace jrc
         Loot find_loot_at(Point<int16_t> playerpos);
 
     private:
+        void try_pickup(int32_t oid, const Drop& drop, Point<int16_t> playerpos,
+            int32_t& closest_distance_sq, Loot& closest_loot) const;
+
         MapObjects drops;
 
         enum MesoIcon

@@ -24,11 +24,19 @@
 #include "../../Constants.h"
 #include "../../Data/ItemData.h"
 
-#include "nlnx/nx.hpp"
 #include "nlnx/node.hpp"
+#include "nlnx/nx.hpp"
+
+#include <limits>
 
 namespace jrc
 {
+    namespace
+    {
+        constexpr int16_t PICKUP_RADIUS = 30;
+        constexpr int32_t PICKUP_RADIUS_SQ = PICKUP_RADIUS * PICKUP_RADIUS;
+    }
+
     MapDrops::MapDrops()
     {
         lootenabled = false;
@@ -66,21 +74,14 @@ namespace jrc
                 bool meso = spawn.is_meso();
                 if (meso)
                 {
-                    MesoIcon mesotype = (itemid > 999)
-                        ? BAG : (itemid > 99)
-                        ? BUNDLE : (itemid > 49)
-                        ? GOLD : BRONZE;
+                    MesoIcon mesotype = (itemid > 999) ? BAG : (itemid > 99) ? BUNDLE : (itemid > 49) ? GOLD : BRONZE;
                     const Animation& icon = mesoicons[mesotype];
-                    drops.add(
-                        spawn.instantiate(icon)
-                    );
+                    drops.add(spawn.instantiate(icon));
                 }
                 else if (const ItemData& itemdata = ItemData::get(itemid))
                 {
                     const Texture& icon = itemdata.get_icon(true);
-                    drops.add(
-                        spawn.instantiate(icon)
-                    );
+                    drops.add(spawn.instantiate(icon));
                 }
             }
         }
@@ -97,9 +98,7 @@ namespace jrc
 
     void MapDrops::spawn(DropSpawn&& spawn)
     {
-        spawns.emplace(
-            std::move(spawn)
-        );
+        spawns.emplace(std::move(spawn));
     }
 
     void MapDrops::remove(int32_t oid, int8_t mode, const PhysicsObject* looter)
@@ -115,23 +114,56 @@ namespace jrc
         drops.clear();
     }
 
+    void MapDrops::try_pickup(int32_t oid, const Drop& drop, Point<int16_t> playerpos, int32_t& closest_distance_sq, Loot& closest_loot) const
+    {
+        Point<int16_t> position = drop.get_position();
+        Point<int16_t> center = position + Point<int16_t>(16, 16);
+
+        int32_t dx = static_cast<int32_t>(center.x()) - playerpos.x();
+        int32_t dy = static_cast<int32_t>(center.y()) - playerpos.y();
+        int32_t distance_sq = dx * dx + dy * dy;
+
+        // Keep strict overlap, but also accept a small proximity window so
+        // slightly offset drops can still be attempted during pickup spam.
+        bool is_overlapping = drop.bounds().contains(playerpos);
+        bool is_nearby = distance_sq <= PICKUP_RADIUS_SQ;
+        if (!is_overlapping && !is_nearby)
+        {
+            return;
+        }
+
+        if (distance_sq >= closest_distance_sq)
+        {
+            return;
+        }
+
+        closest_distance_sq = distance_sq;
+        closest_loot = { oid, position };
+    }
+
     MapDrops::Loot MapDrops::find_loot_at(Point<int16_t> playerpos)
     {
         if (!lootenabled)
-            return{ 0, {} };
+            return { 0, {} };
+
+        int32_t closest_distance_sq = std::numeric_limits<int32_t>::max();
+        Loot closest_loot = { 0, {} };
 
         for (auto& mmo : drops)
         {
             Optional<const Drop> drop = mmo.second.get();
-            if (drop && drop->bounds().contains(playerpos))
+            if (!drop)
             {
-                lootenabled = false;
-
-                int32_t oid = mmo.first;
-                Point<int16_t> position = drop->get_position();
-                return{ oid, position };
+                continue;
             }
+            try_pickup(mmo.first, *drop, playerpos, closest_distance_sq, closest_loot);
         }
-        return{ 0, {} };
+
+        if (closest_loot.first)
+        {
+            lootenabled = false;
+        }
+
+        return closest_loot;
     }
 }
