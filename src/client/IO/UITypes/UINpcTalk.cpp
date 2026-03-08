@@ -20,6 +20,8 @@
 #include "../Components/MapleButton.h"
 
 #include "../../Constants.h"
+#include "../../Data/ItemData.h"
+#include "../../Gameplay/Stage.h"
 #include "../../Graphics/GraphicsGL.h"
 #include "../../Net/Packets/NpcInteractionPackets.h"
 #include "../../Util/Misc.h"
@@ -62,6 +64,130 @@ namespace jrc
             }
 
             return true;
+        }
+
+        bool try_parse_delimited_number(
+            const std::string& source,
+            size_t number_start,
+            size_t& delimiter_pos,
+            int32_t& value
+        )
+        {
+            size_t number_end = number_start;
+            while (number_end < source.size() && std::isdigit(static_cast<unsigned char>(source[number_end])))
+            {
+                number_end++;
+            }
+
+            if (number_end == number_start || number_end >= source.size() || source[number_end] != '#')
+            {
+                return false;
+            }
+
+            if (!try_parse_int32(source.substr(number_start, number_end - number_start), value))
+            {
+                return false;
+            }
+
+            delimiter_pos = number_end;
+            return true;
+        }
+
+        std::string try_get_item_name(int32_t itemid)
+        {
+            const ItemData& item_data = ItemData::get(itemid);
+            if (item_data.is_valid())
+            {
+                return item_data.get_name();
+            }
+
+            return {};
+        }
+
+        std::string try_get_npc_name(int32_t npcid)
+        {
+            nl::node npc_name = nl::nx::string["Npc.img"][std::to_string(npcid)]["name"];
+            if (npc_name)
+            {
+                return npc_name.get_string();
+            }
+
+            return {};
+        }
+
+        std::string try_get_mob_name(int32_t mobid)
+        {
+            nl::node mob_name = nl::nx::string["Mob.img"][std::to_string(mobid)]["name"];
+            if (mob_name)
+            {
+                return mob_name.get_string();
+            }
+
+            return {};
+        }
+
+        std::string try_get_map_name(int32_t mapid)
+        {
+            const NxHelper::Map::MapInfo map_info = NxHelper::Map::get_map_info_by_id(mapid);
+            if (!map_info.full_name.empty())
+            {
+                return map_info.full_name;
+            }
+
+            return map_info.name;
+        }
+
+        std::string resolve_prefixed_reference(char prefix, int32_t id)
+        {
+            switch (prefix)
+            {
+            case 'm':
+            case 'M':
+                return try_get_map_name(id);
+            case 't':
+            case 'T':
+            case 'z':
+            case 'Z':
+                return try_get_item_name(id);
+            case 'p':
+            case 'P':
+                return try_get_npc_name(id);
+            case 'o':
+            case 'O':
+                return try_get_mob_name(id);
+            default:
+                return {};
+            }
+        }
+
+        std::string resolve_numeric_reference(int32_t id)
+        {
+            if (id >= 100000000)
+            {
+                return try_get_map_name(id);
+            }
+
+            // Some server scripts send bare "#123456#" placeholders without a
+            // token prefix. Resolve by trying the most common string tables.
+            std::string resolved = try_get_item_name(id);
+            if (!resolved.empty())
+            {
+                return resolved;
+            }
+
+            resolved = try_get_npc_name(id);
+            if (!resolved.empty())
+            {
+                return resolved;
+            }
+
+            resolved = try_get_mob_name(id);
+            if (!resolved.empty())
+            {
+                return resolved;
+            }
+
+            return try_get_map_name(id);
         }
     }
 
@@ -570,19 +696,62 @@ namespace jrc
         std::string stripped;
         stripped.reserve(source.size());
 
-        for (size_t i = 0; i < source.size(); i++)
+        size_t cursor = 0;
+        while (cursor < source.size())
         {
-            if (source[i] == '#' && i + 1 < source.size())
+            if (source[cursor] != '#' || cursor + 1 >= source.size())
             {
-                char token = source[i + 1];
-                if ((token >= 'a' && token <= 'z') || (token >= 'A' && token <= 'Z'))
+                stripped.push_back(source[cursor]);
+                cursor++;
+                continue;
+            }
+
+            char token = source[cursor + 1];
+
+            if (token == '#')
+            {
+                stripped.push_back('#');
+                cursor += 2;
+                continue;
+            }
+
+            if (std::isalpha(static_cast<unsigned char>(token)))
+            {
+                int32_t ignored_value = 0;
+                size_t token_end = 0;
+                if (try_parse_delimited_number(source, cursor + 2, token_end, ignored_value))
                 {
-                    i++;
+                    cursor = token_end + 1;
+                    continue;
+                }
+
+                if (token == 'h' || token == 'H')
+                {
+                    size_t token_end_h = source.find('#', cursor + 2);
+                    if (token_end_h != std::string::npos)
+                    {
+                        cursor = token_end_h + 1;
+                        continue;
+                    }
+                }
+
+                cursor += 2;
+                continue;
+            }
+
+            if (std::isdigit(static_cast<unsigned char>(token)))
+            {
+                int32_t ignored_value = 0;
+                size_t token_end = 0;
+                if (try_parse_delimited_number(source, cursor + 1, token_end, ignored_value))
+                {
+                    cursor = token_end + 1;
                     continue;
                 }
             }
 
-            stripped.push_back(source[i]);
+            stripped.push_back(source[cursor]);
+            cursor++;
         }
 
         return stripped;
@@ -596,45 +765,74 @@ namespace jrc
         size_t cursor = 0;
         while (cursor < source.size())
         {
-            size_t begin = source.find("#m", cursor);
-            if (begin == std::string::npos)
+            if (source[cursor] != '#' || cursor + 1 >= source.size())
             {
-                result += source.substr(cursor);
-                break;
-            }
-
-            result += source.substr(cursor, begin - cursor);
-
-            size_t id_start = begin + 2;
-            size_t id_end = id_start;
-            while (id_end < source.size() && std::isdigit(static_cast<unsigned char>(source[id_end])))
-                id_end++;
-
-            if (id_end == id_start || id_end >= source.size() || source[id_end] != '#')
-            {
-                result += source.substr(begin);
-                break;
-            }
-
-            int32_t mapid = 0;
-            if (!try_parse_int32(source.substr(id_start, id_end - id_start), mapid))
-            {
-                result += source.substr(begin, id_end + 1 - begin);
-                cursor = id_end + 1;
+                result.push_back(source[cursor]);
+                cursor++;
                 continue;
             }
 
-            const NxHelper::Map::MapInfo map_info = NxHelper::Map::get_map_info_by_id(mapid);
-            if (!map_info.name.empty())
+            char token = source[cursor + 1];
+
+            if (token == 'h' || token == 'H')
             {
-                result += map_info.name;
-            }
-            else
-            {
-                result += source.substr(begin, id_end + 1 - begin);
+                size_t token_end = source.find('#', cursor + 2);
+                if (token_end != std::string::npos)
+                {
+                    result += Stage::get().get_player().get_stats().get_name();
+                    cursor = token_end + 1;
+                    continue;
+                }
             }
 
-            cursor = id_end + 1;
+            if (token == 'm' || token == 'M' ||
+                token == 't' || token == 'T' ||
+                token == 'z' || token == 'Z' ||
+                token == 'p' || token == 'P' ||
+                token == 'o' || token == 'O')
+            {
+                int32_t id = 0;
+                size_t token_end = 0;
+                if (try_parse_delimited_number(source, cursor + 2, token_end, id))
+                {
+                    std::string replacement = resolve_prefixed_reference(token, id);
+                    if (!replacement.empty())
+                    {
+                        result += replacement;
+                    }
+                    else
+                    {
+                        result += source.substr(cursor, token_end + 1 - cursor);
+                    }
+
+                    cursor = token_end + 1;
+                    continue;
+                }
+            }
+
+            if (std::isdigit(static_cast<unsigned char>(token)))
+            {
+                int32_t id = 0;
+                size_t token_end = 0;
+                if (try_parse_delimited_number(source, cursor + 1, token_end, id))
+                {
+                    std::string replacement = resolve_numeric_reference(id);
+                    if (!replacement.empty())
+                    {
+                        result += replacement;
+                    }
+                    else
+                    {
+                        result += source.substr(cursor, token_end + 1 - cursor);
+                    }
+
+                    cursor = token_end + 1;
+                    continue;
+                }
+            }
+
+            result.push_back(source[cursor]);
+            cursor++;
         }
 
         return result;
