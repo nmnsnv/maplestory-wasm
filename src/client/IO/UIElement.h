@@ -66,6 +66,7 @@ namespace jrc
             NOTICE,
             NPCTALK,
             SHOP,
+            STORAGE,
             STATSINFO,
             ITEMINVENTORY,
             EQUIPINVENTORY,

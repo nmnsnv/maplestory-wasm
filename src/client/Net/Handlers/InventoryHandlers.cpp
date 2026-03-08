@@ -24,6 +24,7 @@
 #include "../../IO/UI.h"
 #include "../../IO/Messages.h"
 #include "../../IO/UITypes/UIShop.h"
+#include "../../IO/UITypes/UIStorage.h"
 #include "../../IO/UITypes/UIEquipInventory.h"
 #include "../../IO/UITypes/UIItemInventory.h"
 
@@ -118,6 +119,10 @@ namespace jrc
             if (auto shop = UI::get().get_element<UIShop>())
             {
                 shop->modify(mod.type);
+            }
+            if (auto storage = UI::get().get_element<UIStorage>())
+            {
+                storage->modify(mod.type);
             }
 
             auto eqinvent = UI::get().get_element<UIEquipInventory>();

@@ -145,6 +145,7 @@ namespace jrc
         // NPC Interaction
         NPC_DIALOGUE  = 304,
         OPEN_NPC_SHOP = 305,
+        STORAGE       = 309,
 
         KEYMAP      = 335,
         AUTO_HP_POT = 336,
@@ -222,6 +223,7 @@ namespace jrc
         // Npc Interaction Handlers
         emplace<NPC_DIALOGUE, NpcDialogueHandler>();
         emplace<OPEN_NPC_SHOP, OpenNpcShopHandler>();
+        emplace<STORAGE, StorageHandler>();
 
         // TODO
         emplace<MOVE_MOB_RESPONSE, NullHandler>();

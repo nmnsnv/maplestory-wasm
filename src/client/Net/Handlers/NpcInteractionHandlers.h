@@ -31,4 +31,10 @@ namespace jrc
     {
         void handle(InPacket& recv) const override;
     };
+
+    // Handles storage (trunk) open/update packets.
+    class StorageHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 }

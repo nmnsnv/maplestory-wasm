@@ -23,6 +23,7 @@
 #include "UITypes/UIBuffList.h"
 #include "UITypes/UINpcTalk.h"
 #include "UITypes/UIShop.h"
+#include "UITypes/UIStorage.h"
 #include "UITypes/UIStatsInfo.h"
 #include "UITypes/UIItemInventory.h"
 #include "UITypes/UIEquipInventory.h"
@@ -54,6 +55,8 @@ namespace jrc
                 return Tooltip::SKILLBOOK;
             case UIElement::SHOP:
                 return Tooltip::SHOP;
+            case UIElement::STORAGE:
+                return Tooltip::SHOP;
             case UIElement::MINIMAP:
                 return Tooltip::MINIMAP;
             case UIElement::WORLDMAP:
@@ -82,6 +85,7 @@ namespace jrc
         emplace<UIBuffList>();
         emplace<UINpcTalk>();
         emplace<UIShop>(look, inventory);
+        emplace<UIStorage>(inventory);
     }
 
     void UIStateGame::draw(float inter, Point<int16_t> cursor) const
