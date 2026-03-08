@@ -68,6 +68,7 @@ Place the `.nx` files into the `assets/` directory at the project root.
 
 Useful variants:
 
+```
 ./scripts/docker_build_wasm.sh --debug
 ./scripts/docker_build_wasm.sh --jobs 4
 ```
