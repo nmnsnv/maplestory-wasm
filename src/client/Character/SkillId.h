@@ -151,6 +151,12 @@ namespace jrc
             // Priest
             PRIEST_TELEPORT = 2301001,
 
+            // Hunter
+            BOW_MASTERY = 3100000,
+
+            // Crossbowman
+            CROSSBOW_MASTERY = 3200000,
+
             // Hermit
             DRAIN = 4101005,
             AVENGER = 4111005,
@@ -163,6 +169,9 @@ namespace jrc
             DISORDER = 4001002,
             LUCKY_SEVEN = 4001344,
 
+            // Assassin
+            CLAW_MASTERY = 4100000,
+
             // Chief Bandit
             ASSAULTER = 4211002,
             BAND_OF_THIEVES = 4211004,
@@ -172,7 +181,18 @@ namespace jrc
             BOOMERANG_STEP = 4221007,
 
             // Bandit
-            MESO_EXPLOSION = 4211006
+            DAGGER_MASTERY = 4200000,
+            MESO_EXPLOSION = 4211006,
+
+            // Brawler
+            KNUCKLER_MASTERY = 5100001,
+
+            // Gunslinger
+            GUN_MASTERY = 5200000,
+
+            // Aran
+            POLEARM_MASTERY_ARAN = 21100000,
+            HIGH_MASTERY_ARAN = 21120001
         };
     }
 }

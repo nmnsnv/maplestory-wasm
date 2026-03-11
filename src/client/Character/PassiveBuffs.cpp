@@ -62,7 +62,9 @@ namespace jrc
     template <Weapon::Type...W>
     void WeaponMasteryBuff<W...>::apply_to(CharStats& stats, nl::node level) const
     {
-        float mastery = static_cast<float>(level["mastery"]) / 100;
+        // WZ stores mastery in 5% steps above the 10% unmastered floor:
+        // e.g. 1 -> 15%, 10 -> 60%.
+        float mastery = 0.1f + static_cast<float>(level["mastery"]) * 0.05f;
         stats.set_mastery(mastery);
         stats.add_value(Equipstat::ACC, level["x"]);
     }
@@ -105,7 +107,7 @@ namespace jrc
         buffs[SkillId::ACHILLES_HERO] = std::make_unique<AchillesBuff>();
 
         // Page
-        buffs[SkillId::SWORD_MASTERY_FIGHTER] = std::make_unique<WeaponMasteryBuff<Weapon::SWORD_1H, Weapon::SWORD_2H>>();
+        buffs[SkillId::SWORD_MASTERY_PAGE] = std::make_unique<WeaponMasteryBuff<Weapon::SWORD_1H, Weapon::SWORD_2H>>();
         buffs[SkillId::BW_MASTERY] = std::make_unique<WeaponMasteryBuff<Weapon::MACE_1H, Weapon::MACE_2H>>();
 
         // White Knight
@@ -122,6 +124,28 @@ namespace jrc
         // Dark Knight
         buffs[SkillId::ACHILLES_DK] = std::make_unique<AchillesBuff>();
         buffs[SkillId::BERSERK] = std::make_unique<BerserkBuff>();
+
+        // Hunter
+        buffs[SkillId::BOW_MASTERY] = std::make_unique<WeaponMasteryBuff<Weapon::BOW>>();
+
+        // Crossbowman
+        buffs[SkillId::CROSSBOW_MASTERY] = std::make_unique<WeaponMasteryBuff<Weapon::CROSSBOW>>();
+
+        // Assassin
+        buffs[SkillId::CLAW_MASTERY] = std::make_unique<WeaponMasteryBuff<Weapon::CLAW>>();
+
+        // Bandit
+        buffs[SkillId::DAGGER_MASTERY] = std::make_unique<WeaponMasteryBuff<Weapon::DAGGER>>();
+
+        // Brawler
+        buffs[SkillId::KNUCKLER_MASTERY] = std::make_unique<WeaponMasteryBuff<Weapon::KNUCKLE>>();
+
+        // Gunslinger
+        buffs[SkillId::GUN_MASTERY] = std::make_unique<WeaponMasteryBuff<Weapon::GUN>>();
+
+        // Aran
+        buffs[SkillId::POLEARM_MASTERY_ARAN] = std::make_unique<WeaponMasteryBuff<Weapon::POLEARM>>();
+        buffs[SkillId::HIGH_MASTERY_ARAN] = std::make_unique<WeaponMasteryBuff<Weapon::POLEARM>>();
     }
 
     void PassiveBuffs::apply_buff(CharStats& stats, int32_t skill_id, int32_t skill_level) const

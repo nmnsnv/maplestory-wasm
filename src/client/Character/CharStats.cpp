@@ -52,7 +52,8 @@ namespace jrc
         honor = 0;
         attackspeed = 0;
         projectilerange = 400;
-        mastery = 0.0f;
+        // Unmastered attacks still retain a small lower bound instead of dropping to the secondary stat alone.
+        mastery = 0.1f;
         critical = 0.05f;
         mincrit = 0.5f;
         maxcrit = 0.75f;
@@ -99,6 +100,12 @@ namespace jrc
 
     int32_t CharStats::get_secondary_stat() const
     {
+        // Cosmic treats claw users and thief daggers as a mixed secondary stat.
+        if (job.get_id() / 100 == 4 && (weapontype == Weapon::CLAW || weapontype == Weapon::DAGGER))
+        {
+            return get_total(Equipstat::DEX) + get_total(Equipstat::STR);
+        }
+
         Equipstat::Id secondary = job.get_secondary(weapontype);
         return get_total(secondary);
     }
@@ -194,7 +201,7 @@ namespace jrc
 
     void CharStats::set_mastery(float m)
     {
-        mastery = 0.5f + m;
+        mastery = m;
     }
 
     void CharStats::set_damagepercent(float d)
