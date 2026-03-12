@@ -64,6 +64,8 @@ namespace jrc
         MobAttack create_attack(int32_t oid) const;
         // Return the position of a mob.
         Point<int16_t> get_mob_position(int32_t oid) const;
+        // Return the body-center position used for combat targeting.
+        Point<int16_t> get_mob_body_position(int32_t oid) const;
         // Return the head position of a mob.
         Point<int16_t> get_mob_head_position(int32_t oid) const;
 
@@ -75,4 +77,3 @@ namespace jrc
         std::queue<MobSpawn> spawns;
     };
 }
-

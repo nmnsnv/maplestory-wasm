@@ -60,7 +60,7 @@ namespace jrc
             int32_t target_oid = mb.damageeffect.target_oid;
             if (mobs.contains(target_oid))
             {
-                mb.target = mobs.get_mob_head_position(target_oid);
+                mb.target = mobs.get_mob_body_position(target_oid);
                 bool apply = mb.bullet.update(mb.target);
                 if (apply)
                 {
@@ -178,9 +178,9 @@ namespace jrc
 
     void Combat::apply_damage_effect(const DamageEffect& effect)
     {
-        Point<int16_t> head_position = mobs.get_mob_head_position(effect.target_oid);
+        Point<int16_t> body_position = mobs.get_mob_body_position(effect.target_oid);
         damagenumbers.push_back(effect.number);
-        damagenumbers.back().set_x(head_position.x());
+        damagenumbers.back().set_x(body_position.x());
 
         const SpecialMove& move = get_move(effect.move_id);
         mobs.apply_damage(effect.target_oid, effect.damage, effect.toleft, effect.user, move);
@@ -250,7 +250,7 @@ namespace jrc
                 if (mobs.contains(oid))
                 {
                     std::vector<DamageNumber> numbers = place_numbers(oid, line.second);
-                    Point<int16_t> head = mobs.get_mob_head_position(oid);
+                    Point<int16_t> target = mobs.get_mob_body_position(oid);
 
                     size_t i = 0;
                     for (auto& number : numbers)
@@ -272,7 +272,7 @@ namespace jrc
                             bullet_delay(i),
                             std::move(effect),
                             bullet,
-                            bullet_target(head, i, numbers.size())
+                            bullet_target(target, i, numbers.size())
                         );
                         i++;
                     }
@@ -339,15 +339,15 @@ namespace jrc
     std::vector<DamageNumber> Combat::place_numbers(int32_t oid, const std::vector<std::pair<int32_t, bool>>& damagelines)
     {
         std::vector<DamageNumber> numbers;
-        int16_t head = mobs.get_mob_head_position(oid).y();
+        int16_t body = mobs.get_mob_body_position(oid).y();
         for (auto& line : damagelines)
         {
             int32_t amount = line.first;
             bool critical = line.second;
             DamageNumber::Type type = critical ? DamageNumber::CRITICAL : DamageNumber::NORMAL;
-            numbers.emplace_back(type, amount, head);
+            numbers.emplace_back(type, amount, body);
 
-            head -= DamageNumber::rowheight(critical);
+            body -= DamageNumber::rowheight(critical);
         }
         return numbers;
     }

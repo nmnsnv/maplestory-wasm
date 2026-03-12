@@ -89,6 +89,8 @@ namespace jrc
         bool is_in_range(const Rectangle<int16_t>& range) const;
         /// Check if this mob is still alive.
         bool is_alive() const;
+        /// Return the body center used for combat targeting.
+        Point<int16_t> get_body_position() const;
         /// Return the head position.
         Point<int16_t> get_head_position() const;
 
@@ -126,6 +128,10 @@ namespace jrc
 
         /// Return the current 'head' position.
         Point<int16_t> get_head_position(Point<int16_t> position) const;
+        /// Return the current combat-targeting position.
+        Point<int16_t> get_body_position(Point<int16_t> position) const;
+        /// Return the current animation bounds in world space.
+        Rectangle<int16_t> get_bounds(Point<int16_t> position) const;
 
         std::map<Stance, Animation> animations;
         std::string name;

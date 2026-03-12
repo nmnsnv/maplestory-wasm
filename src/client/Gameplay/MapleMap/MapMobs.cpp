@@ -174,7 +174,7 @@ namespace jrc
             if (mob && mob->is_alive() && mob->is_in_range(range))
             {
                 int32_t oid = mob->get_oid();
-                uint16_t distance = mob->get_position().distance(origin);
+                uint16_t distance = mob->get_body_position().distance(origin);
                 distances.emplace(distance, oid);
             }
         }
@@ -238,6 +238,18 @@ namespace jrc
         if (auto mob = mobs.get(oid))
         {
             return mob->get_position();
+        }
+        else
+        {
+            return {};
+        }
+    }
+
+    Point<int16_t> MapMobs::get_mob_body_position(int32_t oid) const
+    {
+        if (Optional<const Mob> mob = mobs.get(oid))
+        {
+            return mob->get_body_position();
         }
         else
         {

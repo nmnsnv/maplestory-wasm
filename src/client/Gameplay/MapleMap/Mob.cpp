@@ -532,6 +532,41 @@ namespace jrc
         phobj.fhid = lastmove.fh;
     }
 
+    Rectangle<int16_t> Mob::get_bounds(Point<int16_t> position) const
+    {
+        Rectangle<int16_t> bounds = animations.at(stance).get_bounds();
+        if (flip && !noflip)
+        {
+            bounds = {
+                static_cast<int16_t>(-bounds.r()),
+                static_cast<int16_t>(-bounds.l()),
+                bounds.t(),
+                bounds.b()
+            };
+        }
+
+        bounds.shift(position);
+        return bounds;
+    }
+
+    Point<int16_t> Mob::get_body_position(Point<int16_t> position) const
+    {
+        // The NX "head" marker is appropriate for overhead UI, but combat
+        // impacts read better when they track the sprite's occupied bounds.
+        Rectangle<int16_t> bounds = get_bounds(position);
+        if (bounds.straight())
+        {
+            return get_head_position(position);
+        }
+
+        int32_t center_x = static_cast<int32_t>(bounds.l()) + bounds.r();
+        int32_t center_y = static_cast<int32_t>(bounds.t()) + bounds.b();
+        return {
+            static_cast<int16_t>(center_x / 2),
+            static_cast<int16_t>(center_y / 2)
+        };
+    }
+
     Point<int16_t> Mob::get_head_position(Point<int16_t> position) const
     {
         Point<int16_t> head = animations.at(stance).get_head();
@@ -602,7 +637,7 @@ namespace jrc
         switch (pos)
         {
         case 0:
-            shift = get_head_position({});
+            shift = get_body_position({});
             break;
         case 1:
             break;
@@ -773,6 +808,12 @@ namespace jrc
         Rectangle<int16_t> bounds = animations.at(stance).get_bounds();
         bounds.shift(get_position());
         return range.overlaps(bounds);
+    }
+
+    Point<int16_t> Mob::get_body_position() const
+    {
+        Point<int16_t> position = get_position();
+        return get_body_position(position);
     }
 
     Point<int16_t> Mob::get_head_position() const
