@@ -19,9 +19,18 @@
 
 #include "../../Console.h"
 
+#include <algorithm>
 
 namespace jrc
 {
+    namespace
+    {
+        double clamp_to_foothold(const Foothold& foothold, double x)
+        {
+            return std::clamp(x, static_cast<double>(foothold.l()), static_cast<double>(foothold.r()));
+        }
+    }
+
     Footholdtree::Footholdtree(nl::node src)
     {
         int16_t leftw  =  30000;
@@ -199,6 +208,33 @@ namespace jrc
             phobj.fhid = get_fhid_below(x, y);
         }
 
+        if (phobj.fhid == 0 && y >= borders.second())
+        {
+            // Once an object falls below the last foothold, keep it recoverable by
+            // snapping it back to the closest point on the last known foothold.
+            if (curfh.id() != 0 && !curfh.is_wall())
+            {
+                double recovery_x = clamp_to_foothold(curfh, x);
+                double recovery_y = curfh.ground_below(recovery_x);
+                phobj.limitx(recovery_x);
+                phobj.limity(recovery_y);
+                phobj.fhid = curfh.id();
+                phobj.fhslope = curfh.slope();
+                phobj.onground = true;
+                phobj.enablejd = false;
+                phobj.groundbelow = recovery_y + 1.0;
+                phobj.fhlayer = curfh.layer();
+                return;
+            }
+
+            phobj.limity(borders.second());
+            phobj.fhslope = 0.0;
+            phobj.onground = true;
+            phobj.enablejd = false;
+            phobj.groundbelow = borders.second() + 1.0;
+            return;
+        }
+
         const Foothold& nextfh = get_fh(phobj.fhid);
         phobj.fhslope = nextfh.slope();
 
@@ -255,7 +291,6 @@ namespace jrc
         if (phobj.fhid == 0)
         {
             phobj.fhid = curfh.id();
-            phobj.limitx(curfh.x1());
         }
     }
 
