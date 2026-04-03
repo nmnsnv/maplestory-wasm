@@ -101,7 +101,6 @@ namespace jrc
           dirty(false)
     {
         nl::node src = nl::nx::ui["UIWindow.img"]["KeyConfig"];
-        key = src["key"];
         icon = src["icon"];
 
         Texture bg1 = Texture(src["backgrnd"]);
@@ -129,8 +128,7 @@ namespace jrc
         dimension = bgdim;
         dragarea = { bgdim.x(), 20 };
 
-        load_keys_pos();
-        load_key_textures();
+        load_key_bounds();
         load_action_icons();
         load_unbound_action_positions();
         reset_from_keyboard();
@@ -141,20 +139,10 @@ namespace jrc
         UIElement::draw(alpha);
         draw_english_button_labels();
 
-        for (const auto& kv : key_textures)
-        {
-            auto pit = keys_pos.find(kv.first);
-            if (pit != keys_pos.end())
-            {
-                kv.second.draw(position + pit->second);
-            }
-        }
-
         for (const auto& kv : staged_mappings)
         {
             KeyConfig::Key key_slot = KeyConfig::actionbyid(kv.first);
-            auto pit = keys_pos.find(key_slot);
-            if (pit == keys_pos.end())
+            if (key_bounds.count(key_slot) == 0)
             {
                 continue;
             }
@@ -162,7 +150,7 @@ namespace jrc
             Icon* mapped = icon_for_mapping(kv.second);
             if (mapped)
             {
-                mapped->draw(position + pit->second - Point<int16_t>(2, 3));
+                mapped->draw(position + key_icon_position(key_slot));
             }
         }
 
@@ -234,7 +222,7 @@ namespace jrc
             {
                 if (clicked)
                 {
-                    mapped->start_drag(cursorpos - position - keys_pos[key_slot]);
+                    mapped->start_drag(cursorpos - position - key_icon_position(key_slot));
                     UI::get().drag_icon(mapped);
                     return { Cursor::GRABBING, true };
                 }
@@ -376,96 +364,94 @@ namespace jrc
         rebuild_bound_actions();
     }
 
-    void UIKeyConfig::load_keys_pos()
+    void UIKeyConfig::load_key_bounds()
     {
-        int16_t slot_width = 33;
-        int16_t slot_width_lg = 98;
-        int16_t slot_height = 33;
-        int16_t row_y = 126;
-        int16_t row_special_y = row_y - slot_height - 5;
-        int16_t row_quickslot_x = 535;
-        int16_t row_one_x = 31;
-        int16_t row_two_x = 80;
-        int16_t row_three_x = 96;
-        int16_t row_four_x = 55;
-        int16_t row_five_x = 39;
-        int16_t row_special_x = row_one_x + slot_width * 2;
+        key_bounds.clear();
 
-        keys_pos[KeyConfig::ESCAPE] = { row_one_x, row_special_y };
-        for (size_t i = KeyConfig::F1; i <= KeyConfig::F12; i++)
+        auto add_key = [&](KeyConfig::Key key, int16_t x, int16_t y, int16_t width = 32, int16_t height = 32)
         {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-            keys_pos[id] = { row_special_x, row_special_y };
-            row_special_x += slot_width;
-            if (id == KeyConfig::F4 || id == KeyConfig::F8)
-                row_special_x += 17;
-        }
+            key_bounds[key] = Rectangle<int16_t>(
+                Point<int16_t>(x, y),
+                Point<int16_t>(x + width, y + height)
+            );
+        };
 
-        keys_pos[KeyConfig::SCROLL_LOCK] = { static_cast<int16_t>(row_quickslot_x + slot_width), row_special_y };
-        keys_pos[KeyConfig::GRAVE_ACCENT] = { row_one_x + slot_width * 0, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM1] = { row_one_x + slot_width * 1, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM2] = { row_one_x + slot_width * 2, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM3] = { row_one_x + slot_width * 3, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM4] = { row_one_x + slot_width * 4, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM5] = { row_one_x + slot_width * 5, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM6] = { row_one_x + slot_width * 6, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM7] = { row_one_x + slot_width * 7, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM8] = { row_one_x + slot_width * 8, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM9] = { row_one_x + slot_width * 9, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::NUM0] = { row_one_x + slot_width * 10, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::MINUS] = { row_one_x + slot_width * 11, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::EQUAL] = { row_one_x + slot_width * 12, row_y + slot_height * 0 };
-
-        for (size_t i = KeyConfig::Q; i <= KeyConfig::RIGHT_BRACKET; i++)
+        auto add_row = [&](std::initializer_list<KeyConfig::Key> keys, int16_t start_x, int16_t y, int16_t step = 34)
         {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-            keys_pos[id] = { static_cast<int16_t>(row_two_x + slot_width * (i - KeyConfig::Q)), static_cast<int16_t>(row_y + slot_height * 1) };
-        }
-        row_two_x += 9;
-        keys_pos[KeyConfig::BACKSLASH] = { static_cast<int16_t>(row_two_x + slot_width * 12), static_cast<int16_t>(row_y + slot_height * 1) };
-
-        for (size_t i = KeyConfig::A; i <= KeyConfig::APOSTROPHE; i++)
-        {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-            keys_pos[id] = { static_cast<int16_t>(row_three_x + slot_width * (i - KeyConfig::A)), static_cast<int16_t>(row_y + slot_height * 2) };
-        }
-
-        keys_pos[KeyConfig::LEFT_SHIFT] = { row_four_x + slot_width * 0, row_y + slot_height * 3 };
-        row_four_x += 24;
-        for (size_t i = KeyConfig::Z; i <= KeyConfig::PERIOD; i++)
-        {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-            keys_pos[id] = { static_cast<int16_t>(row_four_x + slot_width * (i - KeyConfig::Z + 1)), static_cast<int16_t>(row_y + slot_height * 3) };
-        }
-        row_four_x += 24;
-        keys_pos[KeyConfig::RIGHT_SHIFT] = { static_cast<int16_t>(row_four_x + slot_width * 11), static_cast<int16_t>(row_y + slot_height * 3) };
-
-        keys_pos[KeyConfig::LEFT_CONTROL] = { row_five_x + slot_width_lg * 0, row_y + slot_height * 4 };
-        keys_pos[KeyConfig::LEFT_ALT] = { row_five_x + slot_width_lg * 1, row_y + slot_height * 4 };
-        row_five_x += 24;
-        keys_pos[KeyConfig::SPACE] = { row_five_x + slot_width_lg * 2, row_y + slot_height * 4 };
-        row_five_x += 27;
-        keys_pos[KeyConfig::RIGHT_ALT] = { row_five_x + slot_width_lg * 3, row_y + slot_height * 4 };
-        row_five_x += 2;
-        keys_pos[KeyConfig::RIGHT_CONTROL] = { row_five_x + slot_width_lg * 4, row_y + slot_height * 4 };
-
-        keys_pos[KeyConfig::INSERT] = { row_quickslot_x + slot_width * 0, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::HOME] = { row_quickslot_x + slot_width * 1, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::PAGE_UP] = { row_quickslot_x + slot_width * 2, row_y + slot_height * 0 };
-        keys_pos[KeyConfig::DELETE] = { row_quickslot_x + slot_width * 0, row_y + slot_height * 1 };
-        keys_pos[KeyConfig::END] = { row_quickslot_x + slot_width * 1, row_y + slot_height * 1 };
-        keys_pos[KeyConfig::PAGE_DOWN] = { row_quickslot_x + slot_width * 2, row_y + slot_height * 1 };
-    }
-
-    void UIKeyConfig::load_key_textures()
-    {
-        for (int32_t i = 1; i < KeyConfig::LENGTH; ++i)
-        {
-            if (key[i])
+            int16_t x = start_x;
+            for (KeyConfig::Key key : keys)
             {
-                key_textures[KeyConfig::actionbyid(i)] = key[i];
+                add_key(key, x, y);
+                x += step;
             }
-        }
+        };
+
+        // The background already paints the keyboard legends. These bounds
+        // follow the visible key caps so dragging and dropping lines up with
+        // the artwork in the current UI.nx set.
+        add_key(KeyConfig::ESCAPE, 12, 26);
+        add_row(
+            {
+                KeyConfig::F1, KeyConfig::F2, KeyConfig::F3, KeyConfig::F4,
+                KeyConfig::F5, KeyConfig::F6, KeyConfig::F7, KeyConfig::F8,
+                KeyConfig::F9, KeyConfig::F10, KeyConfig::F11, KeyConfig::F12
+            },
+            80,
+            26
+        );
+        add_key(KeyConfig::SCROLL_LOCK, 546, 26);
+
+        add_key(KeyConfig::GRAVE_ACCENT, 12, 66);
+        add_row(
+            {
+                KeyConfig::NUM1, KeyConfig::NUM2, KeyConfig::NUM3, KeyConfig::NUM4,
+                KeyConfig::NUM5, KeyConfig::NUM6, KeyConfig::NUM7, KeyConfig::NUM8,
+                KeyConfig::NUM9, KeyConfig::NUM0, KeyConfig::MINUS, KeyConfig::EQUAL
+            },
+            46,
+            66
+        );
+        add_row({ KeyConfig::INSERT, KeyConfig::HOME, KeyConfig::PAGE_UP }, 512, 66);
+
+        add_row(
+            {
+                KeyConfig::Q, KeyConfig::W, KeyConfig::E, KeyConfig::R,
+                KeyConfig::T, KeyConfig::Y, KeyConfig::U, KeyConfig::I,
+                KeyConfig::O, KeyConfig::P, KeyConfig::LEFT_BRACKET,
+                KeyConfig::RIGHT_BRACKET, KeyConfig::BACKSLASH
+            },
+            96,
+            99
+        );
+        add_row({ KeyConfig::DELETE, KeyConfig::END, KeyConfig::PAGE_DOWN }, 512, 99);
+
+        add_row(
+            {
+                KeyConfig::A, KeyConfig::S, KeyConfig::D, KeyConfig::F,
+                KeyConfig::G, KeyConfig::H, KeyConfig::J, KeyConfig::K,
+                KeyConfig::L, KeyConfig::SEMICOLON, KeyConfig::APOSTROPHE
+            },
+            79,
+            132
+        );
+
+        add_key(KeyConfig::LEFT_SHIFT, 12, 165, 84, 32);
+        add_row(
+            {
+                KeyConfig::Z, KeyConfig::X, KeyConfig::C, KeyConfig::V,
+                KeyConfig::B, KeyConfig::N, KeyConfig::M, KeyConfig::COMMA,
+                KeyConfig::PERIOD
+            },
+            96,
+            165
+        );
+        add_key(KeyConfig::RIGHT_SHIFT, 436, 165, 68, 32);
+
+        add_key(KeyConfig::LEFT_CONTROL, 12, 198, 50, 32);
+        add_key(KeyConfig::LEFT_ALT, 112, 198, 54, 32);
+        add_key(KeyConfig::SPACE, 166, 198, 168, 32);
+        add_key(KeyConfig::RIGHT_ALT, 334, 198, 56, 32);
+        add_key(KeyConfig::RIGHT_CONTROL, 446, 198, 58, 32);
     }
 
     void UIKeyConfig::load_action_icons()
@@ -501,10 +487,10 @@ namespace jrc
     {
         unbound_action_pos.clear();
 
-        int16_t row_x = 26;
-        int16_t row_y = 307;
-        int16_t slot_width = 36;
-        int16_t slot_height = 36;
+        int16_t row_x = 8;
+        int16_t row_y = 267;
+        int16_t slot_width = 34;
+        int16_t slot_height = 34;
 
         std::vector<int32_t> actions;
         for (const auto& kv : action_icons)
@@ -514,12 +500,12 @@ namespace jrc
 
         std::sort(actions.begin(), actions.end());
 
-        constexpr int32_t cols = 17;
+        constexpr int32_t cols = 18;
         for (size_t i = 0; i < actions.size(); ++i)
         {
             int32_t col = static_cast<int32_t>(i % cols);
             int32_t row = static_cast<int32_t>(i / cols);
-            if (row > 3)
+            if (row > 2)
             {
                 break;
             }
@@ -684,6 +670,23 @@ namespace jrc
         return nullptr;
     }
 
+    Point<int16_t> UIKeyConfig::key_icon_position(KeyConfig::Key key) const
+    {
+        auto it = key_bounds.find(key);
+        if (it == key_bounds.end())
+        {
+            return {};
+        }
+
+        const Rectangle<int16_t>& bounds = it->second;
+        const int16_t icon_width = 32;
+        const int16_t icon_height = 32;
+        return {
+            static_cast<int16_t>(bounds.l() + std::max<int16_t>(0, (bounds.width() - icon_width) / 2)),
+            static_cast<int16_t>(bounds.t() + std::max<int16_t>(0, (bounds.height() - icon_height) / 2))
+        };
+    }
+
     Keyboard::Mapping UIKeyConfig::staged_mapping(int32_t keycode) const
     {
         auto it = staged_mappings.find(keycode);
@@ -697,9 +700,10 @@ namespace jrc
 
     KeyConfig::Key UIKeyConfig::key_by_position(Point<int16_t> cursorpos) const
     {
-        for (const auto& kv : keys_pos)
+        for (const auto& kv : key_bounds)
         {
-            Rectangle<int16_t> rect(position + kv.second, position + kv.second + Point<int16_t>(32, 32));
+            Rectangle<int16_t> rect = kv.second;
+            rect.shift(position);
             if (rect.contains(cursorpos))
             {
                 return kv.first;

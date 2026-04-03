@@ -52,8 +52,7 @@ namespace jrc
             Keyboard::Mapping mapping;
         };
 
-        void load_keys_pos();
-        void load_key_textures();
+        void load_key_bounds();
         void load_action_icons();
         void load_unbound_action_positions();
 
@@ -66,6 +65,7 @@ namespace jrc
         void close_discard();
 
         Icon* icon_for_mapping(const Keyboard::Mapping& mapping) const;
+        Point<int16_t> key_icon_position(KeyConfig::Key key) const;
         Keyboard::Mapping staged_mapping(int32_t key) const;
         KeyConfig::Key key_by_position(Point<int16_t> cursorpos) const;
         int32_t unbound_action_by_position(Point<int16_t> cursorpos) const;
@@ -80,10 +80,8 @@ namespace jrc
 
         std::map<int32_t, Keyboard::Mapping> staged_mappings;
 
-        nl::node key;
         nl::node icon;
-        std::map<KeyConfig::Key, Texture> key_textures;
-        std::map<KeyConfig::Key, Point<int16_t>> keys_pos;
+        std::map<KeyConfig::Key, Rectangle<int16_t>> key_bounds;
 
         std::map<int32_t, std::unique_ptr<Icon>> action_icons;
         std::map<int32_t, Point<int16_t>> unbound_action_pos;
