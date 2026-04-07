@@ -51,6 +51,7 @@ MapleStory WASM brings the classic MapleStory v83 client to modern web browsers 
 ### 1. Client Assets (`.nx` files)
 Place the `.nx` files into the `assets/` directory at the project root.
 - These are the same `.nx` files required by the upstream v83 C++ client codebase.
+- If you only have `.wz` files, use the [WZ to NX converter](./scripts/wz-converter/README.md) to generate `.nx` files first.
 - **Location:** `maplestory-wasm/assets/*.nx`
 - Treat `assets/` as read-only. Do not modify files in this directory.
 
@@ -213,6 +214,7 @@ The `docker-compose.yml` provides sensible defaults. Key environment variables:
 | `./scripts/build_wasm.sh --debug` | Build WASM client with debug symbols |
 | `./scripts/build_wasm.sh -j 4` | Build with 4 parallel jobs |
 | `./scripts/docker_build_wasm.sh` | Build WASM client in Docker |
+| `./scripts/wz-converter/convert.sh` | Convert local `.wz` files to `.nx` files in Docker |
 | `./scripts/run_all.sh` | Start the Docker web services |
 | `./scripts/docker_web_up.sh -d` | Start the Docker web services directly |
 | `./scripts/stop_all.sh` | Stop all services |
