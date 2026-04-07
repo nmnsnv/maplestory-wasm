@@ -1,0 +1,54 @@
+name: wasm-build
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: wasm-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: wasm-build-native
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Emscripten 4.0.21
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.21
+
+      - name: Show toolchain versions
+        run: |
+          emcc -v
+          cmake --version
+
+      - name: Build WASM client
+        run: ./scripts/build_wasm.sh --jobs 4
+
+  docker:
+    name: wasm-build-docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Docker versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Build WASM client in Docker
+        run: ./scripts/docker_build_wasm.sh --jobs 4
