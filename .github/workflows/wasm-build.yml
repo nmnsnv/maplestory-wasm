@@ -35,7 +35,7 @@ jobs:
           cmake --version
 
       - name: Build WASM client
-        run: ./scripts/build_wasm.sh --jobs 4
+        run: ./scripts/build_wasm.sh
 
   docker:
     name: wasm-build-docker
@@ -51,4 +51,4 @@ jobs:
           docker compose version
 
       - name: Build WASM client in Docker
-        run: ./scripts/docker_build_wasm.sh --jobs 4
+        run: ./scripts/docker_build_wasm.sh
