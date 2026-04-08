@@ -37,15 +37,477 @@
             image-rendering: pixelated;
             image-rendering: crisp-edges;
         }
+
+        /* Server Profile Overlay */
+        #profile-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        #profile-panel {
+            background: #1a1a2e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 24px;
+            width: 380px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .profile-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .profile-row select,
+        .profile-row input,
+        .profile-row button {
+            font-size: 13px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+
+        .profile-row select { flex: 1; }
+        .profile-row button {
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .profile-row button:hover { background: #3a3a5e; }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .config-field {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .config-field label {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .config-field input {
+            font-size: 13px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+
+        .config-field input::placeholder { color: #666; }
+
+        #btn-connect {
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            background: #2d5a27;
+            color: #fff;
+            border: 1px solid #3a7a30;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #btn-connect:hover { background: #3a7a30; }
+
+        .profile-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .profile-actions button {
+            flex: 1;
+            font-size: 12px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #2a2a3e;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        .profile-actions button:hover { background: #3a3a5e; }
+
+        .profile-actions button.active {
+            background: #3a5a8a;
+            border-color: #5a8aba;
+        }
+
+        .profile-hint {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        #btn-profiles {
+            position: fixed;
+            top: 8px;
+            right: 8px;
+            z-index: 999;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: rgba(30, 30, 50, 0.7);
+            color: #aaa;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        #btn-profiles:hover {
+            opacity: 1;
+            background: rgba(30, 30, 50, 0.95);
+            color: #fff;
+        }
     </style>
 </head>
 
 <body>
+    <button id="btn-profiles" title="Server Profiles (Esc)">Profiles</button>
+
+    <!-- Server Profile Selection -->
+    <div id="profile-overlay">
+        <div id="profile-panel" style="position:relative">
+            <button id="btn-close-overlay" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;display:none" title="Close (Esc)">&times;</button>
+
+            <div class="profile-row">
+                <select id="profile-select">
+                    <option value="">-- Select Profile --</option>
+                </select>
+                <button id="btn-load" title="Load selected profile">Load</button>
+                <button id="btn-delete" title="Delete selected profile">Del</button>
+            </div>
+
+            <div class="profile-row">
+                <input id="profile-name" type="text" placeholder="Profile name" style="flex:1" />
+                <button id="btn-save">Save</button>
+            </div>
+
+            <div class="profile-actions">
+                <button id="btn-default" title="Set selected profile as default (auto-connects on load)">Set Default</button>
+                <button id="btn-export" title="Export all profiles to clipboard as JSON">Export</button>
+                <button id="btn-import" title="Import profiles from JSON">Import</button>
+            </div>
+
+            <div class="config-grid">
+                <div class="config-field">
+                    <label>Server IP</label>
+                    <input id="cfg-MapleStoryServerIp" placeholder="auto" />
+                </div>
+                <div class="config-field">
+                    <label>Server Port</label>
+                    <input id="cfg-MapleStoryServerPort" placeholder="8484" />
+                </div>
+                <div class="config-field">
+                    <label>Proxy IP</label>
+                    <input id="cfg-ProxyIP" placeholder="auto" />
+                </div>
+                <div class="config-field">
+                    <label>Proxy Port</label>
+                    <input id="cfg-ProxyPort" placeholder="8080" />
+                </div>
+                <div class="config-field">
+                    <label>Assets IP</label>
+                    <input id="cfg-AssetsServerIP" placeholder="auto" />
+                </div>
+                <div class="config-field">
+                    <label>Assets Port</label>
+                    <input id="cfg-AssetsServerPort" placeholder="8765" />
+                </div>
+                <div class="config-field" style="grid-column: span 2">
+                    <label>Assets Protocol</label>
+                    <input id="cfg-AssetsServerProtocol" placeholder="ws or wss (auto)" />
+                </div>
+            </div>
+
+            <button id="btn-connect">Connect</button>
+            <div class="profile-hint">Leave fields blank to auto-detect from browser hostname</div>
+        </div>
+    </div>
+
     <div id="container">
         <canvas id="canvas" tabindex="-1"></canvas>
     </div>
 
     <script>
+        // Pre-fetch config.json once so both the profile UI and startClient share the result.
+        var _configPromise = fetch('/web/config.json')
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .catch(function () { return null; });
+
+        // ==================== Server Profiles ====================
+        (function () {
+            const STORAGE_KEY = 'mapleProfiles';
+            const DEFAULT_KEY = 'mapleDefaultProfile';
+            const CONFIG_KEYS = [
+                'AssetsServerIP', 'AssetsServerPort',
+                'MapleStoryServerIp', 'MapleStoryServerPort',
+                'ProxyIP', 'ProxyPort', 'AssetsServerProtocol'
+            ];
+
+            function getProfiles() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+                } catch { return {}; }
+            }
+
+            function saveProfiles(profiles) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+            }
+
+            function getDefault() {
+                return localStorage.getItem(DEFAULT_KEY) || '';
+            }
+
+            function setDefault(name) {
+                if (name) {
+                    localStorage.setItem(DEFAULT_KEY, name);
+                } else {
+                    localStorage.removeItem(DEFAULT_KEY);
+                }
+            }
+
+            function refreshDropdown() {
+                const sel = document.getElementById('profile-select');
+                const profiles = getProfiles();
+                const def = getDefault();
+                sel.innerHTML = '<option value="">-- Select Profile --</option>';
+                Object.keys(profiles).sort().forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name + (name === def ? ' *' : '');
+                    sel.appendChild(opt);
+                });
+                updateDefaultButton();
+            }
+
+            function updateDefaultButton() {
+                const btn = document.getElementById('btn-default');
+                const sel = document.getElementById('profile-select').value;
+                const def = getDefault();
+                if (sel && sel === def) {
+                    btn.textContent = 'Clear Default';
+                    btn.classList.add('active');
+                } else {
+                    btn.textContent = 'Set Default';
+                    btn.classList.remove('active');
+                }
+            }
+
+            function readFields() {
+                const cfg = {};
+                CONFIG_KEYS.forEach(key => {
+                    const val = document.getElementById('cfg-' + key).value.trim();
+                    if (val) cfg[key] = val;
+                });
+                return cfg;
+            }
+
+            function writeFields(cfg) {
+                CONFIG_KEYS.forEach(key => {
+                    document.getElementById('cfg-' + key).value = (cfg && cfg[key]) || '';
+                });
+            }
+
+            function connectWithConfig(cfg) {
+                if (cfg && Object.keys(cfg).length > 0) {
+                    window._mapleProfileConfig = cfg;
+                }
+                clientStarted = true;
+                hideOverlay();
+                startClient();
+            }
+
+            // Save
+            document.getElementById('btn-save').addEventListener('click', () => {
+                const name = document.getElementById('profile-name').value.trim();
+                if (!name) return;
+                const profiles = getProfiles();
+                profiles[name] = readFields();
+                saveProfiles(profiles);
+                refreshDropdown();
+                document.getElementById('profile-select').value = name;
+                updateDefaultButton();
+            });
+
+            // Load
+            document.getElementById('btn-load').addEventListener('click', () => {
+                const name = document.getElementById('profile-select').value;
+                if (!name) return;
+                const profiles = getProfiles();
+                writeFields(profiles[name]);
+                document.getElementById('profile-name').value = name;
+            });
+
+            // Delete
+            document.getElementById('btn-delete').addEventListener('click', () => {
+                const name = document.getElementById('profile-select').value;
+                if (!name) return;
+                const profiles = getProfiles();
+                delete profiles[name];
+                saveProfiles(profiles);
+                if (getDefault() === name) setDefault('');
+                refreshDropdown();
+            });
+
+            // Set / Clear Default
+            document.getElementById('btn-default').addEventListener('click', () => {
+                const name = document.getElementById('profile-select').value;
+                if (!name) return;
+                if (getDefault() === name) {
+                    setDefault('');
+                } else {
+                    setDefault(name);
+                }
+                refreshDropdown();
+                document.getElementById('profile-select').value = name;
+                updateDefaultButton();
+            });
+
+            // Export all profiles to clipboard
+            document.getElementById('btn-export').addEventListener('click', () => {
+                const data = {
+                    profiles: getProfiles(),
+                    default: getDefault()
+                };
+                const json = JSON.stringify(data, null, 2);
+                navigator.clipboard.writeText(json).then(() => {
+                    const btn = document.getElementById('btn-export');
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => { btn.textContent = 'Export'; }, 1500);
+                }).catch(() => {
+                    prompt('Copy this JSON:', json);
+                });
+            });
+
+            // Import profiles from JSON
+            document.getElementById('btn-import').addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json,application/json';
+                input.addEventListener('change', () => {
+                    const file = input.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        try {
+                            const data = JSON.parse(reader.result);
+                            const imported = data.profiles || data;
+                            if (typeof imported !== 'object') throw new Error('Invalid format');
+
+                            const existing = getProfiles();
+                            let count = 0;
+                            for (const [name, cfg] of Object.entries(imported)) {
+                                existing[name] = cfg;
+                                count++;
+                            }
+                            saveProfiles(existing);
+
+                            if (data.default && existing[data.default]) {
+                                setDefault(data.default);
+                            }
+
+                            refreshDropdown();
+                            const btn = document.getElementById('btn-import');
+                            btn.textContent = count + ' imported';
+                            setTimeout(() => { btn.textContent = 'Import'; }, 1500);
+                        } catch (e) {
+                            alert('Invalid profile JSON: ' + e.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+                input.click();
+            });
+
+            // Dropdown change updates default button
+            document.getElementById('profile-select').addEventListener('change', updateDefaultButton);
+
+            // Connect
+            document.getElementById('btn-connect').addEventListener('click', () => {
+                connectWithConfig(readFields());
+            });
+
+            refreshDropdown();
+
+            // Reopen / close overlay
+            let clientStarted = false;
+
+            function showOverlay() {
+                document.getElementById('profile-overlay').style.display = 'flex';
+                document.getElementById('btn-close-overlay').style.display = clientStarted ? '' : 'none';
+            }
+
+            function hideOverlay() {
+                document.getElementById('profile-overlay').style.display = 'none';
+            }
+
+            document.getElementById('btn-profiles').addEventListener('click', showOverlay);
+            document.getElementById('btn-close-overlay').addEventListener('click', hideOverlay);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const overlay = document.getElementById('profile-overlay');
+                    if (overlay.style.display === 'none') {
+                        showOverlay();
+                    } else if (clientStarted) {
+                        hideOverlay();
+                    }
+                }
+            });
+
+            // Operator: ?noProfiles query param — skip overlay immediately
+            if (new URLSearchParams(window.location.search).has('noProfiles')) {
+                console.log('[profiles] Disabled via ?noProfiles query param');
+                document.getElementById('btn-profiles').style.display = 'none';
+                clientStarted = true;
+                hideOverlay();
+                startClient();
+                return;
+            }
+
+            // Operator: config.json { "disableProfileUI": true } — skip overlay once config loads
+            _configPromise.then(function (config) {
+                if (config && config.disableProfileUI) {
+                    console.log('[profiles] Disabled via config.json disableProfileUI');
+                    document.getElementById('btn-profiles').style.display = 'none';
+                    clientStarted = true;
+                    hideOverlay();
+                    startClient();
+                    return;
+                }
+
+                // Auto-connect if a default profile is set
+                const defaultName = getDefault();
+                const profiles = getProfiles();
+                if (defaultName && profiles[defaultName]) {
+                    console.log('[profiles] Auto-connecting with default profile:', defaultName);
+                    connectWithConfig(profiles[defaultName]);
+                }
+            });
+        })();
+
+        // ==================== Canvas Scaling ====================
         (function () {
             const GAME_WIDTH = 800;
             const GAME_HEIGHT = 600;
@@ -103,6 +565,8 @@
             fitCanvas();
         })();
 
+        // ==================== Module / Client Init ====================
+
         Module = {
             canvas: (function () {
                 let canvas = document.getElementById('canvas');
@@ -119,7 +583,7 @@
             // Disable stdin to prevent annoying prompt() popups
             preRun: [function () {
                 function stdin() {
-                    return null; // Return null for EOF
+                    return null;
                 }
                 FS.init(stdin, null, null);
             }],
@@ -149,7 +613,6 @@
                 }
             },
 
-            // Function to add C++ logs - now just console
             addCppLog: function (level, message) {
                 let timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
                 console.log('[' + timestamp + '] [' + level + '] ' + message);
@@ -162,43 +625,50 @@
             console.error('[post-exception status] Exception thrown, see JavaScript console');
         };
 
-        // Fetch configuration before loading the client
-        fetch('/web/config.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(config => {
-                if (config) {
-                    let hasConfig = false;
-                    const lazyConfig = {};
+        // ==================== Service Worker Registration ====================
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .then(reg => console.log('[SW] Registered, scope:', reg.scope))
+                .catch(err => console.warn('[SW] Registration failed:', err));
+        }
 
+        // ==================== Start Client ====================
+        function startClient() {
+            // Reuse the pre-fetched config.json (resolves to null on error)
+            _configPromise.then(function (config) {
+                if (config) {
                     const lazyConfigKeys = [
                         'AssetsServerIP', 'AssetsServerPort',
                         'MapleStoryServerIp', 'MapleStoryServerPort',
                         'ProxyIP', 'ProxyPort', 'AssetsServerProtocol'
                     ];
-
-                    lazyConfigKeys.forEach(key => {
+                    const lazyConfig = {};
+                    let hasConfig = false;
+                    lazyConfigKeys.forEach(function (key) {
                         if (config[key] !== undefined && config[key] !== null) {
                             lazyConfig[key] = config[key];
-                            console.log(`[config] Set ${key} from config.json:`, config[key]);
+                            console.log('[config] Set ' + key + ' from config.json:', config[key]);
                             hasConfig = true;
                         }
                     });
-
                     if (hasConfig) {
                         Module.LazyFS = Object.assign(Module.LazyFS || {}, lazyConfig);
                     }
+                } else {
+                    console.warn('[config] Could not load /web/config.json, proceeding with defaults.');
                 }
-                loadWasmClient();
-            })
-            .catch(err => {
-                console.warn('[config] Could not load /web/config.json, proceeding with defaults. Error:', err.message);
+
+                // Apply profile overrides on top of config.json
+                if (window._mapleProfileConfig) {
+                    Module.LazyFS = Object.assign(Module.LazyFS || {}, window._mapleProfileConfig);
+                    Object.keys(window._mapleProfileConfig).forEach(function (key) {
+                        console.log('[config] Profile override ' + key + ':', window._mapleProfileConfig[key]);
+                    });
+                }
+
                 loadWasmClient();
             });
+        }
 
         function loadWasmClient() {
             const script = document.createElement('script');
