@@ -102,12 +102,14 @@ namespace jrc
 
     void ServerlistHandler::handle(InPacket& recv) const
     {
+        printf("[ServerlistHandler] Received serverlist packet, available=%d\n", (int)recv.available());
         // Parse all worlds.
         std::vector<World> worlds;
         uint8_t worldcount = 0;
         while (recv.available())
         {
             World world = LoginParser::parse_world(recv);
+            printf("[ServerlistHandler] Parsed world wid=%d\n", world.wid);
             if (world.wid != -1)
             {
                 worlds.emplace_back(std::move(world));
@@ -116,9 +118,12 @@ namespace jrc
             else
             {
                 // "End of serverlist" packet.
+                printf("[ServerlistHandler] End of serverlist marker received\n");
                 return;
             }
         }
+
+        printf("[ServerlistHandler] Creating UIWorldSelect with %d worlds\n", worldcount);
 
         // Remove previous UIs.
         UI::get().remove(UIElement::LOGIN);
@@ -127,6 +132,7 @@ namespace jrc
         // Add the world selection screen to the ui.
         UI::get().emplace<UIWorldSelect>(worlds, worldcount);
         UI::get().enable();
+        printf("[ServerlistHandler] UIWorldSelect created\n");
     }
 
 
