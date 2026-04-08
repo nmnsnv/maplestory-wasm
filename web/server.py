@@ -28,7 +28,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+
+        # Allow service worker to cache build assets; no-cache for everything else
+        if self.path.startswith("/build/"):
+            self.send_header("Cache-Control", "public, max-age=86400")
+        elif self.path == "/sw.js":
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Service-Worker-Allowed", "/")
+        else:
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+
         super().end_headers()
 
     def do_GET(self):
