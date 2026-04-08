@@ -26,7 +26,6 @@ services:
     environment:
       - IS_DOCKER=true
       - WS_PROXY_LOCALHOST_TARGET=host.docker.internal
-      - PYTHONUNBUFFERED=1
     ports:
       - "8080:8080"
     volumes:
