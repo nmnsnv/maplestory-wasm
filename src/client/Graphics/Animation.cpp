@@ -44,12 +44,12 @@ namespace jrc
         else if (hasa0)
         {
             uint8_t a0 = src["a0"];
-            opacities = { a0, 255 - a0 };
+            opacities = { a0, a0 };
         }
         else if (hasa1)
         {
             uint8_t a1 = src["a1"];
-            opacities = { 255 - a1, a1 };
+            opacities = { a1, a1 };
         }
         else
         {
