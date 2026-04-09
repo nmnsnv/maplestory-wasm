@@ -32,7 +32,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Allow service worker to cache build assets; no-cache for everything else
         if self.path.startswith("/build/"):
             self.send_header("Cache-Control", "public, max-age=86400")
-        elif self.path == "/sw.js":
+        elif self.path == "/web/service-worker.js":
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Service-Worker-Allowed", "/")
         else:
