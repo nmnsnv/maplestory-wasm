@@ -22,7 +22,7 @@ services:
       dockerfile: docker/web.Dockerfile
     # to ensure the client connects to 'host.docker.internal' or configure
     # this proxy to route correctly.
-    command: python web/ws_proxy.py --ws-port 8080
+    command: python -u web/ws_proxy.py --ws-port 8080
     environment:
       - IS_DOCKER=true
       - WS_PROXY_LOCALHOST_TARGET=host.docker.internal
