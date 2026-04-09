@@ -49,6 +49,12 @@ namespace jrc
             write_string(response);
         }
 
+        NpcTalkMorePacket(int8_t lastmsg, const std::string& text)
+            : NpcTalkMorePacket(lastmsg, static_cast<int8_t>(1))
+        {
+            write_string(text);
+        }
+
         NpcTalkMorePacket(int32_t selection) : NpcTalkMorePacket(4, 1)
         {
             write_int(selection);

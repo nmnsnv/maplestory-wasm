@@ -18,6 +18,7 @@
 #include "UINpcTalk.h"
 
 #include "../Components/MapleButton.h"
+#include "../UI.h"
 
 #include "../../Console.h"
 #include "../../Constants.h"
@@ -47,6 +48,8 @@ namespace jrc
         constexpr int16_t DIALOG_TEXT_Y_OFFSET = 16;
         constexpr int16_t OPTION_VERTICAL_GAP = 2;
         constexpr int16_t HOVER_UNDERLINE_THICKNESS = 1;
+        constexpr int16_t TEXTFIELD_BOTTOM_OFFSET = 30;
+        constexpr int16_t TEXTFIELD_HEIGHT = 20;
         constexpr int8_t SELECTION_DIALOGUE_TYPE = 4;
         constexpr int8_t LEGACY_SELECTION_DIALOGUE_TYPE = 5;
 
@@ -288,7 +291,7 @@ namespace jrc
         }
     }
 
-    UINpcTalk::UINpcTalk() : selected(0), hovered_selection(-1), scroll_offset(0), max_scroll(0)
+    UINpcTalk::UINpcTalk() : selected(0), hovered_selection(-1), scroll_offset(0), max_scroll(0), show_textfield(false)
     {
         nl::node src = nl::nx::ui["UIWindow2.img"]["UtilDlgEx"];
 
@@ -322,6 +325,18 @@ namespace jrc
         speaker.draw({ position + Point<int16_t>(80, 100), true });
         nametag.draw(position + Point<int16_t>(25, 100));
         name.draw(position + Point<int16_t>(80, 99));
+
+        if (show_textfield)
+        {
+            // Draw text input background box
+            int16_t box_x = static_cast<int16_t>(position.x() + DIALOG_TEXT_X);
+            int16_t box_y = static_cast<int16_t>(position.y() + top.height() + height - TEXTFIELD_BOTTOM_OFFSET);
+            int16_t box_w = TEXT_WIDTH;
+            int16_t box_h = TEXTFIELD_HEIGHT;
+            GraphicsGL::get().drawrectangle(box_x, box_y, box_w, box_h, 0.95f, 0.95f, 0.95f, 1.0f);
+            GraphicsGL::get().drawrectangle(box_x, static_cast<int16_t>(box_y + box_h - 1), box_w, 1, 0.4f, 0.4f, 0.4f, 1.0f);
+            textfield.draw(position);
+        }
 
         // Visible content bounds (relative to dialog position).
         int16_t content_top = static_cast<int16_t>(top.height() + TEXT_VERTICAL_PADDING);
@@ -391,12 +406,27 @@ namespace jrc
         return false;
     }
 
+    void UINpcTalk::submit_textfield()
+    {
+        std::string entered = textfield.get_text();
+        if (!entered.empty())
+        {
+            UI::get().remove_textfield();
+            NpcTalkMorePacket(type, entered).dispatch();
+            active = false;
+        }
+    }
+
     Button::State UINpcTalk::button_pressed(uint16_t buttonid)
     {
         switch (buttonid)
         {
         case OK:
-            if (is_selection_dialogue_type(type))
+            if (show_textfield)
+            {
+                submit_textfield();
+            }
+            else if (is_selection_dialogue_type(type))
             {
                 int32_t selection = selections.empty() ? 0 : selections[selected];
                 NpcTalkMorePacket(type, selection).dispatch();
@@ -454,6 +484,8 @@ namespace jrc
             }
             break;
         case END:
+            if (show_textfield)
+                UI::get().remove_textfield();
             NpcTalkMorePacket(type, end_confirms_dialogue ? 1 : 0).dispatch();
             active = false;
             break;
@@ -551,9 +583,24 @@ namespace jrc
             right_edge -= BUTTON_GAP;
         };
 
+        show_textfield = false;
+
         place_button(END, BUTTON_MARGIN);
         switch (msgtype)
         {
+        case 2:
+        {
+            // Text input dialog (sendGetText — server sends msgtype 2)
+            int16_t tf_y = static_cast<int16_t>(top.height() + height - TEXTFIELD_BOTTOM_OFFSET);
+            Rectangle<int16_t> tf_area(DIALOG_TEXT_X, DIALOG_TEXT_X + TEXT_WIDTH, tf_y, tf_y + TEXTFIELD_HEIGHT);
+            textfield = Textfield(Text::A12M, Text::LEFT, Text::BLACK, tf_area, 100);
+            textfield.set_enter_callback([this](std::string) {
+                submit_textfield();
+            });
+            show_textfield = true;
+            place_button_from_right(OK);
+            break;
+        }
         case 0:
         {
             // Text-only NPC dialogue carries the Prev/Next flags in two trailing
@@ -623,6 +670,22 @@ namespace jrc
             static_cast<int16_t>(Constants::viewheight() / 2 - dimension.y() / 2)
         };
 
+        // Focus textfield after all layout is finalized
+        if (show_textfield)
+        {
+            UI::get().focus_textfield(&textfield);
+        }
+
+    }
+
+    void UINpcTalk::update()
+    {
+        UIElement::update();
+
+        if (show_textfield)
+        {
+            textfield.update(position);
+        }
     }
 
     void UINpcTalk::send_key(int32_t, bool pressed, bool escape)
@@ -632,8 +695,13 @@ namespace jrc
             return;
         }
 
+        if (show_textfield)
+        {
+            UI::get().remove_textfield();
+        }
+
         active = false;
-        NpcTalkMorePacket(type, 0).dispatch();
+        NpcTalkMorePacket(type, static_cast<int8_t>(0)).dispatch();
     }
 
     void UINpcTalk::send_scroll(double yoffset)
@@ -650,6 +718,13 @@ namespace jrc
 
     UIElement::CursorResult UINpcTalk::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
+        if (show_textfield)
+        {
+            Cursor::State tstate = textfield.send_cursor(cursorpos - position, clicked);
+            if (tstate != Cursor::IDLE)
+                return { tstate, true };
+        }
+
         if (active && is_selection_dialogue_type(type) && !selection_labels.empty())
         {
             Point<int16_t> relative = cursorpos - position;

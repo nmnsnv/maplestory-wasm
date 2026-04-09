@@ -166,13 +166,21 @@ namespace jrc
         recv.skip(1);
 
         int32_t npcid = recv.read_int();
-        int8_t msgtype = recv.read_byte(); // 0 - textonly, 1 - yes/no, 4/5 - selection, 12 - accept/decline
+        int8_t msgtype = recv.read_byte(); // 0 - textonly, 1 - yes/no, 2 - getText, 4/5 - selection, 12 - accept/decline
         int8_t speaker = recv.read_byte();
         std::string text = recv.read_string();
 
         int16_t style = 0;
         if (msgtype == 0 && recv.length() > 0)
             style = recv.read_short();
+
+        // getText dialog (msgtype 2) has extra fields: default text, min/max
+        if (msgtype == 2 && recv.length() > 0)
+        {
+            recv.read_string(); // default text
+            if (recv.length() >= 4)
+                recv.read_int(); // min/max packed
+        }
 
         UI::get().emplace<UINpcTalk>();
         UI::get().enable();

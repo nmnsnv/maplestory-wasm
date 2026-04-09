@@ -17,6 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "../UIElement.h"
+#include "../Components/Textfield.h"
 
 #include "../../Graphics/Text.h"
 #include "../../Graphics/Texture.h"
@@ -35,6 +36,7 @@ namespace jrc
         UINpcTalk();
 
         void draw(float inter) const override;
+        void update() override;
         bool is_in_range(Point<int16_t> cursorpos) const override;
         void send_key(int32_t keycode, bool pressed, bool escape) override;
         void send_scroll(double yoffset) override;
@@ -55,6 +57,7 @@ namespace jrc
         int16_t get_dialogue_text_y() const;
         int16_t get_options_start_y() const;
         int32_t get_option_at(Point<int16_t> relative) const;
+        void submit_textfield();
 
         enum Buttons
         {
@@ -88,5 +91,8 @@ namespace jrc
         int32_t hovered_selection;
         int16_t scroll_offset;
         int16_t max_scroll;
+
+        Textfield textfield;
+        bool show_textfield;
     };
 }
