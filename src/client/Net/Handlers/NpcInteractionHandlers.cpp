@@ -166,19 +166,23 @@ namespace jrc
         recv.skip(1);
 
         int32_t npcid = recv.read_int();
-        int8_t msgtype = recv.read_byte(); // 0 - textonly, 1 - yes/no, 4/5 - selection, 12 - accept/decline
+        int8_t msgtype = recv.read_byte();
         int8_t speaker = recv.read_byte();
         std::string text = recv.read_string();
 
         int16_t style = 0;
-        if (msgtype == 0 && recv.length() > 0)
+        bool has_navigation_flags = false;
+        if ((msgtype == 0 || msgtype == 1) && recv.length() >= 2)
+        {
             style = recv.read_short();
+            has_navigation_flags = true;
+        }
 
         UI::get().emplace<UINpcTalk>();
         UI::get().enable();
 
         if (auto npctalk = UI::get().get_element<UINpcTalk>())
-            npctalk->change_text(npcid, msgtype, style, speaker, text);
+            npctalk->change_text(npcid, msgtype, style, has_navigation_flags, speaker, text);
     }
 
 

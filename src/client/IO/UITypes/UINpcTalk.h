@@ -40,15 +40,32 @@ namespace jrc
         void send_scroll(double yoffset) override;
         CursorResult send_cursor(bool clicked, Point<int16_t> cursorpos) override;
 
-        void change_text(int32_t npcid, int8_t msgtype, int16_t style, int8_t speaker, const std::string& text);
+        void change_text(
+            int32_t npcid,
+            int8_t msgtype,
+            int16_t style,
+            bool has_navigation_flags,
+            int8_t speaker,
+            const std::string& text
+        );
 
     protected:
         Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        enum class DialogueMode
+        {
+            TEXT,
+            YES_NO,
+            ACCEPT_DECLINE,
+            SELECTION,
+            UNKNOWN
+        };
+
         void parse_selections(const std::string& text, std::string& rendered_text);
         static std::string strip_npc_tokens(const std::string& text);
         static std::string replace_macros(const std::string& source);
+        static DialogueMode resolve_dialogue_mode(int8_t msgtype, bool has_navigation_flags);
         void refresh_selection_styles();
         int16_t get_selection_text_height() const;
         int16_t get_dialogue_content_height() const;
@@ -76,6 +93,7 @@ namespace jrc
         Text name;
         int16_t height;
         int16_t vtile;
+        DialogueMode dialogue_mode;
         bool slider;
 
         int8_t type;

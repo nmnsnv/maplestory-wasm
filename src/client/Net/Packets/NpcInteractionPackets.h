@@ -54,10 +54,16 @@ namespace jrc
             write_int(selection);
         }
 
-        NpcTalkMorePacket(int8_t lastmsg, int32_t selection)
-            : NpcTalkMorePacket(lastmsg, static_cast<int8_t>(1))
+        static NpcTalkMorePacket selection(int8_t lastmsg, int32_t selection)
         {
-            write_int(selection);
+            NpcTalkMorePacket packet(lastmsg, static_cast<int8_t>(1));
+            packet.write_int(selection);
+            return packet;
+        }
+
+        static NpcTalkMorePacket close(int8_t lastmsg)
+        {
+            return NpcTalkMorePacket(lastmsg, static_cast<int8_t>(-1));
         }
     };
 

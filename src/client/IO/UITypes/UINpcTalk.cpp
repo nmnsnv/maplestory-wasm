@@ -288,7 +288,17 @@ namespace jrc
         }
     }
 
-    UINpcTalk::UINpcTalk() : selected(0), hovered_selection(-1), scroll_offset(0), max_scroll(0)
+    UINpcTalk::UINpcTalk()
+        : height(0),
+          vtile(0),
+          dialogue_mode(DialogueMode::UNKNOWN),
+          slider(false),
+          type(0),
+          end_confirms_dialogue(false),
+          selected(0),
+          hovered_selection(-1),
+          scroll_offset(0),
+          max_scroll(0)
     {
         nl::node src = nl::nx::ui["UIWindow2.img"]["UtilDlgEx"];
 
@@ -305,7 +315,31 @@ namespace jrc
         buttons[NO] = std::make_unique<MapleButton>(src["BtNo"]);
 
         active = false;
-        end_confirms_dialogue = false;
+    }
+
+    UINpcTalk::DialogueMode UINpcTalk::resolve_dialogue_mode(int8_t msgtype, bool has_navigation_flags)
+    {
+        if (is_selection_dialogue_type(msgtype))
+        {
+            return DialogueMode::SELECTION;
+        }
+
+        switch (msgtype)
+        {
+        case 0:
+            return DialogueMode::TEXT;
+        case 1:
+            // Cosmic servers use type=1 for text dialogue with navigation flags,
+            // while some older variants used it for yes/no prompts.
+            return has_navigation_flags ? DialogueMode::TEXT : DialogueMode::YES_NO;
+        case 2:
+            return DialogueMode::YES_NO;
+        case 12:
+        case 14:
+            return DialogueMode::ACCEPT_DECLINE;
+        default:
+            return DialogueMode::UNKNOWN;
+        }
     }
 
     void UINpcTalk::draw(float inter) const
@@ -373,7 +407,7 @@ namespace jrc
         if (UIElement::is_in_range(cursorpos))
             return true;
 
-        if (active && is_selection_dialogue_type(type) && !selection_labels.empty())
+        if (active && dialogue_mode == DialogueMode::SELECTION && !selection_labels.empty())
         {
             Point<int16_t> relative = cursorpos - position;
             int16_t text_y = get_dialogue_text_y();
@@ -396,10 +430,10 @@ namespace jrc
         switch (buttonid)
         {
         case OK:
-            if (is_selection_dialogue_type(type))
+            if (dialogue_mode == DialogueMode::SELECTION)
             {
                 int32_t selection = selections.empty() ? 0 : selections[selected];
-                NpcTalkMorePacket(type, selection).dispatch();
+                NpcTalkMorePacket::selection(type, selection).dispatch();
                 active = false;
             }
             else
@@ -409,7 +443,7 @@ namespace jrc
             }
             break;
         case NEXT:
-            if (is_selection_dialogue_type(type))
+            if (dialogue_mode == DialogueMode::SELECTION)
             {
                 if (!selections.empty())
                 {
@@ -417,14 +451,14 @@ namespace jrc
                     refresh_selection_styles();
                 }
             }
-            else if (type == 0)
+            else if (dialogue_mode == DialogueMode::TEXT)
             {
                 NpcTalkMorePacket(type, 1).dispatch();
                 active = false;
             }
             break;
         case PREV:
-            if (is_selection_dialogue_type(type))
+            if (dialogue_mode == DialogueMode::SELECTION)
             {
                 if (!selections.empty())
                 {
@@ -433,37 +467,52 @@ namespace jrc
                     refresh_selection_styles();
                 }
             }
-            else if (type == 0)
+            else if (dialogue_mode == DialogueMode::TEXT)
             {
                 NpcTalkMorePacket(type, 0).dispatch();
                 active = false;
             }
             break;
         case YES:
-            if (type == 1 || type == 12)
+            if (dialogue_mode == DialogueMode::YES_NO || dialogue_mode == DialogueMode::ACCEPT_DECLINE)
             {
                 NpcTalkMorePacket(type, 1).dispatch();
                 active = false;
             }
             break;
         case NO:
-            if (type == 1 || type == 12)
+            if (dialogue_mode == DialogueMode::YES_NO || dialogue_mode == DialogueMode::ACCEPT_DECLINE)
             {
                 NpcTalkMorePacket(type, 0).dispatch();
                 active = false;
             }
             break;
         case END:
-            NpcTalkMorePacket(type, end_confirms_dialogue ? 1 : 0).dispatch();
+            if (end_confirms_dialogue)
+            {
+                NpcTalkMorePacket(type, 1).dispatch();
+            }
+            else
+            {
+                NpcTalkMorePacket::close(type).dispatch();
+            }
             active = false;
             break;
         }
         return Button::PRESSED;
     }
 
-    void UINpcTalk::change_text(int32_t npcid, int8_t msgtype, int16_t style, int8_t speakerbyte, const std::string& tx)
+    void UINpcTalk::change_text(
+        int32_t npcid,
+        int8_t msgtype,
+        int16_t style,
+        bool has_navigation_flags,
+        int8_t speakerbyte,
+        const std::string& tx
+    )
     {
         std::string processed_tx = replace_macros(tx);
+        dialogue_mode = resolve_dialogue_mode(msgtype, has_navigation_flags);
 
         selections.clear();
         selection_texts.clear();
@@ -472,7 +521,7 @@ namespace jrc
         hovered_selection = -1;
         end_confirms_dialogue = false;
 
-        if (is_selection_dialogue_type(msgtype))
+        if (dialogue_mode == DialogueMode::SELECTION)
         {
             parse_selections(processed_tx, prompttext);
             text = { Text::A12M, Text::LEFT, Text::DARKGREY, prompttext, TEXT_WIDTH, false };
@@ -552,14 +601,14 @@ namespace jrc
         };
 
         place_button(END, BUTTON_MARGIN);
-        switch (msgtype)
+        switch (dialogue_mode)
         {
-        case 0:
+        case DialogueMode::TEXT:
         {
             // Text-only NPC dialogue carries the Prev/Next flags in two trailing
-            // bytes. When both are absent the dialog expects a plain OK button.
-            bool has_prev = (style & 0x00FF) != 0;
-            bool has_next = (style & 0xFF00) != 0;
+            // bytes. When no flags are present the dialog expects a plain OK button.
+            bool has_prev = has_navigation_flags && (style & 0x00FF) != 0;
+            bool has_next = has_navigation_flags && (style & 0xFF00) != 0;
 
             if (has_next)
                 place_button_from_right(NEXT);
@@ -567,25 +616,21 @@ namespace jrc
                 place_button_from_right(PREV);
             if (!has_prev && !has_next)
             {
-                // Vanilla sendOk flow: in this case END should also confirm as a
-                // fallback, because some clients/UI skins fail to render BtOK.
-                end_confirms_dialogue = true;
                 place_button_from_right(OK);
             }
             break;
         }
-        case 1:
-        case 12:
+        case DialogueMode::YES_NO:
+        case DialogueMode::ACCEPT_DECLINE:
             place_button_from_right(NO);
             place_button_from_right(YES);
             break;
-        case SELECTION_DIALOGUE_TYPE:
-        case LEGACY_SELECTION_DIALOGUE_TYPE:
+        case DialogueMode::SELECTION:
             place_button_from_right(OK);
             place_button_from_right(NEXT);
             place_button_from_right(PREV);
             break;
-        default:
+        case DialogueMode::UNKNOWN:
             // Older scripts and some server variants use dialogue types that this
             // client does not model yet. Showing OK keeps the flow usable.
             place_button_from_right(OK);
@@ -598,7 +643,7 @@ namespace jrc
 
         // If text-only dialogue effectively has no visible action button besides
         // END, treat END as confirm to avoid trapping the player in mode=0 exits.
-        if (msgtype == 0 &&
+        if (dialogue_mode == DialogueMode::TEXT &&
             !has_visible_action_button(OK) &&
             !has_visible_action_button(NEXT) &&
             !has_visible_action_button(PREV))
@@ -608,7 +653,7 @@ namespace jrc
 
         // Same fallback for accept/decline prompts when YES/NO buttons fail
         // to render in some WZ/UI variants: END acts as accept so flow advances.
-        if ((msgtype == 1 || msgtype == 12) &&
+        if ((dialogue_mode == DialogueMode::YES_NO || dialogue_mode == DialogueMode::ACCEPT_DECLINE) &&
             !has_visible_action_button(YES) &&
             !has_visible_action_button(NO))
         {
@@ -633,7 +678,7 @@ namespace jrc
         }
 
         active = false;
-        NpcTalkMorePacket(type, 0).dispatch();
+        NpcTalkMorePacket::close(type).dispatch();
     }
 
     void UINpcTalk::send_scroll(double yoffset)
@@ -650,7 +695,7 @@ namespace jrc
 
     UIElement::CursorResult UINpcTalk::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (active && is_selection_dialogue_type(type) && !selection_labels.empty())
+        if (active && dialogue_mode == DialogueMode::SELECTION && !selection_labels.empty())
         {
             Point<int16_t> relative = cursorpos - position;
             int32_t hovered_option = get_option_at(relative);
