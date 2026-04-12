@@ -49,11 +49,17 @@ MapleStory WASM brings the classic MapleStory v83 client to modern web browsers 
 > You **must** provide your own game assets to run this project. We cannot distribute them due to copyright.
 
 ### 1. Client Assets (`.nx` files)
-Place the `.nx` files into the `assets/` directory at the project root.
-- These are the same `.nx` files required by the upstream v83 C++ client codebase.
-- If you only have `.wz` files, use the [WZ to NX converter](./scripts/wz-converter/README.md) to generate `.nx` files first.
-- **Location:** `maplestory-wasm/assets/*.nx`
-- Treat `assets/` as read-only. Do not modify files in this directory.
+
+You'll need a copy of MapleStory **v83** and a copy of MapleStory **v153 or newer**. Any standard installer for those versions will do.
+
+To put together the asset set:
+
+1. Take every `.wz` file from the **v83** install **except** `UI.wz`.
+2. Take **only** `UI.wz` from the **v153+** install.
+3. Run all of those `.wz` files through the [WZ to NX converter](./scripts/wz-converter/README.md) to produce `.nx` files.
+4. Drop the resulting `.nx` files into `maplestory-wasm/assets/`.
+
+Treat `assets/` as read-only once the files are in place — don't modify anything in it.
 
 ---
 
