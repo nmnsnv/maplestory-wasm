@@ -160,6 +160,9 @@ namespace jrc
         case BT_STATS:
             UI::get().send_menu(KeyAction::CHARSTATS);
             return Button::NORMAL;
+        case BT_QUEST:
+            UI::get().send_menu(KeyAction::QUESTLOG);
+            return Button::NORMAL;
         case BT_INVENTORY:
             UI::get().send_menu(KeyAction::INVENTORY);
             return Button::NORMAL;

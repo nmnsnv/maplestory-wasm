@@ -274,6 +274,12 @@ namespace jrc
         PosKEYCONFIG() : PointEntry("PosKEYCONFIG", "(144,144)") {}
     };
 
+    // The default position of the quest log.
+    struct PosQUEST : public Configuration::PointEntry
+    {
+        PosQUEST() : PointEntry("PosQUEST", "(200,100)") {}
+    };
+
     struct PosPARTY : public Configuration::PointEntry
     {
         PosPARTY() : PointEntry("PosPARTY", "(160,120)") {}

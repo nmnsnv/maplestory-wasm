@@ -32,10 +32,36 @@ namespace jrc
         bool is_started(int16_t);
         int16_t get_last_started();
 
+        // Return whether a quest is currently active (started or in progress).
+        bool is_active(int16_t qid) const;
+        // Return whether a quest has been completed.
+        bool is_completed(int16_t qid) const;
+
+        // Update the progress data of an active quest. Adds it as started if
+        // it was not active before. Returns true if the quest was newly added.
+        bool update_progress(int16_t qid, const std::string& quest_data);
+        // Return the current progress string of an active quest (empty if none).
+        std::string get_progress(int16_t qid) const;
+
+        // Move an active quest to the completed list.
+        void complete(int16_t qid, int64_t time);
+        // Remove an active quest (e.g. when it is forfeited).
+        void remove_active(int16_t qid);
+
+        // Set or clear the remaining time (in seconds) of a timed quest.
+        void set_timer(int16_t qid, int32_t seconds);
+        void clear_timer(int16_t qid);
+
+        // Read access for the user interface.
+        const std::map<int16_t, std::string>& get_started() const;
+        const std::map<int16_t, std::pair<int16_t, std::string>>& get_in_progress() const;
+        const std::map<int16_t, int64_t>& get_completed() const;
+        const std::map<int16_t, int32_t>& get_timers() const;
+
     private:
         std::map<int16_t, std::string> started;
         std::map<int16_t, std::pair<int16_t, std::string>> in_progress;
         std::map<int16_t, int64_t> completed;
+        std::map<int16_t, int32_t> timers;
     };
 }
-

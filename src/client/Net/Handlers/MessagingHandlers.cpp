@@ -3,10 +3,13 @@
 #include "../../Character/Char.h"
 #include "../../Console.h"
 #include "../../Data/ItemData.h"
+#include "../../Data/QuestData.h"
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
 #include "../../IO/Messages.h"
 #include "../../IO/UITypes/UIParty.h"
+#include "../../IO/UITypes/UIQuestLog.h"
+#include "../../IO/UITypes/UIQuestTracker.h"
 #include "../../IO/UITypes/UIStatusMessenger.h"
 #include "../../IO/UITypes/UIStatusBar.h"
 
@@ -454,6 +457,42 @@ namespace jrc
                 std::string sign = (gain < 0) ? "-" : "+";
 
                 show_status(Text::WHITE, "Received mesos (" + sign + std::to_string(gain) + ")");
+            }
+        }
+        else if (mode == 1)
+        {
+            int16_t qid = recv.read_short();
+            int8_t status = recv.read_byte();
+
+            Questlog& quests = Stage::get().get_player().get_quests();
+
+            if (status == 1)
+            {
+                std::string progress = recv.available() ? recv.read_string() : "";
+                bool is_new = quests.update_progress(qid, progress);
+                if (is_new)
+                {
+                    const QuestData& data = QuestData::get(qid);
+                    std::string name = data.is_valid() ? data.get_name() : ("Quest " + std::to_string(qid));
+                    show_status(Text::YELLOW, "Quest accepted: " + name);
+                }
+            }
+            else if (status == 2)
+            {
+                quests.complete(qid, 0);
+            }
+            else
+            {
+                quests.remove_active(qid);
+            }
+
+            if (auto questlog = UI::get().get_element<UIQuestLog>())
+            {
+                questlog->refresh();
+            }
+            if (auto tracker = UI::get().get_element<UIQuestTracker>())
+            {
+                tracker->refresh();
             }
         }
         else if (mode == 3)

@@ -26,6 +26,7 @@
 #include "Handlers/InventoryHandlers.h"
 #include "Handlers/MessagingHandlers.h"
 #include "Handlers/NpcInteractionHandlers.h"
+#include "Handlers/QuestHandlers.h"
 
 #include "../Console.h"
 
@@ -66,6 +67,11 @@ namespace jrc
         SHOW_STATUS_INFO = 39,
         MEMO_RESULT      = 41,
         ENABLE_REPORT    = 47,
+
+        // Quest
+        QUEST_CLEAR       = 49,
+        SET_QUEST_CLEAR   = 150,
+        UPDATE_QUEST_INFO = 211,
 
         //Inventory 2
         GATHER_RESULT = 52,
@@ -226,6 +232,11 @@ namespace jrc
         emplace<NPC_DIALOGUE, NpcDialogueHandler>();
         emplace<OPEN_NPC_SHOP, OpenNpcShopHandler>();
         emplace<STORAGE, StorageHandler>();
+
+        // Quest Handlers
+        emplace<QUEST_CLEAR, QuestClearHandler>();
+        emplace<SET_QUEST_CLEAR, SetQuestClearHandler>();
+        emplace<UPDATE_QUEST_INFO, UpdateQuestInfoHandler>();
 
         // TODO
         emplace<MOVE_MOB_RESPONSE, NullHandler>();

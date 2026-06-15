@@ -45,4 +45,88 @@ namespace jrc
         qend--;
         return qend->first;
     }
+
+    bool Questlog::is_active(int16_t qid) const
+    {
+        return started.count(qid) > 0 || in_progress.count(qid) > 0;
+    }
+
+    bool Questlog::is_completed(int16_t qid) const
+    {
+        return completed.count(qid) > 0;
+    }
+
+    bool Questlog::update_progress(int16_t qid, const std::string& qdata)
+    {
+        auto in_progress_iter = in_progress.find(qid);
+        if (in_progress_iter != in_progress.end())
+        {
+            in_progress_iter->second.second = qdata;
+            return false;
+        }
+
+        bool was_active = started.count(qid) > 0;
+        started[qid] = qdata;
+        return !was_active;
+    }
+
+    std::string Questlog::get_progress(int16_t qid) const
+    {
+        auto started_iter = started.find(qid);
+        if (started_iter != started.end())
+        {
+            return started_iter->second;
+        }
+
+        auto in_progress_iter = in_progress.find(qid);
+        if (in_progress_iter != in_progress.end())
+        {
+            return in_progress_iter->second.second;
+        }
+
+        return "";
+    }
+
+    void Questlog::complete(int16_t qid, int64_t time)
+    {
+        remove_active(qid);
+        completed[qid] = time;
+    }
+
+    void Questlog::remove_active(int16_t qid)
+    {
+        started.erase(qid);
+        in_progress.erase(qid);
+        timers.erase(qid);
+    }
+
+    void Questlog::set_timer(int16_t qid, int32_t seconds)
+    {
+        timers[qid] = seconds;
+    }
+
+    void Questlog::clear_timer(int16_t qid)
+    {
+        timers.erase(qid);
+    }
+
+    const std::map<int16_t, std::string>& Questlog::get_started() const
+    {
+        return started;
+    }
+
+    const std::map<int16_t, std::pair<int16_t, std::string>>& Questlog::get_in_progress() const
+    {
+        return in_progress;
+    }
+
+    const std::map<int16_t, int64_t>& Questlog::get_completed() const
+    {
+        return completed;
+    }
+
+    const std::map<int16_t, int32_t>& Questlog::get_timers() const
+    {
+        return timers;
+    }
 }
