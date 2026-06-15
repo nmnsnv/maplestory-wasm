@@ -46,6 +46,11 @@ namespace nl {
         file & operator=(file &&);
         //Opens the file with the given name
         void open(std::string name);
+        //Opens an NX image already resident in memory. The buffer must outlive
+        //this file and remains owned by the caller (it is not unmapped/freed on
+        //close). Native (non-WASM) builds only; used by the host test harness to
+        //load synthetically-built NX images without touching the filesystem.
+        void open_memory(const void* buffer, std::size_t size);
         //Closes the given file
         //Any nodes derived from this file become invalid after closing it
         //Any attempts to use invalid nodes will result in undefined behavior

@@ -46,6 +46,7 @@
 #endif
 #include <stdexcept>
 #include <iostream>
+#include <cstring>
 
 namespace nl {
     file::file(std::string name) {
@@ -166,6 +167,28 @@ namespace nl {
         m_data->audio_table = reinterpret_cast<uint64_t const *>(reinterpret_cast<char const *>(m_data->base) + m_data->header->audio_offset);
 #endif
     }
+    void file::open_memory(const void* buffer, std::size_t buffer_size) {
+        close();
+#ifdef MS_PLATFORM_WASM
+        (void)buffer;
+        (void)buffer_size;
+        throw std::runtime_error("file::open_memory is not supported on this platform");
+#else
+        m_data = new data();
+        m_data->base = buffer;
+        m_data->size = buffer_size;
+        m_data->file_handle = 0; // no real fd: marks an in-memory image
+
+        m_data->header = reinterpret_cast<header const *>(m_data->base);
+        if (m_data->header->magic != 0x34474B50)
+            throw std::runtime_error("in-memory buffer is not a PKG4 NX image");
+        auto const base = reinterpret_cast<char const *>(m_data->base);
+        m_data->node_table = reinterpret_cast<node::data const *>(base + m_data->header->node_offset);
+        m_data->string_table = reinterpret_cast<uint64_t const *>(base + m_data->header->string_offset);
+        m_data->bitmap_table = reinterpret_cast<uint64_t const *>(base + m_data->header->bitmap_offset);
+        m_data->audio_table = reinterpret_cast<uint64_t const *>(base + m_data->header->audio_offset);
+#endif
+    }
     void file::close() {
         if (!m_data) return;
 #ifdef _WIN32
@@ -179,8 +202,13 @@ namespace nl {
             LazyFS::LazyFileLoader::free_file(const_cast<void *>(m_data->base));
         }
 #else
-        ::munmap(const_cast<void *>(m_data->base), m_data->size);
-        ::close(m_data->file_handle);
+        // file_handle == 0 marks an in-memory image (open_memory): the buffer is
+        // owned by the caller, so do not unmap or close it.
+        if (m_data->file_handle > 0)
+        {
+            ::munmap(const_cast<void *>(m_data->base), m_data->size);
+            ::close(m_data->file_handle);
+        }
 #endif
 #endif
         delete m_data;
@@ -272,7 +300,16 @@ namespace nl {
         memcpy(buf, data, size);
         return true;
 #else
-        // Use pread for native builds
+        // file_handle == 0 marks an in-memory image (open_memory): read straight
+        // from the resident buffer instead of issuing a pread on a real fd.
+        if (fd->file_handle <= 0)
+        {
+            if (offset + size > fd->size)
+                return false;
+            std::memcpy(buf, reinterpret_cast<const char*>(fd->base) + offset, size);
+            return true;
+        }
+
         ssize_t result = pread(fd->file_handle, buf, size, offset);
         return result == static_cast<ssize_t>(size);
 #endif

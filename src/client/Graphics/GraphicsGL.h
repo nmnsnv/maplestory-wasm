@@ -27,7 +27,11 @@
 
 #include "nlnx/bitmap.hpp"
 
+#ifdef MS_HEADLESS
+#include "GLHeadless.h"
+#else
 #include "GL/glew.h"
+#endif
 
 #include "ft2build.h"
 #include FT_FREETYPE_H
@@ -80,6 +84,27 @@ namespace jrc
         void flush(float opacity);
         // Clear the buffer contents.
         void clearscene();
+
+        // Stable, test-facing digest of one accumulated draw call. Used by the
+        // headless render-list tests (see MS_HEADLESS) so they can assert on
+        // geometry without depending on the private Quad/Vertex layout.
+        struct QuadSnapshot
+        {
+            // Screen-space bounds (top-left and bottom-right corners).
+            int16_t left;
+            int16_t right;
+            int16_t top;
+            int16_t bottom;
+            // Atlas (texture) offset of the top-left corner. Zero for solid
+            // rectangles (which draw with the null offset).
+            int16_t atlas_left;
+            int16_t atlas_top;
+            Color color;
+        };
+
+        // Snapshot the current render list (the quads accumulated since the
+        // last clearscene()). Test-only; cheap and side-effect free.
+        std::vector<QuadSnapshot> peek_quads() const;
 
     private:
         void clearinternal();

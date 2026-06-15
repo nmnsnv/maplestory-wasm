@@ -3,3 +3,8 @@
 /assets/
 /serverAssets/
 __pycache__
+
+# Native unit-test build dirs and runtime artifacts (Plan 00 / Plan 07)
+/src/client/build-tests/
+/src/client/build-tests-docker/
+/src/client/Settings

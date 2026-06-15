@@ -130,6 +130,56 @@ $ make
 If all this is successful, you should have the executable in your current
 directory (`LibreMaple-Client/build`).
 
+## Testing
+
+The client has a fast, host-native unit-test binary (no GL context, network, or
+WZ assets required) built with [doctest](https://github.com/doctest/doctest)
+(vendored at `includes/doctest/doctest.h`). It is gated behind the `BUILD_TESTS`
+CMake option and is independent of the WASM/native client build.
+
+From `src/client/`:
+
+```sh
+$ cmake -S . -B build-tests -DBUILD_TESTS=ON
+$ cmake --build build-tests --target tests
+$ (cd build-tests && ctest --output-on-failure)
+```
+
+Or use the helper scripts from the repo root, which wrap the three steps above
+(extra arguments are forwarded to `ctest`, e.g. `-R Keyboard`):
+
+```sh
+$ ./scripts/run_tests.sh             # build + run on the host
+$ ./scripts/docker_run_tests.sh      # build + run inside the Docker builder image
+```
+
+The Docker runner reuses the `wasm-builder` service (which now also carries a
+native toolchain + FreeType) and uses a separate `build-tests-docker/` dir so
+the Linux container's CMake cache never collides with a host build.
+
+Tests live in `Test/` and cover three layers:
+
+- **Pure logic** (`test_packet_io`, `test_cryptography`, `test_util`,
+  `test_template`, `test_keyboard`): wire format, crypto round-trips, geometry,
+  containers, and keyboard mapping. (`Keyboard` uses a small in-repo GLFW
+  key-code shim, `Test/glfw_shim/`, so no system GLFW is required.)
+- **Headless rendering** (`test_graphics_headless`): the target defines
+  `MS_HEADLESS`, which compiles every GL call out of `GraphicsGL` while keeping
+  FreeType glyph layout and all quad/atlas bookkeeping (see
+  `Graphics/GLHeadless.h`). Tests drive the draw API and assert on the recorded
+  render list via the test-only `GraphicsGL::peek_quads()` — no GPU, no context.
+- **Synthetic assets + real components** (`test_nx_synthetic`,
+  `test_texture_render`, `test_button_render`): `Test/NxBuilder` serializes a
+  synthetic NX (PKG4) image in code which is loaded through the real `nl::nx`
+  reader via `nl::file::open_memory()` (no committed binary fixture). Real
+  `Texture` and `MapleButton` objects are then constructed from those assets and
+  exercised against the headless render list, including hit-testing and state.
+
+FreeType is the only external dependency (located via `pkg-config`; on macOS
+`brew install freetype`). See `plans/07-ui-testing.md` for the full roadmap.
+Full `UIElement` windows additionally pull in the `UI` singleton hub, so
+window-level tests await the singleton decoupling in `plans/06-*`.
+
 ### Windows NT (Windows 7, 8, 10+)
 
 Coming soon...

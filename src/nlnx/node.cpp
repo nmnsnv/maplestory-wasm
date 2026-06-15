@@ -32,7 +32,9 @@
 
 namespace nl {
     namespace {
-        size_t make_audio_id(const _file_data* file_data, uint64_t audio_offset) {
+        // Only referenced by the LazyFS audio path (MS_PLATFORM_WASM); unused in
+        // native/headless builds, where -Werror would otherwise flag it.
+        [[maybe_unused]] size_t make_audio_id(const _file_data* file_data, uint64_t audio_offset) {
             // On WASM the underlying contiguous buffer can be a stitched scratch buffer,
             // so its address is not a stable identity for a logical audio asset.
             size_t seed = reinterpret_cast<size_t>(file_data);

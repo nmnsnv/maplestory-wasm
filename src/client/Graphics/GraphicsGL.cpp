@@ -32,16 +32,19 @@ namespace jrc
 
     Error GraphicsGL::init()
     {
+#ifndef MS_HEADLESS
         if (glewInit())
         {
             return Error::GLEW;
         }
+#endif
 
         if (FT_Init_FreeType(&ftlibrary))
         {
             return Error::FREETYPE;
         }
 
+#ifndef MS_HEADLESS
         GLint result = GL_FALSE;
 
         GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -141,6 +144,7 @@ namespace jrc
             GL_TEXTURE_2D, 0, GL_RGBA, ATLASW, ATLASH, 0,
             GL_RGBA, GL_UNSIGNED_BYTE, nullptr
         );
+#endif // MS_HEADLESS
 
         fontborder.set_y(1);
 
@@ -294,7 +298,9 @@ namespace jrc
 
             if (w > 0 && h > 0)
             {
-#ifdef MS_PLATFORM_WASM
+#if defined(MS_HEADLESS)
+                // Headless: keep the glyph metrics computed above, skip upload.
+#elif defined(MS_PLATFORM_WASM)
                 // WebGL path: expand single-channel glyph bitmap to RGBA.
                 std::vector<uint8_t> rgba_buffer(static_cast<size_t>(w) * h * 4);
                 for (int32_t i = 0; i < static_cast<int32_t>(w) * h; ++i)
@@ -328,6 +334,7 @@ namespace jrc
 
     void GraphicsGL::reinit()
     {
+#ifndef MS_HEADLESS
         glUseProgram(program);
 
         glUniform1i(uniform_yoffset, Constants::VIEWYOFFSET);
@@ -346,14 +353,20 @@ namespace jrc
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#endif // MS_HEADLESS
 
         clearinternal();
     }
 
     void GraphicsGL::set_screensize(int16_t width, int16_t height)
     {
+#ifndef MS_HEADLESS
         glUseProgram(program);
         glUniform2f(uniform_screensize, width, height);
+#else
+        (void)width;
+        (void)height;
+#endif
     }
 
     Rectangle<int16_t> GraphicsGL::screen()
@@ -514,7 +527,9 @@ namespace jrc
         Console::get().print("Used: " + std::to_string(usedpercent) + ", wasted: " + std::to_string(wastedpercent));
         */
 
-#ifdef MS_PLATFORM_WASM
+#if defined(MS_HEADLESS)
+        // Headless: keep the atlas offset bookkeeping above, skip the upload.
+#elif defined(MS_PLATFORM_WASM)
         // WebGL 2 does not support GL_BGRA, so we need to manually swap the channels
         // from BGRA (what the game uses) to RGBA (what WebGL expects).
         int32_t len = w * h * 4;
@@ -666,7 +681,7 @@ namespace jrc
             for (size_t i = first; i < last; ++i)
             {
                 char c = text[i];
-                wordwidth += font.chars[c].ax;
+                wordwidth += font.chars[static_cast<uint8_t>(c)].ax;
 
                 if (wordwidth > maxwidth)
                 {
@@ -701,7 +716,7 @@ namespace jrc
         for (size_t pos = first; pos < last; ++pos)
         {
             char c = text[pos];
-            const Font::Char& ch = font.chars[c];
+            const Font::Char& ch = font.chars[static_cast<uint8_t>(c)];
 
             advances.push_back(ax);
 
@@ -849,7 +864,7 @@ namespace jrc
                 for (size_t pos = word.first; pos < word.last; ++pos)
                 {
                     const char c = text[pos];
-                    const Font::Char &ch = font.chars[c];
+                    const Font::Char &ch = font.chars[static_cast<uint8_t>(c)];
 
                     GLshort chx = x + ax + ch.bl;
                     GLshort chy = y + ay - ch.bt;
@@ -910,6 +925,7 @@ namespace jrc
             quads.emplace_back(screen_rect.l(), screen_rect.r(), screen_rect.t(), screen_rect.b(), nulloffset, color, 0.0f);
         }
 
+#ifndef MS_HEADLESS
         glClearColor(1.0, 1.0, 1.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -947,12 +963,30 @@ namespace jrc
         glDisableVertexAttribArray(attribute_coord);
         glDisableVertexAttribArray(attribute_color);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+#endif // MS_HEADLESS
 
         if (coverscene)
         {
             quads.pop_back();
         }
 
+    }
+
+    std::vector<GraphicsGL::QuadSnapshot> GraphicsGL::peek_quads() const
+    {
+        std::vector<QuadSnapshot> snapshot;
+        snapshot.reserve(quads.size());
+        for (const Quad& quad : quads)
+        {
+            // vertices[0] is the top-left corner, vertices[2] the bottom-right
+            // (see the Quad constructor).
+            const Quad::Vertex& tl = quad.vertices[0];
+            const Quad::Vertex& br = quad.vertices[2];
+            snapshot.push_back({
+                tl.x, br.x, tl.y, br.y, tl.s, tl.t, tl.c
+            });
+        }
+        return snapshot;
     }
 
     void GraphicsGL::clearscene()
