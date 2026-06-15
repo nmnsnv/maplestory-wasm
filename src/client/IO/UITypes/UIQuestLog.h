@@ -21,14 +21,17 @@
 #include "../../Character/QuestLog.h"
 #include "../../Graphics/Geometry.h"
 #include "../../Graphics/Text.h"
+#include "../../Graphics/Texture.h"
 
 #include <array>
 #include <vector>
 
 namespace jrc
 {
-    // The quest journal. Lists the player's in-progress and completed quests
-    // and allows forfeiting an active quest.
+    // The quest journal. Lists the player's available, in-progress and
+    // completed quests and allows forfeiting an active quest. Renders with the
+    // authentic UIWindow2.img/Quest artwork, falling back to a simple frame
+    // when those assets are unavailable.
     class UIQuestLog : public UIDragElement<PosQUEST>
     {
     public:
@@ -77,16 +80,18 @@ namespace jrc
         void build_detail();
         void draw_detail(float inter) const;
 
-        static constexpr int16_t WIDTH = 280;
-        static constexpr int16_t HEIGHT = 348;
-        static constexpr int16_t LIST_TOP = 54;
+        static constexpr int16_t WIDTH = 295;
+        static constexpr int16_t HEIGHT = 396;
+        static constexpr int16_t LIST_TOP = 80;
         static constexpr int16_t ROW_HEIGHT = 18;
-        static constexpr int16_t ROWS = 9;
-        static constexpr int16_t DETAIL_TOP = 210;
-        static constexpr int16_t TAB_TOP = 28;
-        static constexpr int16_t TAB_HEIGHT = 20;
+        static constexpr int16_t ROWS = 8;
+        static constexpr int16_t DETAIL_TOP = 232;
+        static constexpr int16_t TAB_TOP = 23;
+        static constexpr int16_t TAB_HEIGHT = 22;
 
         const Questlog& questlog;
+
+        bool has_assets;
 
         uint16_t tab;
         int16_t offset;
@@ -98,6 +103,8 @@ namespace jrc
         Text detail_name;
         Text detail_desc;
         std::vector<Text> req_lines;
+
+        std::array<Texture, NUM_TABS> notice;
 
         Text title;
         std::array<Text, NUM_TABS> tab_labels;

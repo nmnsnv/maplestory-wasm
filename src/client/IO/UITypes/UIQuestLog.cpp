@@ -19,6 +19,7 @@
 
 #include "../Components/AreaButton.h"
 #include "../Components/MapleButton.h"
+#include "../Components/TwoSpriteButton.h"
 
 #include "../../Data/ItemData.h"
 #include "../../Data/QuestData.h"
@@ -63,71 +64,137 @@ namespace jrc
           offset(0),
           selected(-1)
     {
-        background = { WIDTH, HEIGHT, Geometry::BLACK, 0.85f };
-        header = { WIDTH, 26, Geometry::WHITE, 0.12f };
-        tab_active = { static_cast<int16_t>(WIDTH / NUM_TABS), TAB_HEIGHT, Geometry::WHITE, 0.18f };
-        row_highlight = { static_cast<int16_t>(WIDTH - 16), ROW_HEIGHT, Geometry::WHITE, 0.15f };
-        forfeit_box = { 80, 20, Geometry::WHITE, 0.18f };
+        nl::node quest = nl::nx::ui["UIWindow2.img"]["Quest"];
+        nl::node list = quest["list"];
+        nl::node info = quest["quest_info"];
+        nl::node backgrnd = list["backgrnd"];
 
-        title = { Text::A12B, Text::LEFT, Text::WHITE, "Quest Log" };
-        tab_labels[TAB_AVAILABLE] = { Text::A11M, Text::CENTER, Text::WHITE, "Available" };
-        tab_labels[TAB_IN_PROGRESS] = { Text::A11M, Text::CENTER, Text::WHITE, "In Progress" };
-        tab_labels[TAB_COMPLETED] = { Text::A11M, Text::CENTER, Text::WHITE, "Completed" };
-        forfeit_label = { Text::A11M, Text::CENTER, Text::WHITE, "Forfeit" };
-        empty_label = { Text::A11M, Text::CENTER, Text::LIGHTGREY, "", static_cast<uint16_t>(WIDTH - 24) };
+        has_assets = static_cast<bool>(backgrnd);
 
-        int16_t tab_width = WIDTH / NUM_TABS;
-        for (uint16_t i = 0; i < NUM_TABS; ++i)
+        if (has_assets)
         {
-            buttons[BT_TAB0 + i] = std::make_unique<AreaButton>(
-                Point<int16_t>(static_cast<int16_t>(i * tab_width), TAB_TOP),
-                Point<int16_t>(tab_width, TAB_HEIGHT)
-            );
+            sprites.emplace_back(backgrnd);
+            sprites.emplace_back(list["backgrnd2"]);
+
+            notice[TAB_AVAILABLE] = list["notice0"];
+            notice[TAB_IN_PROGRESS] = list["notice1"];
+            notice[TAB_COMPLETED] = list["notice2"];
+
+            nl::node taben = list["Tab"]["enabled"];
+            nl::node tabdis = list["Tab"]["disabled"];
+            for (uint16_t i = 0; i < NUM_TABS; ++i)
+            {
+                buttons[BT_TAB0 + i] = std::make_unique<TwoSpriteButton>(
+                    tabdis[std::to_string(i)], taben[std::to_string(i)]
+                );
+            }
+
+            dimension = Texture(backgrnd).get_dimensions();
         }
+        else
+        {
+            background = { WIDTH, HEIGHT, Geometry::BLACK, 0.85f };
+            header = { WIDTH, 26, Geometry::WHITE, 0.12f };
+            tab_active = { static_cast<int16_t>(WIDTH / NUM_TABS), TAB_HEIGHT, Geometry::WHITE, 0.18f };
+
+            title = { Text::A12B, Text::LEFT, Text::WHITE, "Quest Log" };
+            tab_labels[TAB_AVAILABLE] = { Text::A11M, Text::CENTER, Text::WHITE, "Available" };
+            tab_labels[TAB_IN_PROGRESS] = { Text::A11M, Text::CENTER, Text::WHITE, "In Progress" };
+            tab_labels[TAB_COMPLETED] = { Text::A11M, Text::CENTER, Text::WHITE, "Completed" };
+
+            int16_t tab_width = WIDTH / NUM_TABS;
+            for (uint16_t i = 0; i < NUM_TABS; ++i)
+            {
+                buttons[BT_TAB0 + i] = std::make_unique<AreaButton>(
+                    Point<int16_t>(static_cast<int16_t>(i * tab_width), TAB_TOP),
+                    Point<int16_t>(tab_width, TAB_HEIGHT)
+                );
+            }
+
+            dimension = { WIDTH, HEIGHT };
+        }
+
+        row_highlight = { static_cast<int16_t>(dimension.x() - 24), ROW_HEIGHT, Geometry::WHITE, has_assets ? 0.25f : 0.15f };
 
         buttons[BT_CLOSE] = std::make_unique<MapleButton>(
             nl::nx::ui["Basic.img"]["BtClose3"],
-            Point<int16_t>(WIDTH - 20, 6)
+            Point<int16_t>(static_cast<int16_t>(dimension.x() - 20), 6)
         );
 
-        buttons[BT_FORFEIT] = std::make_unique<AreaButton>(
-            Point<int16_t>(WIDTH - 88, HEIGHT - 28),
-            Point<int16_t>(80, 20)
-        );
+        nl::node giveup = info["BtGiveup"];
+        if (giveup)
+        {
+            buttons[BT_FORFEIT] = std::make_unique<MapleButton>(
+                giveup,
+                Point<int16_t>(static_cast<int16_t>(dimension.x() / 2 - 30), static_cast<int16_t>(dimension.y() - 32))
+            );
+        }
+        else
+        {
+            forfeit_box = { 80, 20, Geometry::WHITE, 0.18f };
+            forfeit_label = { Text::A11M, Text::CENTER, Text::WHITE, "Forfeit" };
+            buttons[BT_FORFEIT] = std::make_unique<AreaButton>(
+                Point<int16_t>(static_cast<int16_t>(dimension.x() / 2 - 40), static_cast<int16_t>(dimension.y() - 32)),
+                Point<int16_t>(80, 20)
+            );
+        }
 
         for (int16_t i = 0; i < ROWS; ++i)
         {
             buttons[BT_ROW0 + i] = std::make_unique<AreaButton>(
-                Point<int16_t>(8, static_cast<int16_t>(LIST_TOP + i * ROW_HEIGHT)),
-                Point<int16_t>(static_cast<int16_t>(WIDTH - 16), ROW_HEIGHT)
+                Point<int16_t>(12, static_cast<int16_t>(LIST_TOP + i * ROW_HEIGHT)),
+                Point<int16_t>(static_cast<int16_t>(dimension.x() - 24), ROW_HEIGHT)
             );
         }
 
-        dimension = { WIDTH, HEIGHT };
+        empty_label = { Text::A11M, Text::CENTER, Text::LIGHTGREY, "", static_cast<uint16_t>(dimension.x() - 24) };
 
         change_tab(TAB_IN_PROGRESS);
     }
 
     void UIQuestLog::draw(float inter) const
     {
-        background.draw(position);
-        header.draw(position);
-        title.draw(position + Point<int16_t>(12, 5));
-
-        int16_t tab_width = WIDTH / NUM_TABS;
-        for (uint16_t i = 0; i < NUM_TABS; ++i)
+        if (has_assets)
         {
-            Point<int16_t> tab_pos = position + Point<int16_t>(static_cast<int16_t>(i * tab_width), TAB_TOP);
-            if (i == tab)
+            draw_sprites(inter);
+        }
+        else
+        {
+            background.draw(position);
+            header.draw(position);
+            title.draw(position + Point<int16_t>(12, 5));
+
+            int16_t tab_width = WIDTH / NUM_TABS;
+            for (uint16_t i = 0; i < NUM_TABS; ++i)
             {
-                tab_active.draw(tab_pos);
+                Point<int16_t> tab_pos = position + Point<int16_t>(static_cast<int16_t>(i * tab_width), TAB_TOP);
+                if (i == tab)
+                {
+                    tab_active.draw(tab_pos);
+                }
+                tab_labels[i].draw(tab_pos + Point<int16_t>(static_cast<int16_t>(tab_width / 2), 3));
             }
-            tab_labels[i].draw(tab_pos + Point<int16_t>(static_cast<int16_t>(tab_width / 2), 3));
         }
 
         if (entries.empty())
         {
-            empty_label.draw(position + Point<int16_t>(WIDTH / 2, LIST_TOP + 40));
+            if (has_assets && notice[tab].is_valid())
+            {
+                // Center the notice in the list area. Adding the texture's own
+                // origin cancels the origin that Texture::draw subtracts, so the
+                // top-left lands exactly at the desired point.
+                Point<int16_t> ndim = notice[tab].get_dimensions();
+                int16_t mid_y = static_cast<int16_t>((LIST_TOP + dimension.y() - 20) / 2 - ndim.y() / 2);
+                Point<int16_t> desired = position + Point<int16_t>(
+                    static_cast<int16_t>((dimension.x() - ndim.x()) / 2),
+                    mid_y
+                );
+                notice[tab].draw(desired + notice[tab].get_origin());
+            }
+            else
+            {
+                empty_label.draw(position + Point<int16_t>(dimension.x() / 2, LIST_TOP + 60));
+            }
         }
         else
         {
@@ -139,13 +206,13 @@ namespace jrc
                     break;
                 }
 
-                Point<int16_t> row_pos = position + Point<int16_t>(8, static_cast<int16_t>(LIST_TOP + i * ROW_HEIGHT));
+                Point<int16_t> row_pos = position + Point<int16_t>(12, static_cast<int16_t>(LIST_TOP + i * ROW_HEIGHT));
                 if (entries[index] == selected)
                 {
                     row_highlight.draw(row_pos);
                 }
 
-                entry_labels[index].draw(row_pos + Point<int16_t>(6, 1));
+                entry_labels[index].draw(row_pos + Point<int16_t>(8, 1));
             }
         }
 
@@ -161,18 +228,18 @@ namespace jrc
             return;
         }
 
-        detail_name.draw(position + Point<int16_t>(12, DETAIL_TOP));
-        detail_desc.draw(position + Point<int16_t>(12, DETAIL_TOP + 20));
+        detail_name.draw(position + Point<int16_t>(16, DETAIL_TOP));
+        detail_desc.draw(position + Point<int16_t>(16, DETAIL_TOP + 20));
 
         for (size_t i = 0; i < req_lines.size(); ++i)
         {
-            req_lines[i].draw(position + Point<int16_t>(16, static_cast<int16_t>(DETAIL_TOP + 78 + i * 16)));
+            req_lines[i].draw(position + Point<int16_t>(20, static_cast<int16_t>(DETAIL_TOP + 78 + i * 16)));
         }
 
-        if (tab == TAB_IN_PROGRESS)
+        if (!has_assets && tab == TAB_IN_PROGRESS && selected >= 0)
         {
-            forfeit_box.draw(position + Point<int16_t>(WIDTH - 88, HEIGHT - 28));
-            forfeit_label.draw(position + Point<int16_t>(WIDTH - 48, HEIGHT - 25));
+            forfeit_box.draw(position + Point<int16_t>(dimension.x() / 2 - 40, dimension.y() - 32));
+            forfeit_label.draw(position + Point<int16_t>(dimension.x() / 2, dimension.y() - 29));
         }
     }
 
@@ -251,7 +318,7 @@ namespace jrc
         case BT_TAB1:
         case BT_TAB2:
             change_tab(id - BT_TAB0);
-            return Button::NORMAL;
+            return has_assets ? Button::PRESSED : Button::NORMAL;
         case BT_FORFEIT:
             if (tab == TAB_IN_PROGRESS && selected >= 0)
             {
@@ -269,6 +336,12 @@ namespace jrc
 
     void UIQuestLog::change_tab(uint16_t new_tab)
     {
+        if (has_assets)
+        {
+            buttons[BT_TAB0 + tab]->set_state(Button::NORMAL);
+            buttons[BT_TAB0 + new_tab]->set_state(Button::PRESSED);
+        }
+
         tab = new_tab;
         offset = 0;
         selected = -1;
@@ -307,11 +380,12 @@ namespace jrc
             break;
         }
 
+        Text::Color color = has_assets ? Text::DARKGREY : Text::WHITE;
         for (int16_t qid : entries)
         {
             const QuestData& data = QuestData::get(qid);
             std::string name = data.is_valid() ? data.get_name() : ("Quest " + std::to_string(qid));
-            entry_labels.emplace_back(Text::A11M, Text::LEFT, Text::WHITE, name, static_cast<uint16_t>(WIDTH - 28));
+            entry_labels.emplace_back(Text::A11M, Text::LEFT, color, name, static_cast<uint16_t>(dimension.x() - 32));
         }
     }
 
@@ -339,9 +413,13 @@ namespace jrc
             return;
         }
 
+        Text::Color name_color = has_assets ? Text::BLUE : Text::YELLOW;
+        Text::Color body_color = has_assets ? Text::DARKGREY : Text::LIGHTGREY;
+        Text::Color req_color = has_assets ? Text::DARKGREY : Text::WHITE;
+
         const QuestData& data = QuestData::get(selected);
         std::string name = data.is_valid() ? data.get_name() : ("Quest " + std::to_string(selected));
-        detail_name = { Text::A12B, Text::LEFT, Text::YELLOW, name, static_cast<uint16_t>(WIDTH - 24) };
+        detail_name = { Text::A12B, Text::LEFT, name_color, name, static_cast<uint16_t>(dimension.x() - 28) };
 
         QuestData::Phase phase = tab == TAB_COMPLETED ? QuestData::COMPLETED : QuestData::IN_PROGRESS;
         std::string desc = data.get_desc(phase);
@@ -349,7 +427,7 @@ namespace jrc
         {
             desc = data.get_desc(QuestData::NOT_STARTED);
         }
-        detail_desc = { Text::A11M, Text::LEFT, Text::LIGHTGREY, desc, static_cast<uint16_t>(WIDTH - 24) };
+        detail_desc = { Text::A11M, Text::LEFT, body_color, desc, static_cast<uint16_t>(dimension.x() - 28) };
 
         if (tab != TAB_IN_PROGRESS)
         {
@@ -368,7 +446,7 @@ namespace jrc
             }
             std::string line = mob_name(mobs[i].id) + ": " +
                 std::to_string(current) + "/" + std::to_string(mobs[i].count);
-            req_lines.emplace_back(Text::A11M, Text::LEFT, Text::WHITE, line, static_cast<uint16_t>(WIDTH - 32));
+            req_lines.emplace_back(Text::A11M, Text::LEFT, req_color, line, static_cast<uint16_t>(dimension.x() - 36));
         }
 
         for (const auto& item : data.get_item_requirements())
@@ -376,7 +454,7 @@ namespace jrc
             const ItemData& idata = ItemData::get(item.id);
             std::string item_name = idata.is_valid() ? idata.get_name() : ("Item " + std::to_string(item.id));
             std::string line = "Collect " + item_name + " x" + std::to_string(item.count);
-            req_lines.emplace_back(Text::A11M, Text::LEFT, Text::WHITE, line, static_cast<uint16_t>(WIDTH - 32));
+            req_lines.emplace_back(Text::A11M, Text::LEFT, req_color, line, static_cast<uint16_t>(dimension.x() - 36));
         }
     }
 
