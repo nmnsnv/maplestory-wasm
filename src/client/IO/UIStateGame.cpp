@@ -32,10 +32,12 @@
 #include "UITypes/UISkillBook.h"
 #include "UITypes/UIKeyConfig.h"
 #include "UITypes/UIWorldMap.h"
+#include "UITypes/UICashShop.h"
 
 #include "../Constants.h"
 #include "../Character/Inventory/InventoryType.h"
 #include "../Gameplay/Stage.h"
+#include "../Net/Packets/GameplayPackets.h"
 
 #include <algorithm>
 
@@ -231,6 +233,9 @@ namespace jrc
                     break;
                 case KeyAction::WORLDMAP:
                     emplace<UIWorldMap>();
+                    break;
+                case KeyAction::CASHSHOP:
+                    EnterCashShopPacket().dispatch();
                     break;
                 case KeyAction::CHATALL:
                     if (auto statusbar = UI::get().get_element<UIStatusbar>())

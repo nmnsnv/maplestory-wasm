@@ -208,6 +208,7 @@ namespace jrc
                 UIElement::SKILLBOOK,
                 UIElement::PARTY,
                 UIElement::STATSINFO,
+                UIElement::CASHSHOP,
                 UIElement::NOTICE
             };
 

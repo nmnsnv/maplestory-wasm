@@ -36,6 +36,36 @@ namespace jrc
         }
     };
 
+    /// Requests returning to the channel server from the cash shop.
+    /// Opcode: CHANGE_MAP(38)
+    class LeaveCashShopPacket : public OutPacket
+    {
+    public:
+        LeaveCashShopPacket() : OutPacket(CHANGEMAP) {}
+    };
+
+    /// Requests entering the cash shop.
+    /// Opcode: ENTER_CASHSHOP(40)
+    class EnterCashShopPacket : public OutPacket
+    {
+    public:
+        EnterCashShopPacket() : OutPacket(ENTER_CASHSHOP) {}
+    };
+
+    /// Purchases a cash shop item.
+    /// Opcode: CASHSHOP_OPERATION(229), Action: 0x03
+    class BuyCashItemPacket : public OutPacket
+    {
+    public:
+        BuyCashItemPacket(int32_t payment_type, int32_t serial_number) : OutPacket(CASHSHOP_OPERATION)
+        {
+            write_byte(0x03);
+            write_byte(0);
+            write_int(payment_type);
+            write_int(serial_number);
+        }
+    };
+
 
     /// Updates the player's position with the server.
     /// Opcode: MOVE_PLAYER(41)

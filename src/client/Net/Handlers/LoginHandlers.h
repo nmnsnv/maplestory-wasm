@@ -61,4 +61,10 @@ namespace jrc
     {
         void handle(InPacket& recv) const override;
     };
+
+    // Handles the packet which redirects an already logged-in character to a channel.
+    class ChangeChannelHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
 }

@@ -53,6 +53,7 @@ namespace jrc
                 return { Error::MISSING_FILE, filename };
             }
         }
+        LazyFS::RegisterFile("UI_83.nx", "/assets/UI_83.nx");
 #else
         if (!std::ifstream{ REQUIRED_ROOT_NX }.good())
         {

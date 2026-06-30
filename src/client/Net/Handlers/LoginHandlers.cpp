@@ -23,6 +23,7 @@
 #include "../Packets/LoginPackets.h"
 
 #include "../../Configuration.h"
+#include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
 #include "../../IO/UITypes/UILogin.h"
 #include "../../IO/UITypes/UILoginNotice.h"
@@ -269,6 +270,29 @@ namespace jrc
         int32_t cid = recv.read_int();
 
         // Attempt to reconnect to the server and if successfull, login to the game.
+        Session::get().reconnect(addrstr.c_str(), portstr.c_str());
+        PlayerLoginPacket(cid).dispatch();
+    }
+
+    void ChangeChannelHandler::handle(InPacket& recv) const
+    {
+        recv.read_byte(); // success flag
+
+        std::string addrstr;
+        for (int i = 0; i < 4; ++i)
+        {
+            auto num = static_cast<uint8_t>(recv.read_byte());
+            addrstr.append(std::to_string(num));
+            if (i < 3)
+            {
+                addrstr.push_back('.');
+            }
+        }
+
+        std::string portstr = std::to_string(recv.read_short());
+        int32_t cid = Stage::get().get_player().get_oid();
+
+        UI::get().remove(UIElement::CASHSHOP);
         Session::get().reconnect(addrstr.c_str(), portstr.c_str());
         PlayerLoginPacket(cid).dispatch();
     }

@@ -83,8 +83,9 @@ namespace jrc
         SELECT_CHAR_PIC      = 0x1E,
 
         // Gameplay 1
-        CHANGEMAP     = 38,
-        MOVE_PLAYER   = 41,
+        CHANGEMAP      = 38,
+        ENTER_CASHSHOP = 40,
+        MOVE_PLAYER    = 41,
         CLOSE_ATTACK  = 44,
         RANGED_ATTACK = 45,
         MAGIC_ATTACK  = 46,
@@ -122,6 +123,7 @@ namespace jrc
         MOVE_MONSTER       = 188,
         PICKUP_ITEM        = 202,
         PLAYER_UPDATE      = 0xCF,
+        CASHSHOP_OPERATION = 0xE5,
 
         // Custom
         HASH_CHECK = 30000
