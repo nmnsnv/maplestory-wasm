@@ -23,6 +23,7 @@
 #include "../../IO/Cursor.h"
 
 #include <queue>
+#include <string>
 
 namespace jrc
 {
@@ -43,6 +44,10 @@ namespace jrc
 
         // Send mouse input to clickable npcs.
         Cursor::State send_cursor(bool pressed, Point<int16_t> position, Point<int16_t> viewpos);
+        // Start a conversation with the active NPC nearest to a map position.
+        bool talk_to_nearest(Point<int16_t> position);
+        // Find the map position of an active NPC by display name.
+        bool find_position_by_name(const std::string& name, Point<int16_t>& position) const;
 
         MapObjects* get_npcs()
         {

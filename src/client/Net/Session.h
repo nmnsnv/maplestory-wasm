@@ -48,6 +48,8 @@ namespace jrc
         void reconnect(const char* address, const char* port);
         // Check if the connection is alive.
         bool is_connected() const;
+        // Close the game server connection and reconnect to the login server.
+        void logout();
 
     private:
         bool init(const char* host, const char* port);

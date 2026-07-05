@@ -20,6 +20,7 @@
 #include "Npc.h"
 
 #include "../../Net/Packets/NpcInteractionPackets.h"
+#include <limits>
 
 namespace jrc
 {
@@ -74,11 +75,16 @@ namespace jrc
         for (auto& mmo : npcs)
         {
             Npc* npc = static_cast<Npc*>(mmo.second.get());
-            if (npc && npc->is_active() && npc->inrange(position, viewpos))
+            if (!npc || !npc->is_active())
+            {
+                continue;
+            }
+
+            bool hit = npc->inrange(position, viewpos);
+            if (hit)
             {
                 if (pressed)
                 {
-                    // TODO: try finding dialogue first
                     TalkToNPCPacket(npc->get_oid())
                         .dispatch();
                     return Cursor::IDLE;
@@ -89,6 +95,55 @@ namespace jrc
                 }
             }
         }
+
         return Cursor::IDLE;
+    }
+
+    bool MapNpcs::talk_to_nearest(Point<int16_t> position)
+    {
+        Npc* nearest = nullptr;
+        int32_t nearest_distance = std::numeric_limits<int32_t>::max();
+
+        for (auto& mmo : npcs)
+        {
+            Npc* npc = static_cast<Npc*>(mmo.second.get());
+            if (!npc || !npc->is_active())
+            {
+                continue;
+            }
+
+            Point<int16_t> npc_position = npc->get_position();
+            int32_t dx = static_cast<int32_t>(npc_position.x()) - position.x();
+            int32_t dy = static_cast<int32_t>(npc_position.y()) - position.y();
+            int32_t distance = dx * dx + dy * dy;
+            if (distance < nearest_distance)
+            {
+                nearest = npc;
+                nearest_distance = distance;
+            }
+        }
+
+        if (!nearest)
+        {
+            return false;
+        }
+
+        TalkToNPCPacket(nearest->get_oid()).dispatch();
+        return true;
+    }
+
+    bool MapNpcs::find_position_by_name(const std::string& name, Point<int16_t>& position) const
+    {
+        for (const auto& mmo : npcs)
+        {
+            const Npc* npc = static_cast<const Npc*>(mmo.second.get());
+            if (npc && npc->is_active() && npc->get_name() == name)
+            {
+                position = npc->get_position();
+                return true;
+            }
+        }
+
+        return false;
     }
 }

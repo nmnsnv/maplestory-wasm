@@ -382,6 +382,11 @@ namespace jrc
 
     bool Player::is_invincible() const
     {
+        if (test_godmode)
+        {
+            return true;
+        }
+
         if (state == DIED)
         {
             return true;
@@ -393,6 +398,18 @@ namespace jrc
         }
 
         return Char::is_invincible();
+    }
+
+    void Player::set_test_godmode(bool enabled)
+    {
+        // This is a client-only testing aid: it suppresses local touch-damage
+        // packets without altering server rules or persisted character data.
+        test_godmode = enabled;
+    }
+
+    bool Player::is_test_godmode() const
+    {
+        return test_godmode;
     }
 
     MobAttackResult Player::damage(const MobAttack& attack)

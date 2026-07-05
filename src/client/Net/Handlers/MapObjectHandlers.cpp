@@ -24,6 +24,7 @@
 #include "../../Audio/Audio.h"
 #include "../../Gameplay/Stage.h"
 #include "../../Gameplay/Spawn.h"
+#include "../../Gameplay/MapleMap/Npc.h"
 
 namespace jrc
 {
@@ -428,6 +429,22 @@ namespace jrc
             Stage::get().get_npcs().spawn({
                 oid, id, position, flip, fh
             });
+        }
+    }
+
+    void SetNpcScriptableHandler::handle(InPacket& recv) const
+    {
+        uint8_t count = static_cast<uint8_t>(recv.read_byte());
+        for (uint8_t i = 0; i < count; ++i)
+        {
+            int32_t npcid = recv.read_int();
+            std::string name = recv.read_string();
+            Npc::add_scriptable(npcid, name);
+
+            if (recv.length() >= 8)
+            {
+                recv.skip(8); // start and end timestamps; the server already filtered active entries.
+            }
         }
     }
 

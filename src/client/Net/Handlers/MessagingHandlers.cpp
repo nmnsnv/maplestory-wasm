@@ -285,6 +285,21 @@ namespace jrc
             return true;
         }
 
+        std::string get_quest_name(int16_t questid)
+        {
+            nl::node quest_name = nl::nx::string["Quest.img"]["QuestInfo"][std::to_string(questid)]["name"];
+            if (quest_name)
+            {
+                std::string name = quest_name.get_string();
+                if (!name.empty())
+                {
+                    return name;
+                }
+            }
+
+            return "Quest " + std::to_string(questid);
+        }
+
         void schedule_intro_warp_from_path(const std::string& path)
         {
             nl::node scene = resolve_effect_node(path);
@@ -456,6 +471,10 @@ namespace jrc
                 show_status(Text::WHITE, "Received mesos (" + sign + std::to_string(gain) + ")");
             }
         }
+        else if (mode == 1)
+        {
+            handle_quest_update(recv);
+        }
         else if (mode == 3)
         {
             bool white = recv.read_bool();
@@ -491,6 +510,70 @@ namespace jrc
         }
         else if (mode == 5)
         {
+        }
+    }
+
+    void ShowStatusInfoHandler::handle_quest_update(InPacket& recv) const
+    {
+        if (recv.length() < 3)
+        {
+            return;
+        }
+
+        int16_t questid = recv.read_short();
+        int8_t status = recv.read_byte();
+        std::string progress;
+        int64_t completion_time = 0;
+
+        switch (status)
+        {
+        case 0:
+            break;
+        case 1:
+            if (can_read_string(recv))
+            {
+                progress = recv.read_string();
+            }
+            if (recv.length() >= 5)
+            {
+                recv.skip(5);
+            }
+            break;
+        case 2:
+            if (recv.length() >= 8)
+            {
+                completion_time = recv.read_long();
+            }
+            else if (can_read_string(recv))
+            {
+                progress = recv.read_string();
+                if (recv.length() >= 5)
+                {
+                    recv.skip(5);
+                }
+            }
+            break;
+        default:
+            return;
+        }
+
+        Questlog& quests = Stage::get().get_player().get_quests();
+        bool was_started = quests.is_started(questid);
+        bool was_completed = quests.is_completed(questid);
+        quests.update(questid, status, progress, completion_time);
+
+        const std::string quest_name = get_quest_name(questid);
+        if (status == 0 && (was_started || was_completed))
+        {
+            show_status(Text::YELLOW, "Quest forfeited: " + quest_name);
+        }
+        else if (status == 1 && !was_started)
+        {
+            show_status(Text::YELLOW, "Quest started: " + quest_name);
+        }
+        else if (status == 2 && !was_completed)
+        {
+            show_status(Text::YELLOW, "Quest complete: " + quest_name);
         }
     }
 

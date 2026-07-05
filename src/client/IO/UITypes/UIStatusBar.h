@@ -82,7 +82,6 @@ namespace jrc
             BT_WHISPER,
             BT_CALLGM,
             BT_CASHSHOP,
-            BT_TRADE,
             BT_MENU,
             BT_OPTIONS,
             BT_CHARACTER,

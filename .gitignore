@@ -3,3 +3,22 @@
 /assets/
 /serverAssets/
 __pycache__
+
+# Build artifacts and object files
+*.o
+/nxFiles/
+
+# Game data (WZ files, like assets — do not commit)
+/wz/
+
+# Machine-specific symlink to local Cosmic server checkout
+/cosmic
+
+# Local-only tooling and debug profiles
+/.firefox-debug-profile/
+/harepacker-cross-platform/
+/tmp/
+
+# Logs and local screenshots
+*.log
+/local-maple-state.png

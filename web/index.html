@@ -47,36 +47,26 @@
 
     <script>
         (function () {
-            const GAME_WIDTH = 800;
+            // The game renders at a fixed height of 600 and a dynamic width
+            // that matches the browser's aspect ratio, so the canvas fills
+            // the entire window without letterboxing.
             const GAME_HEIGHT = 600;
 
-            function syncCanvasResolution(canvas) {
-                if (canvas.width === GAME_WIDTH && canvas.height === GAME_HEIGHT) {
+            function getGameWidth(viewW, viewH) {
+                return Math.max(800, Math.round(GAME_HEIGHT * viewW / viewH));
+            }
+
+            function syncCanvasResolution(canvas, width) {
+                if (canvas.width === width && canvas.height === GAME_HEIGHT) {
                     return;
                 }
 
                 if (typeof Module !== 'undefined' && typeof Module.setCanvasSize === 'function') {
-                    Module.setCanvasSize(GAME_WIDTH, GAME_HEIGHT);
+                    Module.setCanvasSize(width, GAME_HEIGHT);
                 } else {
-                    canvas.width = GAME_WIDTH;
+                    canvas.width = width;
                     canvas.height = GAME_HEIGHT;
                 }
-            }
-
-            function getFittedCanvasSize(viewW, viewH) {
-                if (viewW * GAME_HEIGHT <= viewH * GAME_WIDTH) {
-                    const width = Math.max(1, Math.floor(viewW));
-                    return {
-                        width,
-                        height: Math.max(1, Math.floor(width * GAME_HEIGHT / GAME_WIDTH))
-                    };
-                }
-
-                const height = Math.max(1, Math.floor(viewH));
-                return {
-                    width: Math.max(1, Math.floor(height * GAME_WIDTH / GAME_HEIGHT)),
-                    height
-                };
             }
 
             function fitCanvas() {
@@ -85,13 +75,17 @@
                     return;
                 }
 
-                // Keep the render surface fixed and only scale it with CSS.
-                syncCanvasResolution(canvas);
+                const viewW = window.innerWidth;
+                const viewH = window.innerHeight;
+                const gameWidth = getGameWidth(viewW, viewH);
 
-                const { width, height } = getFittedCanvasSize(window.innerWidth, window.innerHeight);
+                // Set the internal render resolution to match the browser aspect ratio.
+                syncCanvasResolution(canvas, gameWidth);
 
-                canvas.style.width = width + 'px';
-                canvas.style.height = height + 'px';
+                // CSS fills the entire window — no letterboxing because the
+                // internal aspect ratio now matches the browser's.
+                canvas.style.width = viewW + 'px';
+                canvas.style.height = viewH + 'px';
             }
 
             window.MapleWasmUI = {
@@ -178,13 +172,23 @@
                     const lazyConfigKeys = [
                         'AssetsServerIP', 'AssetsServerPort',
                         'MapleStoryServerIp', 'MapleStoryServerPort',
-                        'ProxyIP', 'ProxyPort', 'AssetsServerProtocol'
+                        'ProxyIP', 'ProxyPort', 'AssetsServerProtocol',
+                        'AutoLoginAccount', 'AutoLoginPassword', 'AutoLoginCharacter'
                     ];
 
                     lazyConfigKeys.forEach(key => {
                         if (config[key] !== undefined && config[key] !== null) {
                             lazyConfig[key] = config[key];
                             console.log(`[config] Set ${key} from config.json:`, config[key]);
+                            hasConfig = true;
+                        }
+                    });
+
+                    const query = new URLSearchParams(window.location.search);
+                    lazyConfigKeys.forEach(key => {
+                        if (query.has(key)) {
+                            lazyConfig[key] = query.get(key);
+                            console.log(`[config] Set ${key} from URL query:`, lazyConfig[key]);
                             hasConfig = true;
                         }
                     });

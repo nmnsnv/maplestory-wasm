@@ -29,6 +29,7 @@ namespace jrc
     public:
         void handle(InPacket& recv) const override;
     private:
+        void handle_quest_update(InPacket& recv) const;
         void show_status(Text::Color color, const std::string& message) const;
     };
 

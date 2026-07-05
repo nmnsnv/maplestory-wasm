@@ -36,6 +36,7 @@ namespace jrc
         cursor_press_id = 0;
         enabled = true;
         quitted = false;
+        skip_auto_login = false;
     }
 
     void UI::init()
@@ -93,6 +94,18 @@ namespace jrc
         return !quitted;
     }
 
+    void UI::set_skip_auto_login()
+    {
+        skip_auto_login = true;
+    }
+
+    bool UI::consume_skip_auto_login()
+    {
+        bool was_set = skip_auto_login;
+        skip_auto_login = false;
+        return was_set;
+    }
+
     uint64_t UI::get_cursor_press_id() const
     {
         return cursor_press_id;
@@ -107,6 +120,11 @@ namespace jrc
 
     void UI::send_cursor(bool pressed)
     {
+        send_cursor(pressed, cursor.get_position());
+    }
+
+    void UI::send_cursor(bool pressed, Point<int16_t> cursorpos)
+    {
         if (pressed && enabled)
         {
             cursor_press_id++;
@@ -115,7 +133,6 @@ namespace jrc
         Cursor::State cursorstate = (pressed && enabled) ?
             Cursor::CLICKING :
             Cursor::IDLE;
-        Point<int16_t> cursorpos = cursor.get_position();
         send_cursor(cursorpos, cursorstate);
 
         if (focusedtextfield && pressed)
@@ -208,6 +225,8 @@ namespace jrc
                 UIElement::SKILLBOOK,
                 UIElement::PARTY,
                 UIElement::STATSINFO,
+                UIElement::MENU,
+                UIElement::SYSTEMMENU,
                 UIElement::NOTICE
             };
 
@@ -322,6 +341,11 @@ namespace jrc
     {
         return keyboard;
     }
+    UIElement* UI::get_element(UIElement::Type type)
+    {
+        return state->get(type);
+    }
+
 
     void UI::add_keymapping(uint8_t no, uint8_t type, int32_t action)
     {

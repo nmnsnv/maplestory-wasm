@@ -109,7 +109,7 @@ namespace jrc
                     static_cast<int16_t>(ypos)
                 );
 
-                UI::get().send_cursor(true);
+                UI::get().send_cursor(true, position);
                 if (is_doubleclick(position))
                 {
                     UI::get().cancel_drag();
@@ -118,8 +118,18 @@ namespace jrc
                 break;
             }
             case GLFW_RELEASE:
-                UI::get().send_cursor(false);
+            {
+                double xpos = 0.0;
+                double ypos = 0.0;
+                glfwGetCursorPos(window, &xpos, &ypos);
+                Point<int16_t> position(
+                    static_cast<int16_t>(xpos),
+                    static_cast<int16_t>(ypos)
+                );
+
+                UI::get().send_cursor(false, position);
                 break;
+            }
             default:
                 break;
             }
@@ -141,9 +151,10 @@ namespace jrc
 
     void cursor_callback(GLFWwindow*, double xpos, double ypos)
     {
-        auto x = static_cast<int16_t>(xpos);
-        auto y = static_cast<int16_t>(ypos);
-        Point<int16_t> pos = Point<int16_t>(x, y);
+        Point<int16_t> pos = {
+            static_cast<int16_t>(xpos),
+            static_cast<int16_t>(ypos)
+        };
         UI::get().send_cursor(pos);
     }
 
@@ -167,14 +178,8 @@ namespace jrc
     {
         if (width > 0 && height > 0)
         {
-#ifdef MS_PLATFORM_WASM
-            // Browser resizes only change CSS scaling; the game keeps a fixed internal viewport.
-            Constants::set_viewsize(Constants::VIEWWIDTH, Constants::VIEWHEIGHT);
-            glViewport(0, 0, Constants::VIEWWIDTH, Constants::VIEWHEIGHT);
-#else
             Constants::set_viewsize(width, height);
             glViewport(0, 0, width, height);
-#endif
             GraphicsGL::get().set_screensize(
                 Constants::viewwidth(),
                 Constants::viewheight()
@@ -319,6 +324,17 @@ namespace jrc
             if (window.MapleWasmUI && window.MapleWasmUI.applyScale) {
                 window.MapleWasmUI.applyScale();
             }
+        });
+
+        // Expose a JS-callable logout function so the user can trigger
+        // a clean logout from the browser console or a bookmarklet.
+        EM_ASM({
+            window.MapleWasmUI = window.MapleWasmUI || {};
+            window.MapleWasmUI.logout = function() {
+                if (typeof Module !== 'undefined' && Module._maple_logout) {
+                    Module._maple_logout();
+                }
+            };
         });
 #endif
         return Error::NONE;

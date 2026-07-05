@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="/work"
+# Auto-detect root: prefer /work (Docker bind-mount), else derive from script location.
+# This lets the script run identically inside Docker and directly on the host.
+if [ -d "/work/wz" ]; then
+    ROOT_DIR="/work"
+else
+    ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+fi
 WZ_DIR="$ROOT_DIR/wz"
 NX_DIR="$ROOT_DIR/nxFiles"
 CACHE_DIR="$ROOT_DIR/.cache/tools"

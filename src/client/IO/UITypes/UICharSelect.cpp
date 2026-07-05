@@ -51,8 +51,8 @@ namespace jrc
           charcount_absolute(c), slots_absolute(s)
     {
         selected_absolute = Setting<DefaultCharacter>::get().load();
-        selected_relative = selected_absolute % PAGESIZE;
-        page              = selected_absolute / PAGESIZE;
+        selected_relative = selected_absolute % CHARS_PER_PAGE;
+        page = selected_absolute / CHARS_PER_PAGE;
 
         nl::node back       = nl::nx::map["Back"]["login.img"]["back"];
         nl::node title      = nl::nx::ui["Login.img"]["Title"];
@@ -112,7 +112,7 @@ namespace jrc
         buttons[BT_PAGELEFT]   = std::make_unique<MapleButton>(charselect["pageL"],    Point<int16_t>(100, 490));
         buttons[BT_PAGERIGHT]  = std::make_unique<MapleButton>(charselect["pageR"],    Point<int16_t>(490, 490));
 
-        for (uint8_t i = 0; i < PAGESIZE; ++i)
+        for (uint8_t i = 0; i < CHARS_PER_PAGE; ++i)
         {
             buttons[BT_CHAR0 + i] = std::make_unique<AreaButton>(
                 Point<int16_t>(105 + (120 * (i % 4)), 170 + (200 * (i > 3))),
@@ -138,8 +138,30 @@ namespace jrc
         update_selection();
 
         position  = { 0, 0 };
-        dimension = { 800, 600 };
+        dimension = { Constants::viewwidth(), Constants::viewheight() };
         active    = true;
+
+        // Dev convenience: auto-select the configured character and advance.
+        if (Setting<AutoLogin>::get().load())
+        {
+            std::string target_name = Setting<AutoLoginCharacter>::get().load();
+            uint8_t target_index = 0;
+            // Search for a character matching the configured name; fall back to the first.
+            for (size_t i = 0; i < characters.size(); ++i)
+            {
+                if (characters[i].stats.name == target_name)
+                {
+                    target_index = static_cast<uint8_t>(i);
+                    break;
+                }
+            }
+            selected_absolute = target_index;
+            selected_relative = selected_absolute % CHARS_PER_PAGE;
+            page = selected_absolute / CHARS_PER_PAGE;
+            update_counts();
+            update_selection();
+            send_selection();
+        }
     }
 
     void UICharSelect::draw(float alpha) const
@@ -149,7 +171,7 @@ namespace jrc
         for (uint8_t i = 0; i < charcount_relative; ++i)
         {
             Point<int16_t> charpos = get_char_pos(i);
-            uint8_t index = i + page * PAGESIZE;
+            uint8_t index = i + page * CHARS_PER_PAGE;
             charlooks[index].draw(charpos, alpha);
             nametags[index].draw(charpos);
         }
@@ -190,18 +212,91 @@ namespace jrc
         }
     }
 
+    uint8_t UICharSelect::get_character_count() const
+    {
+        return charcount_absolute;
+    }
+
+    int32_t UICharSelect::get_selected_character_index() const
+    {
+        return selected_absolute < charcount_absolute ? selected_absolute : -1;
+    }
+
+    int32_t UICharSelect::get_selected_character_id() const
+    {
+        return selected_absolute < characters.size() ? characters[selected_absolute].cid : -1;
+    }
+
+    const char* UICharSelect::get_selected_character_name() const
+    {
+        return selected_absolute < characters.size() ? characters[selected_absolute].stats.name.c_str() : nullptr;
+    }
+
+    const char* UICharSelect::get_character_name(uint8_t index) const
+    {
+        return index < characters.size() ? characters[index].stats.name.c_str() : nullptr;
+    }
+
+    bool UICharSelect::select_character(uint8_t index)
+    {
+        if (index >= charcount_absolute || index >= characters.size())
+        {
+            return false;
+        }
+
+        if (selected_absolute < charlooks.size())
+        {
+            charlooks[selected_absolute].set_stance(Stance::STAND1);
+        }
+        if (selected_absolute < nametags.size())
+        {
+            nametags[selected_absolute].set_selected(false);
+        }
+        if (selected_relative < CHARS_PER_PAGE)
+        {
+            auto button_iter = buttons.find(BT_CHAR0 + selected_relative);
+            if (button_iter != buttons.end())
+            {
+                button_iter->second->set_state(Button::NORMAL);
+            }
+        }
+
+        selected_absolute = index;
+        page = selected_absolute / CHARS_PER_PAGE;
+        selected_relative = selected_absolute % CHARS_PER_PAGE;
+        update_counts();
+        update_selection();
+        return true;
+    }
+
+    bool UICharSelect::select_character_by_name(const std::string& name)
+    {
+        for (uint8_t index = 0; index < characters.size(); ++index)
+        {
+            if (characters[index].stats.name == name)
+            {
+                return select_character(index);
+            }
+        }
+        return false;
+    }
+
+    bool UICharSelect::start_selected_character()
+    {
+        if (selected_relative >= charcount_relative || selected_absolute >= characters.size())
+        {
+            return false;
+        }
+
+        send_selection();
+        return true;
+    }
+
     Button::State UICharSelect::button_pressed(uint16_t bid)
     {
         if (bid >= BT_CHAR0)
         {
-            nametags[selected_absolute].set_selected(false);
-            charlooks[selected_absolute].set_stance(Stance::STAND1);
-            buttons[BT_CHAR0 + selected_relative]->set_state(Button::NORMAL);
-
-            selected_relative = static_cast<uint8_t>(bid - BT_CHAR0);
-            selected_absolute = selected_relative + page * PAGESIZE;
-            update_selection();
-
+            select_character(static_cast<uint8_t>((bid - BT_CHAR0) + page * CHARS_PER_PAGE));
             return Button::IDENTITY;
         }
         else
@@ -209,7 +304,7 @@ namespace jrc
             switch (bid)
             {
             case BT_SELECTCHAR:
-                send_selection();
+                start_selected_character();
                 return Button::NORMAL;
             case BT_CREATECHAR:
                 active = false;
@@ -264,7 +359,7 @@ namespace jrc
             buttons[BT_PAGELEFT]->set_state(Button::DISABLED);
         }
 
-        if (page < slots_absolute / PAGESIZE)
+        if (page < slots_absolute / CHARS_PER_PAGE)
         {
             buttons[BT_PAGERIGHT]->set_state(Button::NORMAL);
         }
@@ -274,17 +369,17 @@ namespace jrc
         }
 
         charcount_relative = charcount_absolute;
-        if (charcount_relative > (page + 1) * PAGESIZE)
+        if (charcount_relative > (page + 1) * CHARS_PER_PAGE)
         {
-            charcount_relative = PAGESIZE;
+            charcount_relative = CHARS_PER_PAGE;
         }
-        else if (charcount_relative < page * PAGESIZE)
+        else if (charcount_relative < page * CHARS_PER_PAGE)
         {
             charcount_relative = 0;
         }
         else
         {
-            charcount_relative -= page * PAGESIZE;
+            charcount_relative -= page * CHARS_PER_PAGE;
         }
 
         if (selected_absolute >= charcount_absolute)
@@ -292,16 +387,16 @@ namespace jrc
             selected_absolute = 0;
         }
 
-        selected_relative = selected_absolute % PAGESIZE;
+        selected_relative = selected_absolute % CHARS_PER_PAGE;
         if (selected_relative >= charcount_relative)
         {
             selected_relative = 0;
         }
 
-        slots_relative = slots_absolute - page * PAGESIZE;
-        if (slots_relative > PAGESIZE)
+        slots_relative = slots_absolute - page * CHARS_PER_PAGE;
+        if (slots_relative > CHARS_PER_PAGE)
         {
-            slots_relative = PAGESIZE;
+            slots_relative = CHARS_PER_PAGE;
         }
 
         if (charcount_relative < slots_relative)
@@ -322,7 +417,7 @@ namespace jrc
             buttons[BT_DELETECHAR]->set_state(Button::DISABLED);
         }
 
-        for (uint8_t i = 0; i < PAGESIZE; ++i)
+        for (uint8_t i = 0; i < CHARS_PER_PAGE; ++i)
         {
             if (i < charcount_relative)
             {
@@ -463,7 +558,7 @@ namespace jrc
             charlooks[selected_absolute].set_stance(Stance::STAND1);
             nametags[selected_absolute].set_selected(false);
 
-            if (selected_relative < PAGESIZE)
+            if (selected_relative < CHARS_PER_PAGE)
             {
                 buttons[BT_CHAR0 + selected_relative]->set_state(Button::NORMAL);
             }
@@ -471,8 +566,8 @@ namespace jrc
 
         charcount_absolute++;
         selected_absolute = charcount_absolute - 1;
-        page = selected_absolute / PAGESIZE;
-        selected_relative = selected_absolute % PAGESIZE;
+        page = selected_absolute / CHARS_PER_PAGE;
+        selected_relative = selected_absolute % CHARS_PER_PAGE;
 
         update_counts();
         update_selection();

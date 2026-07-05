@@ -38,6 +38,11 @@ namespace jrc
         Npc(int32_t npcid, int32_t oid, bool mirrored, uint16_t fhid,
             bool control, Point<int16_t> position);
 
+        // Registers an NPC id that the server exposes through script packets.
+        static void add_scriptable(int32_t npcid, const std::string& display_name);
+        static bool is_scriptable(int32_t npcid);
+        static std::string get_scriptable_name(int32_t npcid);
+
         // Draws the current animation and name/function tags.
         void draw(double viewx, double viewy, float alpha) const override;
         // Updates the current animation and physics.
@@ -50,6 +55,8 @@ namespace jrc
         bool isscripted() const;
         // Check if the npc is in range of the cursor.
         bool inrange(Point<int16_t> cursorpos, Point<int16_t> viewpos) const;
+        // Screen-space bounds used for mouse interaction.
+        Rectangle<int16_t> bounds(Point<int16_t> viewpos) const;
 
         const std::string& get_name() const
         {

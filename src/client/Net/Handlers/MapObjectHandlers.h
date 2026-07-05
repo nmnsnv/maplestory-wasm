@@ -123,6 +123,13 @@ namespace jrc
         void handle(InPacket& recv) const override;
     };
 
+    // Mark server-configured NPC ids as scriptable.
+    // Opcode: SET_NPC_SCRIPTABLE(263)
+    class SetNpcScriptableHandler : public PacketHandler
+    {
+        void handle(InPacket& recv) const override;
+    };
+
 
     // Drop a lootable item on the stage.
     // Opcode: DROP_LOOT(268)

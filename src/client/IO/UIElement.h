@@ -75,6 +75,9 @@ namespace jrc
             PARTY,
             MINIMAP,
             WORLDMAP,
+            MENU,
+            SYSTEMMENU,
+            QUESTLOG,
             NUM_TYPES
         };
 
@@ -100,6 +103,7 @@ namespace jrc
         virtual void send_scroll(double yoffset);
         virtual void send_key(int32_t keycode, bool pressed, bool escape);
         virtual UIElement::Type get_type() const;
+        bool get_button_bounds(uint16_t buttonid, Rectangle<int16_t>& out) const;
 
         void set_type(UIElement::Type value);
 

@@ -45,6 +45,15 @@ namespace jrc
         void update() override;
         Button::State button_pressed(uint16_t id) override;
 
+        uint8_t get_character_count() const;
+        int32_t get_selected_character_index() const;
+        int32_t get_selected_character_id() const;
+        const char* get_selected_character_name() const;
+        const char* get_character_name(uint8_t index) const;
+        bool select_character(uint8_t index);
+        bool select_character_by_name(const std::string& name);
+        bool start_selected_character();
+
         void add_character(CharEntry&& character);
         void remove_char(int32_t cid);
         bool handle_pic_failure(int8_t message, int32_t cid = -1);
@@ -83,7 +92,9 @@ namespace jrc
             BT_CHAR0
         };
 
-        static constexpr uint8_t PAGESIZE = 8;
+        // Renamed from PAGESIZE to avoid collision with the PAGESIZE macro
+        // defined in emscripten's sysroot bits/limits.h (#define PAGESIZE 65536).
+        static constexpr uint8_t CHARS_PER_PAGE = 8;
 
         Sprite emptyslot;
         Charset levelset;

@@ -37,6 +37,8 @@
 #include "../Template/TimedQueue.h"
 #include "../Template/Singleton.h"
 
+#include <string>
+
 
 namespace jrc
 {
@@ -71,6 +73,8 @@ namespace jrc
         void send_key(KeyType::Id keytype, int32_t keycode, bool pressed);
         // Send mouse input to the stage.
         Cursor::State send_cursor(bool pressed, Point<int16_t> position);
+        // Move the local player next to an active NPC by display name.
+        bool teleport_player_to_npc(const std::string& name);
 
         // Check if the specified id is the player's id.
         bool is_player(int32_t cid) const;

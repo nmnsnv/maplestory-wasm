@@ -412,6 +412,10 @@ namespace jrc
                 case KeyAction::ATTACK:
                     combat.use_move(0);
                     break;
+                case KeyAction::NPCCHAT:
+                case KeyAction::SPACE:
+                    npcs.talk_to_nearest(player.get_position());
+                    break;
                 case KeyAction::PICKUP:
                     // Immediate pickup on key press
                     check_drops();
@@ -444,6 +448,21 @@ namespace jrc
     Cursor::State Stage::send_cursor(bool pressed, Point<int16_t> position)
     {
         return npcs.send_cursor(pressed, position, camera.position());
+    }
+
+    bool Stage::teleport_player_to_npc(const std::string& name)
+    {
+        Point<int16_t> npc_position;
+        if (!npcs.find_position_by_name(name, npc_position))
+        {
+            return false;
+        }
+
+        // Place the player on the NPC's foothold position so the next movement
+        // update naturally reports the new local test position to the server.
+        player.set_position(npc_position.x(), npc_position.y());
+        camera.update(player.get_position());
+        return true;
     }
 
     bool Stage::is_player(int32_t cid) const

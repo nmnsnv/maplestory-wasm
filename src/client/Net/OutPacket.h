@@ -108,6 +108,9 @@ namespace jrc
         USE_ITEM     = 72,
         SCROLL_EQUIP = 86,
 
+        // Quest
+        QUEST_ACTION = 0x6B,
+
         // Player
         SPEND_AP = 87,
         SPEND_SP = 90,

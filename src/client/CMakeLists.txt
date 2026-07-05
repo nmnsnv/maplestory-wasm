@@ -1,5 +1,5 @@
 ## CMake file for the JourneyClient from-scratch Maplestory client ##
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.10)
 project (JourneyClient)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -37,6 +37,7 @@ if(EMSCRIPTEN)
         -sSTACK_SIZE=16777216
         -sINITIAL_MEMORY=268435456  
         -sEXPORTED_RUNTIME_METHODS=FS,ccall,cwrap,setCanvasSize
+        "-sEXPORTED_FUNCTIONS=['_main','_malloc','_free']"
         "--embed-file=${CMAKE_CURRENT_SOURCE_DIR}/fonts/Arial/Arial.ttf@fonts/Arial/Arial.ttf"
         "--embed-file=${CMAKE_CURRENT_SOURCE_DIR}/fonts/Arial/Arial-Bold.ttf@fonts/Arial/Arial-Bold.ttf"
         --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/LazyFS/lazyfs.js
@@ -45,7 +46,7 @@ if(EMSCRIPTEN)
     
     if(DEBUG_SYMBOLS)
         add_compile_options(-g)
-        add_link_options(-g3 -gsource-map)
+        add_link_options(-g3 -gsource-map -Wno-limited-postlink-optimizations)
     endif()
 else()
     # Native Linux flags
