@@ -67,6 +67,7 @@ namespace jrc
             GUIDE = 39,
             EQUIPENHANCE = 40,
             EQUIPENHANCE2 = 41,
+            SYSTEMMENU = 42,
             PICKUP = 50,
             SIT = 51,
             ATTACK = 52,

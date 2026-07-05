@@ -36,6 +36,22 @@ namespace jrc
         }
     };
 
+    /// Requests a quest operation from the server.
+    /// Opcode: QUEST_ACTION(107)
+    class QuestActionPacket : public OutPacket
+    {
+    public:
+        QuestActionPacket(int8_t action, int16_t questid, int32_t npcid, Point<int16_t> position)
+            : OutPacket(QUEST_ACTION)
+        {
+            write_byte(action);
+            write_short(questid);
+            write_int(npcid);
+            write_point(position);
+        }
+    };
+
+
 
     /// Updates the player's position with the server.
     /// Opcode: MOVE_PLAYER(41)

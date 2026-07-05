@@ -123,6 +123,7 @@ namespace jrc
         SHOW_ITEM_GAIN_INCHAT = 206, // this is terribly named
         LOCK_UI               = 221,
         TOGGLE_UI             = 222,
+        UPDATE_QUEST_INFO     = 211,
 
         // Player
         ADMIN_RESULT = 144,
@@ -179,6 +180,7 @@ namespace jrc
         emplace<SPAWN_PET, SpawnPetHandler>();
         emplace<SPAWN_NPC, SpawnNpcHandler>();
         emplace<SPAWN_NPC_C, SpawnNpcControllerHandler>();
+        emplace<MAKE_NPC_SCRIPTED, SetNpcScriptableHandler>();
         emplace<SPAWN_MOB, SpawnMobHandler>();
         emplace<SPAWN_MOB_C, SpawnMobControllerHandler>();
         emplace<MOB_MOVED, MobMovedHandler>();
@@ -237,6 +239,7 @@ namespace jrc
         emplace<FAMILY_PRIV_LIST, NullHandler>();
         emplace<SCRIPT_PROGRESS_MESSAGE, NullHandler>();
         emplace<RECEIVE_POLICE, NullHandler>();
+        emplace<UPDATE_QUEST_INFO, NullHandler>();
         emplace<FIELD_EFFECT, FieldEffectHandler>();
         emplace<FIELD_OBSTACLE_ONOFF, NullHandler>();
         emplace<FIELD_OBSTACLE_LIST, NullHandler>();
@@ -244,7 +247,6 @@ namespace jrc
         emplace<LEGACY_FIELD_OBJECT, NullHandler>();
         emplace<LOCK_UI, NullHandler>();
         emplace<TOGGLE_UI, NullHandler>();
-        emplace<MAKE_NPC_SCRIPTED, NullHandler>();
         emplace<AUTO_HP_POT, NullHandler>();
         emplace<AUTO_MP_POT, NullHandler>();
 

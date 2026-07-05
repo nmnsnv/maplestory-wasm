@@ -21,9 +21,32 @@
 #include "nlnx/node.hpp"
 #include "nlnx/nx.hpp"
 
+#include <unordered_map>
+
 
 namespace jrc
 {
+    namespace
+    {
+        std::unordered_map<int32_t, std::string> scriptable_npcs;
+    }
+
+    void Npc::add_scriptable(int32_t npcid, const std::string& display_name)
+    {
+        scriptable_npcs[npcid] = display_name;
+    }
+
+    bool Npc::is_scriptable(int32_t npcid)
+    {
+        return scriptable_npcs.find(npcid) != scriptable_npcs.end();
+    }
+
+    std::string Npc::get_scriptable_name(int32_t npcid)
+    {
+        auto iter = scriptable_npcs.find(npcid);
+        return iter == scriptable_npcs.end() ? std::string() : iter->second;
+    }
+
     Npc::Npc(int32_t id,
              int32_t o,
              bool fl,
@@ -50,7 +73,7 @@ namespace jrc
 
         hidename  = info["hideName"].get_bool();
         mouseonly = info["talkMouseOnly"].get_bool();
-        scripted  = info["script"].size() > 0 || info["shop"].get_bool();
+        scripted  = info["script"].size() > 0 || info["shop"].get_bool() || is_scriptable(id);
 
         for (const auto& npcnode : src)
         {
@@ -68,6 +91,10 @@ namespace jrc
         }
 
         name = strsrc["name"].get_string();
+        if (name.empty())
+        {
+            name = get_scriptable_name(id);
+        }
         func = strsrc["func"].get_string();
 
         namelabel = { Text::A13B, Text::CENTER, Text::YELLOW, Text::NAMETAG, name };
@@ -138,7 +165,48 @@ namespace jrc
 
     bool Npc::isscripted() const
     {
-        return scripted;
+        return scripted || is_scriptable(npcid);
+    }
+
+    Rectangle<int16_t> Npc::bounds(Point<int16_t> viewpos) const
+    {
+        auto animation = animations.find(stance);
+        if (animation == animations.end())
+        {
+            return {};
+        }
+
+        Point<int16_t> absp = get_position() + viewpos;
+        Point<int16_t> dim = animation->second.get_dimensions();
+        Point<int16_t> origin = animation->second.get_origin();
+        Rectangle<int16_t> rendered_bounds =
+            DrawArgument(absp, flip).get_rectangle(origin, dim);
+
+        int16_t left = rendered_bounds.l();
+        int16_t right = rendered_bounds.r();
+        if (left > right)
+        {
+            int16_t tmp = left;
+            left = right;
+            right = tmp;
+        }
+
+        int16_t top = rendered_bounds.t();
+        int16_t bottom = rendered_bounds.b();
+        if (top > bottom)
+        {
+            int16_t tmp = top;
+            top = bottom;
+            bottom = tmp;
+        }
+
+        constexpr int16_t CLICK_TOLERANCE = 6;
+        return {
+            static_cast<int16_t>(left - CLICK_TOLERANCE),
+            static_cast<int16_t>(right + CLICK_TOLERANCE),
+            static_cast<int16_t>(top - CLICK_TOLERANCE),
+            static_cast<int16_t>(bottom + CLICK_TOLERANCE)
+        };
     }
 
     bool Npc::inrange(Point<int16_t> cursorpos, Point<int16_t> viewpos) const
@@ -148,17 +216,6 @@ namespace jrc
             return false;
         }
 
-        Point<int16_t> absp = get_position() + viewpos;
-        Point<int16_t> dim  =
-            animations.count(stance) ?
-                animations.at(stance).get_dimensions() :
-                Point<int16_t>();
-
-        return Rectangle<int16_t>(
-            absp.x() - dim.x() / 2,
-            absp.x() + dim.x() / 2,
-            absp.y() - dim.y(),
-            absp.y()
-        ).contains(cursorpos);
+        return bounds(viewpos).contains(cursorpos);
     }
 }

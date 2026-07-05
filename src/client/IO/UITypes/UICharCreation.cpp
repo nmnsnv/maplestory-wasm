@@ -170,7 +170,7 @@ namespace jrc
         newchar.set_direction(true);
 
         position = { 0, 0 };
-        dimension = { 800, 600 };
+        dimension = { Constants::viewwidth(), Constants::viewheight() };
         active = true;
         cloudfx = 200.0f;
     }
@@ -425,13 +425,13 @@ namespace jrc
     {
         for (int16_t i = 0; i < 2; i++)
         {
-            for (int16_t k = 0; k < 800; k += sky.width())
+            for (int16_t k = 0; k < Constants::viewwidth(); k += sky.width())
             {
                 sky.draw(Point<int16_t>(k, (400 * i) - 100));
             }
         }
 
-        int16_t cloudx = static_cast<int16_t>(cloudfx) % 800;
+        int16_t cloudx = static_cast<int16_t>(cloudfx) % Constants::viewwidth();
         cloud.draw(Point<int16_t>(cloudx - cloud.width(), 300));
         cloud.draw(Point<int16_t>(cloudx, 300));
         cloud.draw(Point<int16_t>(cloudx + cloud.width(), 300));

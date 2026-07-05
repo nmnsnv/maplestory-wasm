@@ -23,13 +23,14 @@
 #include "../../IO/Components/MapleButton.h"
 #include "../../IO/Components/TwoSpriteButton.h"
 #include "../../Net/Packets/LoginPackets.h"
+#include "../../Constants.h"
 
 #include "nlnx/nx.hpp"
 
 namespace jrc
 {
     UIWorldSelect::UIWorldSelect(std::vector<World> worlds, uint8_t worldcount)
-        : UIElement({ 0, 0 }, { 800, 600 }) {
+        : UIElement({ 0, 0 }, { Constants::viewwidth(), Constants::viewheight() }) {
 
         worldid = Setting<DefaultWorld>::get().load();
         channelid = Setting<DefaultChannel>::get().load();
@@ -71,6 +72,13 @@ namespace jrc
                 );
             if (i == channelid)
                 buttons[BT_CHANNEL0 + i]->set_state(Button::PRESSED);
+        }
+
+        // Dev convenience: auto-select first world/channel and advance.
+        if (Setting<AutoLogin>::get().load())
+        {
+            UI::get().disable();
+            CharlistRequestPacket(worldid, channelid).dispatch();
         }
     }
 

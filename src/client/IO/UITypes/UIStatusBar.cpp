@@ -71,7 +71,6 @@ namespace jrc
         buttons[BT_CALLGM]    = std::make_unique<MapleButton>(mainbar["BtClaim"]);
 
         buttons[BT_CASHSHOP]  = std::make_unique<MapleButton>(mainbar["BtCashShop"]);
-        buttons[BT_TRADE]     = std::make_unique<MapleButton>(mainbar["BtMTS"]);
         buttons[BT_MENU]      = std::make_unique<MapleButton>(mainbar["BtMenu"]);
         buttons[BT_OPTIONS]   = std::make_unique<MapleButton>(mainbar["BtSystem"]);
 
@@ -157,6 +156,9 @@ namespace jrc
     {
         switch (id)
         {
+        case BT_CHARACTER:
+            UI::get().send_menu(KeyAction::CHARSTATS);
+            return Button::NORMAL;
         case BT_STATS:
             UI::get().send_menu(KeyAction::CHARSTATS);
             return Button::NORMAL;
@@ -168,6 +170,21 @@ namespace jrc
             return Button::NORMAL;
         case BT_SKILL:
             UI::get().send_menu(KeyAction::SKILLBOOK);
+            return Button::NORMAL;
+        case BT_QUEST:
+            UI::get().send_menu(KeyAction::QUESTLOG);
+            return Button::NORMAL;
+        case BT_MENU:
+            UI::get().send_menu(KeyAction::MAINMENU);
+            return Button::NORMAL;
+        case BT_OPTIONS:
+            UI::get().send_menu(KeyAction::SYSTEMMENU);
+            return Button::NORMAL;
+        case BT_WHISPER:
+            UI::get().send_menu(KeyAction::WHISPER);
+            return Button::NORMAL;
+        case BT_CASHSHOP:
+            UI::get().send_menu(KeyAction::CASHSHOP);
             return Button::NORMAL;
         default:
             return Button::PRESSED;
@@ -206,7 +223,13 @@ namespace jrc
             return UIElement::send_cursor(pressed, cursorpos);
         }
 
-        chatbar.send_cursor(pressed, cursorpos);
+        // Even when the cursor is outside the chat text area, the chatbar's
+        // scroll buttons may still be under the cursor. Check their hit result
+        // before falling through to the status bar's own buttons.
+        if (CursorResult child_result = chatbar.send_cursor(pressed, cursorpos))
+        {
+            return child_result;
+        }
         return UIElement::send_cursor(pressed, cursorpos);
     }
 

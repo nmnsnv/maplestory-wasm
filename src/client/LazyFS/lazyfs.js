@@ -349,7 +349,10 @@ var LazyFS = {
 		const chunkIndex = view.getUint32(0, true); // little-endian
 		const filenameLen = view.getUint8(4);
 		const filenameBytes = new Uint8Array(buffer, 5, filenameLen);
-		const filename = new TextDecoder().decode(filenameBytes);
+		// Copy into a fresh fixed ArrayBuffer: the source buffer may be a
+		// resizable ArrayBuffer (Emscripten HEAP with memory growth) or a
+		// detached view after growth. TextDecoder rejects resizable buffers.
+		const filename = new TextDecoder().decode(filenameBytes.slice());
 
 		// Extract chunk data
 		const dataStart = 5 + filenameLen;

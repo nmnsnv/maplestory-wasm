@@ -180,6 +180,18 @@ namespace jrc
     {
         return type;
     }
+    bool UIElement::get_button_bounds(uint16_t buttonid, Rectangle<int16_t>& out) const
+    {
+        auto iter = buttons.find(buttonid);
+        if (iter == buttons.end() || !iter->second)
+        {
+            return false;
+        }
+
+        out = iter->second->bounds(position);
+        return true;
+    }
+
 
     void UIElement::set_type(UIElement::Type value)
     {

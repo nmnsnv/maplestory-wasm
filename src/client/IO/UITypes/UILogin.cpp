@@ -26,6 +26,7 @@
 #include "../../Console.h"
 #include "../../Graphics/Sprite.h"
 #include "../../Net/Packets/LoginPackets.h"
+#include "../../Constants.h"
 
 #include "nlnx/nx.hpp"
 
@@ -161,8 +162,18 @@ namespace jrc
         }
 
         position = {0, 0};
-        dimension = {800, 600};
+        dimension = {Constants::viewwidth(), Constants::viewheight()};
         active = true;
+
+        // Dev convenience: auto-fill credentials and submit immediately.
+        // A one-shot flag from the logout handler suppresses this for a
+        // single UILogin creation so the user sees the login screen.
+        if (Setting<AutoLogin>::get().load() && !UI::get().consume_skip_auto_login())
+        {
+            account.change_text(Setting<AutoLoginAccount>::get().load());
+            password.change_text(Setting<AutoLoginPassword>::get().load());
+            login();
+        }
     }
 
     void UILogin::draw(float alpha) const

@@ -245,6 +245,30 @@ namespace jrc
         DefaultCharacter() : ByteEntry("Character", "0") {}
     };
 
+    // Whether to skip the login screens automatically (dev convenience).
+    struct AutoLogin : public Configuration::BoolEntry
+    {
+        AutoLogin() : BoolEntry("AutoLogin", "true") {}
+    };
+
+    // Account name used when AutoLogin is enabled.
+    struct AutoLoginAccount : public Configuration::StringEntry
+    {
+        AutoLoginAccount() : StringEntry("AutoLoginAccount", "noob") {}
+    };
+
+    // Password used when AutoLogin is enabled.
+    struct AutoLoginPassword : public Configuration::StringEntry
+    {
+        AutoLoginPassword() : StringEntry("AutoLoginPassword", "noob") {}
+    };
+
+    // Character name to auto-select when AutoLogin is enabled (empty = first character).
+    struct AutoLoginCharacter : public Configuration::StringEntry
+    {
+        AutoLoginCharacter() : StringEntry("AutoLoginCharacter", "hello") {}
+    };
+
     // The default position of the character stats inventory.
     struct PosSTATS : public Configuration::PointEntry
     {
@@ -277,6 +301,11 @@ namespace jrc
     struct PosPARTY : public Configuration::PointEntry
     {
         PosPARTY() : PointEntry("PosPARTY", "(160,120)") {}
+    };
+
+    struct PosQUEST : public Configuration::PointEntry
+    {
+        PosQUEST() : PointEntry("PosQUEST", "(100,80)") {}
     };
 
     struct PosMAP : public Configuration::PointEntry

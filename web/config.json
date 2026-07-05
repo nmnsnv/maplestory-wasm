@@ -1,9 +1,9 @@
 {
-  "AssetsServerIP": null,
-  "AssetsServerPort": null,
-  "AssetsServerProtocol": null,
-  "MapleStoryServerIp": null,
-  "MapleStoryServerPort": null,
-  "ProxyIP": null,
-  "ProxyPort": null
+  "AssetsServerIP": "127.0.0.1",
+  "AssetsServerPort": "8765",
+  "AssetsServerProtocol": "ws",
+  "MapleStoryServerIp": "127.0.0.1",
+  "MapleStoryServerPort": "8484",
+  "ProxyIP": "127.0.0.1",
+  "ProxyPort": "8080"
 }

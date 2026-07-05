@@ -1,0 +1,1121 @@
+{
+  "1000": {
+    "questId": 1000,
+    "start": {
+      "npc": 2101,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2100
+    }
+  },
+  "1001": {
+    "questId": 1001,
+    "start": {
+      "npc": 2100,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "quests": [
+        {
+          "id": 1000,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2101,
+      "items": [
+        {
+          "id": 4031003,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1003": {
+    "questId": 1003,
+    "start": {
+      "npc": 2102,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2001
+    }
+  },
+  "1004": {
+    "questId": 1004,
+    "start": {
+      "npc": 2001,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "quests": [
+        {
+          "id": 1003,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2102
+    }
+  },
+  "1005": {
+    "questId": 1005,
+    "start": {
+      "npc": 2103,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12000,
+      "items": [
+        {
+          "id": 4031000,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1006": {
+    "questId": 1006,
+    "start": {
+      "npc": 12000,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "quests": [
+        {
+          "id": 1005,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2103,
+      "items": [
+        {
+          "id": 4031001,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1007": {
+    "questId": 1007,
+    "start": {
+      "npc": 20002,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 20002,
+      "items": [
+        {
+          "id": 4000000,
+          "count": 5
+        },
+        {
+          "id": 4000001,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1008": {
+    "questId": 1008,
+    "start": {
+      "npc": 10000,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "items": [
+        {
+          "id": 4031162,
+          "count": 1
+        },
+        {
+          "id": 4031161,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1009": {
+    "questId": 1009,
+    "start": {
+      "npc": 12101,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "npc": 12101
+    }
+  },
+  "1010": {
+    "questId": 1010,
+    "start": {
+      "npc": 12101,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1009,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12101
+    }
+  },
+  "1011": {
+    "questId": 1011,
+    "start": {
+      "npc": 12101,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1010,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12101
+    }
+  },
+  "1012": {
+    "questId": 1012,
+    "start": {
+      "npc": 12101,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1011,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12101
+    }
+  },
+  "1013": {
+    "questId": 1013,
+    "start": {
+      "npc": 12101,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1012,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12101
+    }
+  },
+  "1014": {
+    "questId": 1014,
+    "start": {
+      "npc": 12101,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1013,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12101
+    }
+  },
+  "1015": {
+    "questId": 1015,
+    "start": {
+      "npc": 12101,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1014,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12101
+    }
+  },
+  "1016": {
+    "questId": 1016,
+    "start": {
+      "npc": 12100,
+      "levelMax": 7,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "quests": [
+        {
+          "id": 1019,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12100,
+      "mobs": [
+        {
+          "id": 100100,
+          "count": 5
+        },
+        {
+          "id": 100101,
+          "count": 5
+        },
+        {
+          "id": 120100,
+          "count": 3
+        }
+      ]
+    }
+  },
+  "1017": {
+    "questId": 1017,
+    "start": {
+      "npc": 12100,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "quests": [
+        {
+          "id": 1016,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12100,
+      "mobs": [
+        {
+          "id": 1210102,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1018": {
+    "questId": 1018,
+    "start": {
+      "npc": 2004,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2002,
+      "items": [
+        {
+          "id": 4000142,
+          "count": 1
+        }
+      ],
+      "mobs": [
+        {
+          "id": 9300018,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1019": {
+    "questId": 1019,
+    "start": {
+      "npc": 2005,
+      "levelMax": 7,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12100,
+      "mobs": [
+        {
+          "id": 100100,
+          "count": 10
+        }
+      ]
+    }
+  },
+  "1020": {
+    "questId": 1020,
+    "start": {
+      "npc": 10000,
+      "quests": [
+        {
+          "id": 1008,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 10000
+    }
+  },
+  "1021": {
+    "questId": 1021,
+    "start": {
+      "npc": 2000,
+      "jobs": [
+        0
+      ],
+      "startScript": "q1021s"
+    },
+    "complete": {
+      "npc": 2000,
+      "items": [],
+      "endScript": "q1021e"
+    }
+  },
+  "1022": {
+    "questId": 1022,
+    "start": {
+      "npc": 12000,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 20100,
+      "mobs": [
+        {
+          "id": 130101,
+          "count": 7
+        }
+      ]
+    }
+  },
+  "1023": {
+    "questId": 1023,
+    "start": {
+      "npc": 20002,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 20002,
+      "mobs": [
+        {
+          "id": 1210100,
+          "count": 2
+        }
+      ]
+    }
+  },
+  "1024": {
+    "questId": 1024,
+    "start": {
+      "npc": 2005,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 20001,
+      "items": [
+        {
+          "id": 4000003,
+          "count": 3
+        }
+      ]
+    }
+  },
+  "1025": {
+    "questId": 1025,
+    "start": {
+      "npc": 2103,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2103,
+      "items": [
+        {
+          "id": 4000011,
+          "count": 5
+        },
+        {
+          "id": 4000004,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1026": {
+    "questId": 1026,
+    "start": {
+      "npc": 2103,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "quests": [
+        {
+          "id": 1025,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 22000,
+      "items": [
+        {
+          "id": 4031556,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1027": {
+    "questId": 1027,
+    "start": {
+      "npc": 12100,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12000
+    }
+  },
+  "1028": {
+    "questId": 1028,
+    "start": {
+      "npc": 22000,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "quests": [
+        {
+          "id": 1027,
+          "state": 2
+        }
+      ],
+      "startScript": "q1028s"
+    },
+    "complete": {
+      "npc": 1002101
+    }
+  },
+  "1029": {
+    "questId": 1029,
+    "start": {
+      "npc": 2005,
+      "levelMin": 2,
+      "levelMax": 3,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ],
+      "autoStart": true
+    },
+    "complete": {
+      "npc": 2005
+    }
+  },
+  "1030": {
+    "questId": 1030,
+    "start": {
+      "npc": 2103,
+      "jobs": [
+        0
+      ],
+      "items": [
+        {
+          "id": 1042003,
+          "count": 1
+        }
+      ]
+    },
+    "complete": {}
+  },
+  "1031": {
+    "questId": 1031,
+    "start": {
+      "npc": 2101,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "npc": 2100
+    }
+  },
+  "1032": {
+    "questId": 1032,
+    "start": {
+      "npc": 2102,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "npc": 2001
+    }
+  },
+  "1033": {
+    "questId": 1033,
+    "start": {
+      "npc": 2001,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1032,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2102
+    }
+  },
+  "1034": {
+    "questId": 1034,
+    "start": {
+      "npc": 2102,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1033,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 2001,
+      "items": [
+        {
+          "id": 4031792,
+          "count": 10
+        }
+      ]
+    }
+  },
+  "1035": {
+    "questId": 1035,
+    "start": {
+      "npc": 2004,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "npc": 2002,
+      "items": [
+        {
+          "id": 4031802,
+          "count": 1
+        }
+      ],
+      "mobs": [
+        {
+          "id": 9300018,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1036": {
+    "questId": 1036,
+    "start": {
+      "npc": 2003,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "npc": 2003
+    }
+  },
+  "1037": {
+    "questId": 1037,
+    "start": {
+      "npc": 2005,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "npc": 2103,
+      "mobs": [
+        {
+          "id": 100100,
+          "count": 10
+        }
+      ]
+    }
+  },
+  "1038": {
+    "questId": 1038,
+    "start": {
+      "npc": 2103,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1037,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12000,
+      "items": [
+        {
+          "id": 4031800,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1039": {
+    "questId": 1039,
+    "start": {
+      "npc": 20100,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ]
+    },
+    "complete": {
+      "npc": 20100,
+      "mobs": [
+        {
+          "id": 100101,
+          "count": 10
+        },
+        {
+          "id": 120100,
+          "count": 10
+        }
+      ]
+    }
+  },
+  "1040": {
+    "questId": 1040,
+    "start": {
+      "npc": 12000,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1038,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12000,
+      "quests": [
+        {
+          "id": 1041,
+          "state": 2
+        },
+        {
+          "id": 1042,
+          "state": 2
+        },
+        {
+          "id": 1043,
+          "state": 2
+        },
+        {
+          "id": 1044,
+          "state": 2
+        }
+      ]
+    }
+  },
+  "1041": {
+    "questId": 1041,
+    "start": {
+      "npc": 12100,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1040,
+          "state": 1
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12100,
+      "items": [
+        {
+          "id": 4000003,
+          "count": 3
+        }
+      ],
+      "mobs": [
+        {
+          "id": 130100,
+          "count": 5
+        }
+      ]
+    }
+  },
+  "1042": {
+    "questId": 1042,
+    "start": {
+      "npc": 12100,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1041,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12100,
+      "mobs": [
+        {
+          "id": 130101,
+          "count": 5
+        }
+      ]
+    }
+  },
+  "1043": {
+    "questId": 1043,
+    "start": {
+      "npc": 12100,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1042,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12100,
+      "items": [
+        {
+          "id": 4000004,
+          "count": 1
+        }
+      ],
+      "mobs": [
+        {
+          "id": 210100,
+          "count": 3
+        }
+      ]
+    }
+  },
+  "1044": {
+    "questId": 1044,
+    "start": {
+      "npc": 12100,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1043,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 12100,
+      "mobs": [
+        {
+          "id": 9500102,
+          "count": 2
+        }
+      ]
+    }
+  },
+  "1045": {
+    "questId": 1045,
+    "start": {
+      "npc": 20001,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1044,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 20001,
+      "items": [
+        {
+          "id": 4000001,
+          "count": 1
+        }
+      ],
+      "mobs": [
+        {
+          "id": 1210102,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "1046": {
+    "questId": 1046,
+    "start": {
+      "npc": 20002,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1045,
+          "state": 2
+        }
+      ]
+    },
+    "complete": {
+      "npc": 1002101
+    }
+  },
+  "1047": {
+    "questId": 1047,
+    "start": {
+      "npc": 2006
+    },
+    "complete": {}
+  },
+  "1048": {
+    "questId": 1048,
+    "start": {
+      "npc": 9010000,
+      "levelMin": 8,
+      "levelMax": 10,
+      "jobs": [
+        0
+      ],
+      "startScript": "q1048s",
+      "autoStart": true
+    },
+    "complete": {}
+  },
+  "1049": {
+    "questId": 1049,
+    "start": {
+      "npc": 9010000,
+      "levelMin": 10,
+      "levelMax": 20,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1048,
+          "state": 2
+        }
+      ],
+      "startScript": "q1049s",
+      "autoStart": true
+    },
+    "complete": {}
+  },
+  "1050": {
+    "questId": 1050,
+    "start": {
+      "npc": 9010000,
+      "levelMin": 8,
+      "levelMax": 20,
+      "jobs": [
+        0
+      ],
+      "quests": [
+        {
+          "id": 1048,
+          "state": 2
+        }
+      ],
+      "startScript": "q1050s",
+      "autoStart": true
+    },
+    "complete": {}
+  }
+}

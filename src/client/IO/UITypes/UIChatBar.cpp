@@ -255,6 +255,14 @@ namespace jrc
         case BT_CHATTARGETS:
             cycle_chat_target();
             return Button::PRESSED;
+        case BT_SCROLLUP:
+            if (rowpos > 0)
+                rowpos--;
+            return Button::PRESSED;
+        case BT_SCROLLDOWN:
+            if (rowpos < rowmax)
+                rowpos++;
+            return Button::PRESSED;
         }
         return Button::NORMAL;
     }

@@ -118,6 +118,11 @@ namespace jrc
         // Close the current connection and open a new one.
         bool success = socket.close();
 
+        // Reset packet-parsing state so stale framing from the previous
+        // connection doesn't corrupt the new one.
+        pos = 0;
+        length = 0;
+
         if (success)
         {
             std::string target_address = resolve_channel_address(address);
@@ -128,6 +133,24 @@ namespace jrc
         {
             connected = false;
         }
+    }
+
+    void Session::logout()
+    {
+        // Closing the socket tells the game server the player disconnected,
+        // which frees the account so it can log in again.
+        socket.close();
+        connected = false;
+
+        // Reset packet-parsing state so stale framing from the game server
+        // connection doesn't corrupt the fresh login server connection.
+        pos = 0;
+        length = 0;
+
+        // Reconnect to the login server using the configured address.
+        std::string host = Setting<MapleStoryServerIp>::get().load();
+        std::string port = Setting<MapleStoryServerPort>::get().load();
+        init(host.c_str(), port.c_str());
     }
 
     void Session::process(const int8_t* bytes, size_t available)

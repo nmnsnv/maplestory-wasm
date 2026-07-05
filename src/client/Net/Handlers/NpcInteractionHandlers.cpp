@@ -165,6 +165,7 @@ namespace jrc
     {
         recv.skip(1);
 
+
         int32_t npcid = recv.read_int();
         int8_t msgtype = recv.read_byte();
         int8_t speaker = recv.read_byte();

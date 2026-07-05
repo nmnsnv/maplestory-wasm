@@ -56,6 +56,7 @@ namespace jrc
 
         void send_cursor(Point<int16_t> pos);
         void send_cursor(bool pressed);
+        void send_cursor(bool pressed, Point<int16_t> cursorpos);
         void send_cursor(Point<int16_t> cursorpos, Cursor::State cursorstate);
         void send_focus(int focused);
         void send_scroll(double yoffset);
@@ -65,6 +66,9 @@ namespace jrc
         void doubleclick();
         void send_key(int32_t keycode, bool pressed);
         void send_menu(KeyAction::Id action);
+        // One-shot flag: suppresses auto-login for the next UILogin creation only.
+        void set_skip_auto_login();
+        bool consume_skip_auto_login();
 
         void set_scrollnotice(const std::string& notice);
         void focus_textfield(Textfield* textfield);
@@ -89,6 +93,7 @@ namespace jrc
         Optional<T> emplace(Args&&...args);
         template <class T>
         Optional<T> get_element();
+        UIElement* get_element(UIElement::Type type);
         void remove(UIElement::Type type);
 
     private:
@@ -100,9 +105,9 @@ namespace jrc
         Optional<Textfield> focusedtextfield;
         std::unordered_map<int32_t, bool> is_key_down;
         uint64_t cursor_press_id;
-
         bool enabled;
         bool quitted;
+        bool skip_auto_login;
     };
 
     template <class T, typename...Args>

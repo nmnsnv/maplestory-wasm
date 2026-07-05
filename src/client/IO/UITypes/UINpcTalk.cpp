@@ -294,6 +294,7 @@ namespace jrc
           dialogue_mode(DialogueMode::UNKNOWN),
           slider(false),
           type(0),
+          current_npcid(0),
           end_confirms_dialogue(false),
           selected(0),
           hovered_selection(-1),
@@ -315,6 +316,102 @@ namespace jrc
         buttons[NO] = std::make_unique<MapleButton>(src["BtNo"]);
 
         active = false;
+    }
+
+    const char* UINpcTalk::get_dialogue_text_cstr() const
+    {
+        return is_active() ? prompttext.c_str() : nullptr;
+    }
+
+    int32_t UINpcTalk::get_dialogue_npcid() const
+    {
+        return is_active() ? current_npcid : 0;
+    }
+
+    int8_t UINpcTalk::get_dialogue_type() const
+    {
+        return is_active() ? type : 0;
+    }
+
+    int32_t UINpcTalk::get_dialogue_mode() const
+    {
+        if (!is_active())
+        {
+            return 0;
+        }
+
+        switch (dialogue_mode)
+        {
+        case DialogueMode::TEXT:
+            return 1;
+        case DialogueMode::YES_NO:
+            return 2;
+        case DialogueMode::ACCEPT_DECLINE:
+            return 3;
+        case DialogueMode::SELECTION:
+            return 4;
+        case DialogueMode::UNKNOWN:
+            return 5;
+        }
+
+        return 5;
+    }
+
+    int32_t UINpcTalk::get_dialogue_selection_count() const
+    {
+        return is_active() ? static_cast<int32_t>(selection_texts.size()) : 0;
+    }
+
+    const char* UINpcTalk::get_dialogue_selection_cstr(int32_t index) const
+    {
+        if (!is_active() || index < 0 || index >= static_cast<int32_t>(selection_texts.size()))
+        {
+            return nullptr;
+        }
+
+        return selection_texts[index].c_str();
+    }
+
+    bool UINpcTalk::simulate_button(int32_t action)
+    {
+        if (!is_active())
+        {
+            return false;
+        }
+
+        switch (action)
+        {
+        case 0:
+            button_pressed(OK);
+            return true;
+        case 1:
+            button_pressed(NEXT);
+            return true;
+        case 2:
+            button_pressed(PREV);
+            return true;
+        case 3:
+            button_pressed(END);
+            return true;
+        case 4:
+            button_pressed(YES);
+            return true;
+        case 5:
+            button_pressed(NO);
+            return true;
+        case 6:
+            // Select-first is the deterministic branch for automated quest sweeps.
+            if (dialogue_mode == DialogueMode::SELECTION && !selection_texts.empty())
+            {
+                selected = 0;
+                hovered_selection = -1;
+                refresh_selection_styles();
+            }
+            button_pressed(OK);
+            return true;
+        default:
+            return false;
+        }
     }
 
     UINpcTalk::DialogueMode UINpcTalk::resolve_dialogue_mode(int8_t msgtype, bool has_navigation_flags)
@@ -511,6 +608,7 @@ namespace jrc
         const std::string& tx
     )
     {
+        current_npcid = npcid;
         std::string processed_tx = replace_macros(tx);
         dialogue_mode = resolve_dialogue_mode(msgtype, has_navigation_flags);
 
@@ -543,7 +641,18 @@ namespace jrc
             std::string strid = std::to_string(npcid);
             strid.insert(0, 7 - strid.size(), '0');
             strid.append(".img");
-            speaker = nl::nx::npc[strid]["stand"]["0"];
+
+            nl::node npcsrc = nl::nx::npc[strid];
+            std::string link = npcsrc["info"]["link"];
+            if (link.size() > 0)
+            {
+                // Some NPC entries are link-only shells; the dialogue portrait
+                // must resolve the same backing sprite as map NPC rendering.
+                link.append(".img");
+                npcsrc = nl::nx::npc[link];
+            }
+
+            speaker = npcsrc["stand"]["0"];
             std::string namestr = nl::nx::string["Npc.img"][std::to_string(npcid)]["name"];
             name = { Text::A11M, Text::CENTER, Text::WHITE, namestr };
         }
@@ -600,7 +709,7 @@ namespace jrc
             right_edge -= BUTTON_GAP;
         };
 
-        place_button(END, BUTTON_MARGIN);
+        place_button_from_right(END);
         switch (dialogue_mode)
         {
         case DialogueMode::TEXT:

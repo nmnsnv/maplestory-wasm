@@ -32,6 +32,9 @@
 #include "UITypes/UISkillBook.h"
 #include "UITypes/UIKeyConfig.h"
 #include "UITypes/UIWorldMap.h"
+#include "UITypes/UIMenu.h"
+#include "UITypes/UISystemMenu.h"
+#include "UITypes/UIQuestLog.h"
 
 #include "../Constants.h"
 #include "../Character/Inventory/InventoryType.h"
@@ -259,6 +262,15 @@ namespace jrc
                 case KeyAction::PARTY:
                     emplace<UIParty>();
                     break;
+                case KeyAction::MAINMENU:
+                    emplace<UIMenu>();
+                    break;
+                case KeyAction::QUESTLOG:
+                    emplace<UIQuestLog>();
+                    break;
+                case KeyAction::SYSTEMMENU:
+                    emplace<UISystemMenu>();
+                    break;
                 default:
                     break;
                 }
@@ -368,18 +380,23 @@ namespace jrc
                     }
                     clear_cursors(clicked, pos, fronttype);
                     UIElement::CursorResult result = front->send_cursor(clicked, pos);
-                    if (clicked && result.handled)
+                    if (result.handled)
                     {
-                        cursor_captured = fronttype;
+                        if (clicked)
+                        {
+                            cursor_captured = fronttype;
+                        }
+                        return result.state;
                     }
-                    return result.state;
+                    // The front UI element was in range but didn't handle
+                    // the click (e.g. the status bar background with no
+                    // button under the cursor). Fall through to the stage
+                    // so clicks on NPCs, drops, and other map objects work.
                 }
-                else
-                {
-                    cursor_captured = UIElement::NONE;
-                    clear_cursors(clicked, pos, UIElement::NONE);
-                    return Stage::get().send_cursor(clicked, pos);
-                }
+
+                cursor_captured = UIElement::NONE;
+                clear_cursors(clicked, pos, UIElement::NONE);
+                return Stage::get().send_cursor(clicked, pos);
             }
         }
     }

@@ -89,6 +89,10 @@ namespace jrc
 
         /// Check wether the player is invincible.
         bool is_invincible() const override;
+        /// Toggle client-side damage immunity for local testing.
+        void set_test_godmode(bool enabled);
+        /// Return whether local test damage immunity is enabled.
+        bool is_test_godmode() const;
         /// Handle an attack to the player.
         MobAttackResult damage(const MobAttack& attack);
         /// Enter the local dead state until the server respawns the player.
@@ -185,5 +189,6 @@ namespace jrc
         Optional<const Ladder> ladder;
         bool underwater;
         bool gm_hidden = false;
+        bool test_godmode = false;
     };
 }

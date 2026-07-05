@@ -49,6 +49,14 @@ namespace jrc
             const std::string& text
         );
 
+        const char* get_dialogue_text_cstr() const;
+        int32_t get_dialogue_npcid() const;
+        int8_t get_dialogue_type() const;
+        int32_t get_dialogue_mode() const;
+        int32_t get_dialogue_selection_count() const;
+        const char* get_dialogue_selection_cstr(int32_t index) const;
+        bool simulate_button(int32_t action);
+
     protected:
         Button::State button_pressed(uint16_t buttonid) override;
 
@@ -97,6 +105,7 @@ namespace jrc
         bool slider;
 
         int8_t type;
+        int32_t current_npcid;
         bool end_confirms_dialogue;
         std::string prompttext;
         std::vector<std::string> selection_texts;

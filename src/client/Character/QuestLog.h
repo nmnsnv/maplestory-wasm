@@ -29,7 +29,10 @@ namespace jrc
         void add_started(int16_t, const std::string& quest_data);
         void add_in_progress(int16_t, int16_t, const std::string& quest_data);
         void add_completed(int16_t, int64_t);
+        void remove(int16_t);
+        void update(int16_t, int8_t, const std::string& quest_data, int64_t completion_time);
         bool is_started(int16_t);
+        bool is_completed(int16_t) const;
         int16_t get_last_started();
 
     private:
