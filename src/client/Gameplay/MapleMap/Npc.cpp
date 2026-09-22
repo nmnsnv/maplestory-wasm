@@ -21,6 +21,7 @@
 #include "nlnx/node.hpp"
 #include "nlnx/nx.hpp"
 
+#include <algorithm>
 
 namespace jrc
 {
@@ -78,6 +79,14 @@ namespace jrc
         control = cnt;
         stance  = "stand";
 
+        // Keep the marker steady while the NPC's idle frames change shape.
+        // Texture origins locate the top of the sprite relative to its feet.
+        for (nl::node frame : src["stand"])
+        {
+            if (frame.data_type() == nl::node::type::bitmap)
+                sprite_top = std::max(sprite_top, Point<int16_t>(frame["origin"]).y());
+        }
+
         phobj.fhid = f;
         set_position(position);
     }
@@ -95,6 +104,9 @@ namespace jrc
             namelabel.draw(absp);
             funclabel.draw(absp + Point<int16_t>(0, 18));
         }
+
+        if (quest_marker != Questlog::NpcMarker::NONE)
+            quest_marker_animation.draw(absp + quest_marker_offset, alpha);
     }
 
     int8_t Npc::update(const Physics& physics)
@@ -105,6 +117,9 @@ namespace jrc
         }
 
         physics.move_object(phobj);
+
+        if (quest_marker != Questlog::NpcMarker::NONE)
+            quest_marker_animation.update();
 
         if (animations.count(stance))
         {
@@ -141,6 +156,33 @@ namespace jrc
         return scripted;
     }
 
+    void Npc::set_quest_marker(Questlog::NpcMarker marker)
+    {
+        if (quest_marker == marker)
+            return;
+        quest_marker = marker;
+        if (marker == Questlog::NpcMarker::NONE)
+        {
+            quest_marker_animation = Animation();
+            return;
+        }
+
+        nl::node source = nl::nx::ui["UIWindow.img"]["QuestIcon"]
+            [marker == Questlog::NpcMarker::AVAILABLE ? "0" : "2"];
+        quest_marker_animation = Animation(source);
+        int16_t bottom = 0;
+        for (nl::node frame : source)
+        {
+            if (frame.data_type() == nl::node::type::bitmap)
+            {
+                const int16_t extent = static_cast<int16_t>(
+                    frame.get_bitmap().height() - Point<int16_t>(frame["origin"]).y());
+                bottom = std::max(bottom, extent);
+            }
+        }
+        quest_marker_offset = Point<int16_t>(0, -sprite_top - bottom - 6);
+    }
+
     bool Npc::inrange(Point<int16_t> cursorpos, Point<int16_t> viewpos) const
     {
         if (!active)
@@ -149,6 +191,14 @@ namespace jrc
         }
 
         Point<int16_t> absp = get_position() + viewpos;
+
+        // Use the same origin and offset as drawing; the bulb extends beyond
+        // the NPC's body and must remain clickable when the camera moves.
+        if (quest_marker != Questlog::NpcMarker::NONE &&
+            DrawArgument(absp + quest_marker_offset).get_rectangle(
+                quest_marker_animation.get_origin(), quest_marker_animation.get_dimensions()).contains(cursorpos))
+            return true;
+
         Point<int16_t> dim  =
             animations.count(stance) ?
                 animations.at(stance).get_dimensions() :

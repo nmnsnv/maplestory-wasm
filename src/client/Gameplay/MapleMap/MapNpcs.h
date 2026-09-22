@@ -58,5 +58,6 @@ namespace jrc
         MapObjects npcs;
 
         std::queue<NpcSpawn> spawns;
+        uint16_t quest_refresh_delay = 0;
     };
 }

@@ -55,6 +55,11 @@ namespace jrc
         Eligibility get_eligibility(int16_t qid, bool start, uint16_t level,
             uint16_t job_id, const Inventory& inventory, int32_t map_id) const;
 
+        enum class NpcMarker { NONE, AVAILABLE, COMPLETE };
+        // A confirmed hand-in takes priority over new quests at the same NPC.
+        NpcMarker get_npc_marker(int32_t npcid, uint16_t level, uint16_t job_id,
+            const Inventory& inventory, int32_t map_id) const;
+
         // SET_FIELD and quest completion timestamps share the server's clock,
         // including its timezone offset. Use that clock for repeat cooldowns.
         void set_server_time(int64_t filetime);

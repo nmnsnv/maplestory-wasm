@@ -20,6 +20,7 @@
 
 #include "../Physics/PhysicsObject.h"
 
+#include "../../Character/QuestLog.h"
 #include "../../Graphics/Animation.h"
 #include "../../Graphics/Text.h"
 #include "../../Util/Randomizer.h"
@@ -50,6 +51,8 @@ namespace jrc
         bool isscripted() const;
         // Check if the npc is in range of the cursor.
         bool inrange(Point<int16_t> cursorpos, Point<int16_t> viewpos) const;
+
+        void set_quest_marker(Questlog::NpcMarker marker);
 
         const std::string& get_name() const
         {
@@ -84,5 +87,10 @@ namespace jrc
         Randomizer random;
         Text namelabel;
         Text funclabel;
+
+        Questlog::NpcMarker quest_marker = Questlog::NpcMarker::NONE;
+        Animation quest_marker_animation;
+        Point<int16_t> quest_marker_offset;
+        int16_t sprite_top = 0;
     };
 }

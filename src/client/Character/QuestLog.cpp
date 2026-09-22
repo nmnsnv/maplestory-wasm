@@ -145,6 +145,37 @@ namespace jrc
         }
     }
 
+    Questlog::NpcMarker Questlog::get_npc_marker(int32_t npcid, uint16_t level,
+        uint16_t job_id, const Inventory& inventory, int32_t map_id) const
+    {
+        if (npcid <= 0)
+            return NpcMarker::NONE;
+
+        const auto can_hand_in = [&](const auto& active_quests) {
+            for (const auto& entry : active_quests)
+            {
+                const int16_t qid = entry.first;
+                if (QuestData::get(qid).get_end_npc() == npcid &&
+                    get_eligibility(qid, false, level, job_id, inventory, map_id) == Eligibility::AVAILABLE)
+                    return true;
+            }
+            return false;
+        };
+
+        // Conditions known only to the server stay reachable in the NPC menu,
+        // but must not advertise a reward that the player cannot yet claim.
+        if (can_hand_in(started) || can_hand_in(in_progress))
+            return NpcMarker::COMPLETE;
+
+        for (int32_t qid : QuestData::quests_by_npc(npcid))
+        {
+            if (get_eligibility(static_cast<int16_t>(qid), true, level, job_id, inventory, map_id)
+                != Eligibility::UNAVAILABLE)
+                return NpcMarker::AVAILABLE;
+        }
+        return NpcMarker::NONE;
+    }
+
     void Questlog::set_server_time(int64_t filetime)
     {
         server_filetime = filetime;
