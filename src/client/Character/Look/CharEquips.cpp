@@ -35,6 +35,12 @@ namespace jrc
         }
     }
 
+    void CharEquips::draw_face_accessory(Expression::Id expression, Clothing::FaceLayer layer, uint8_t frame, const DrawArgument& args) const
+    {
+        if (const Clothing* accessory = clothes[Equipslot::FACEACC])
+            accessory->draw_face_accessory(expression, layer, frame, args);
+    }
+
     void CharEquips::add_equip(int32_t itemid, const BodyDrawinfo& drawinfo)
     {
         if (itemid <= 0)
