@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../UIElement.h"
+#include "../UIWindow.h"
 
 #include "../Components/Slider.h"
 
@@ -27,7 +27,7 @@
 
 namespace jrc
 {
-    class UIShop : public UIElement
+    class UIShop : public UIWindow
     {
     public:
         static constexpr Type TYPE = SHOP;
@@ -39,8 +39,8 @@ namespace jrc
         void draw(float alpha) const override;
         void update() override;
 
-        bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
-        CursorResult send_cursor(bool clicked, Point<int16_t> position) override;
+        bool remove_window_cursor(bool clicked, Point<int16_t> cursorpos) override;
+        CursorResult send_window_cursor(bool clicked, Point<int16_t> position) override;
         void send_scroll(double yoffset) override;
         void rightclick(Point<int16_t> cursorpos) override;
         void send_key(int32_t keycode, bool pressed, bool escape) override;

@@ -928,10 +928,10 @@ namespace jrc
         type = msgtype;
 
         dimension = { top.width(), static_cast<int16_t>(top.height() + height + bottom.height()) };
-        position = {
+        set_default_position({
             static_cast<int16_t>(Constants::viewwidth() / 2 - dimension.x() / 2),
             static_cast<int16_t>(Constants::viewheight() / 2 - dimension.y() / 2)
-        };
+        });
 
     }
 
@@ -973,7 +973,7 @@ namespace jrc
         );
     }
 
-    UIElement::CursorResult UINpcTalk::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UINpcTalk::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (clicked && handled_button_press_id == UI::get().get_cursor_press_id())
             return { Cursor::CLICKING, true };
@@ -1011,7 +1011,7 @@ namespace jrc
             }
         }
 
-        return UIElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UINpcTalk::parse_selections(const std::string& source, std::string& rendered_text)

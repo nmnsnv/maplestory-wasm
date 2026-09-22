@@ -232,9 +232,9 @@ namespace jrc
         UIElement::update();
     }
 
-    bool UIMiniMap::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UIMiniMap::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        bool removed = UIDragElement::remove_cursor(clicked, cursorpos);
+        bool removed = UIWindow::remove_window_cursor(clicked, cursorpos);
         bool slider_removed = list_npc_slider.remove_cursor(clicked);
 
         if (!is_in_range(cursorpos))
@@ -245,13 +245,8 @@ namespace jrc
         return removed || slider_removed;
     }
 
-    UIElement::CursorResult UIMiniMap::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIMiniMap::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (dragged)
-        {
-            return UIDragElement::send_cursor(clicked, cursorpos);
-        }
-
         Point<int16_t> relative = cursorpos - position;
 
         if (list_npc_slider.isenabled())
@@ -357,7 +352,7 @@ namespace jrc
             UI::get().clear_tooltip(Tooltip::MINIMAP);
         }
 
-        return UIDragElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UIMiniMap::send_scroll(double yoffset)

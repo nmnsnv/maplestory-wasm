@@ -25,8 +25,8 @@ namespace jrc
         void draw(float inter) const override;
         void send_key(int32_t keycode, bool pressed, bool escape) override;
         void send_scroll(double yoffset) override;
-        CursorResult send_cursor(bool clicked, Point<int16_t> cursorpos) override;
-        bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
+        CursorResult send_window_cursor(bool clicked, Point<int16_t> cursorpos) override;
+        bool remove_window_cursor(bool clicked, Point<int16_t> cursorpos) override;
         void update_screen(int16_t width, int16_t height) override;
         UIElement::Type get_type() const override;
         void refresh();

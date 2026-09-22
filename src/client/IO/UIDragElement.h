@@ -1,100 +1,25 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "UIElement.h"
-
+#include "UIWindow.h"
 #include "../Configuration.h"
 
 namespace jrc
 {
+    // Compatibility adapter for windows whose position belongs in Settings.
+    // Input handling lives entirely in UIWindow, including for unsaved dialogs.
     template <typename T>
-    // Base class for UI Windows which can be moved with the mouse cursor.
-    class UIDragElement : public UIElement
+    class UIDragElement : public UIWindow
     {
-    public:
-        bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override
-        {
-            if (dragged)
-            {
-                if (clicked)
-                {
-                    position = cursorpos - cursoroffset;
-                    return true;
-                }
-                else
-                {
-                    dragged = false;
-                    Setting<T>::get().save(position);
-                }
-            }
-            return false;
-        }
-
-        CursorResult send_cursor(bool clicked, Point<int16_t> cursorpos) override
-        {
-            if (dragged)
-            {
-                if (clicked)
-                {
-                    position = cursorpos - cursoroffset;
-                    return { Cursor::CLICKING, true };
-                }
-
-                dragged = false;
-                Setting<T>::get().save(position);
-                return { Cursor::IDLE, true };
-            }
-
-            if (CursorResult button_result = UIElement::send_cursor(clicked, cursorpos))
-            {
-                return button_result;
-            }
-
-            if (clicked)
-            {
-                if (indragrange(cursorpos))
-                {
-                    cursoroffset = cursorpos - position;
-                    dragged = true;
-                    return { Cursor::CLICKING, true };
-                }
-            }
-
-            // Keep click/drag active only when a button or drag area captured
-            // the press. This blocks press-then-hover from triggering controls.
-            return { Cursor::IDLE, false };
-        }
-
     protected:
-        UIDragElement(Point<int16_t> d) : dragarea(d)
+        explicit UIDragElement(Point<int16_t> area) : UIWindow(area)
         {
-            position = Setting<T>::get().load();
+            Point<int16_t> saved = Setting<T>::get().load();
+            if (saved.x() >= 0 && saved.y() >= 0)
+                restore_position(saved);
         }
 
-        bool dragged = false;
-        Point<int16_t> dragarea;
-        Point<int16_t> cursoroffset;
-
-    private:
-        bool indragrange(Point<int16_t> cursorpos) const
+        void save_position() override
         {
-            auto bounds = Rectangle<int16_t>(position, position + dragarea);
-            return bounds.contains(cursorpos);
+            Setting<T>::get().save(position);
         }
     };
 }

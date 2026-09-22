@@ -154,21 +154,19 @@ namespace jrc
             list_slider.send_scroll(yoffset);
     }
 
-    UIElement::CursorResult UIQuestLog::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIQuestLog::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (dragged)
-            return UIDragElement::send_cursor(clicked, cursorpos);
         Point<int16_t> relative = cursorpos - position;
         over_detail = relative.x() >= WIDTH;
         Slider& slider = over_detail && selected >= 0 ? detail_slider : list_slider;
         if (Cursor::State state = slider.send_cursor(relative, clicked))
             return {state, true};
-        return UIDragElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
-    bool UIQuestLog::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UIQuestLog::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        bool moved = UIDragElement::remove_cursor(clicked, cursorpos);
+        bool moved = UIWindow::remove_window_cursor(clicked, cursorpos);
         bool list = list_slider.remove_cursor(clicked);
         bool detail = detail_slider.remove_cursor(clicked);
         return moved || list || detail;

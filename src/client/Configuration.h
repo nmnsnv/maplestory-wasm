@@ -280,6 +280,12 @@ namespace jrc
         PosQUEST() : PointEntry("PosQUEST", "(200,100)") {}
     };
 
+    struct PosQUESTHELPER : public Configuration::PointEntry
+    {
+        // Unset positions use the screen's right edge on first opening.
+        PosQUESTHELPER() : PointEntry("PosQUESTHELPER", "(-1,-1)") {}
+    };
+
     struct PosPARTY : public Configuration::PointEntry
     {
         PosPARTY() : PointEntry("PosPARTY", "(160,120)") {}

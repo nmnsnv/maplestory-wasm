@@ -225,12 +225,12 @@ namespace jrc
         player_mesolabel.change_text(player_mesostr);
     }
 
-    bool UIStorage::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UIStorage::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        return UIElement::remove_cursor(clicked, cursorpos);
+        return UIWindow::remove_window_cursor(clicked, cursorpos);
     }
 
-    UIElement::CursorResult UIStorage::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIStorage::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         Point<int16_t> cursoroffset = cursorpos - position;
         last_cursor_pos = cursoroffset;
@@ -256,7 +256,7 @@ namespace jrc
             clear_tooltip();
         }
 
-        return UIElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UIStorage::send_scroll(double yoffset)

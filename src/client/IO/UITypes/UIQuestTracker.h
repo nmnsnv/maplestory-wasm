@@ -1,5 +1,5 @@
 #pragma once
-#include "../UIElement.h"
+#include "../UIDragElement.h"
 #include "../../Character/QuestLog.h"
 #include "../../Graphics/Text.h"
 #include "../../Graphics/Texture.h"
@@ -11,7 +11,7 @@ namespace jrc
 {
     class Inventory;
 
-    class UIQuestTracker : public UIElement
+    class UIQuestTracker : public UIDragElement<PosQUESTHELPER>
     {
     public:
         static constexpr Type TYPE = QUESTTRACKER;

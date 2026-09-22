@@ -9,6 +9,7 @@
 #include "../../Character/Inventory/Inventory.h"
 #include "../../Data/QuestData.h"
 #include "../../Gameplay/Stage.h"
+#include "../../Graphics/Geometry.h"
 #include "nlnx/nx.hpp"
 #include "nlnx/node.hpp"
 
@@ -17,14 +18,14 @@
 namespace jrc
 {
     UIQuestTracker::UIQuestTracker(const Inventory& in_inventory, const Questlog& in_questlog)
-        : inventory(in_inventory), questlog(in_questlog),
+        : UIDragElement({PANEL_WIDTH, 25}), inventory(in_inventory), questlog(in_questlog),
           screen_width(Constants::viewwidth()), screen_height(Constants::viewheight())
     {
         auto art = nl::nx::ui["UIWindow.img"]["QuestAlarm"];
         top = art["backgrndmax"];
         center = art["backgrndcenter"];
         bottom = art["backgrndbottom"];
-        header = {Text::A11B, Text::LEFT, Text::WHITE};
+        header = {Text::A11B, Text::LEFT, Text::DARKGREY};
         empty = {Text::A11M, Text::LEFT, Text::WHITE, "No quests being tracked.", 200, false};
         more = {Text::A11M, Text::LEFT, Text::YELLOW, "Click title for all objectives.", 200, false};
         buttons[BT_JOURNAL] = std::make_unique<MapleButton>(art["BtQ"], 7, 5);
@@ -44,6 +45,10 @@ namespace jrc
         header.draw(position + Point<int16_t>(24, 3));
         if (!minimized)
         {
+            // The original frame is translucent; provide enough contrast on
+            // bright maps without altering the bundled artwork.
+            ColorBox(PANEL_WIDTH - 2, body_height, Geometry::BLACK, 0.7f)
+                .draw(position + Point<int16_t>(1, 25));
             center.draw({position + Point<int16_t>(0, 25), Point<int16_t>(PANEL_WIDTH, body_height)});
             bottom.draw(position + Point<int16_t>(0, 25 + body_height));
             if (tracked.empty()) empty.draw(position + Point<int16_t>(10, 28));
@@ -72,7 +77,8 @@ namespace jrc
 
     bool UIQuestTracker::is_in_range(Point<int16_t> cursorpos) const
     {
-        // Only controls capture the cursor; objective text lets gameplay clicks through.
+        if (in_drag_area(cursorpos)) return true;
+        // Objective text still lets gameplay clicks through.
         for (const auto& button : buttons)
             if (button.second->is_active() && button.second->bounds(position).contains(cursorpos)) return true;
         return false;
@@ -82,7 +88,7 @@ namespace jrc
 
     void UIQuestTracker::reanchor()
     {
-        position = {static_cast<int16_t>(std::max(0, screen_width - PANEL_WIDTH - RIGHT_MARGIN)), TOP_MARGIN};
+        set_default_position({static_cast<int16_t>(std::max(0, screen_width - PANEL_WIDTH - RIGHT_MARGIN)), TOP_MARGIN});
     }
 
     void UIQuestTracker::toggle_quest(int16_t qid)
@@ -188,5 +194,6 @@ namespace jrc
         buttons[BT_MAX]->set_active(minimized);
         for (size_t i = 0; i < MAX_TRACKED; ++i) buttons[BT_QUEST0 + i]->set_active(!minimized && i < tracked.size());
         dimension = {PANEL_WIDTH, static_cast<int16_t>(minimized ? 25 : body_height + 30)};
+        keep_on_screen();
     }
 }

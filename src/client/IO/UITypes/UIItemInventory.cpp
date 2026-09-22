@@ -279,14 +279,8 @@ namespace jrc
         }
     }
 
-    UIElement::CursorResult UIItemInventory::send_cursor(bool pressed, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIItemInventory::send_window_cursor(bool pressed, Point<int16_t> cursorpos)
     {
-        if (dragged)
-        {
-            clear_tooltip();
-            return UIDragElement::send_cursor(pressed, cursorpos);
-        }
-
         Point<int16_t> cursor_relative = cursorpos - position;
         if (slider.isenabled())
         {
@@ -319,7 +313,7 @@ namespace jrc
         }
 
         clear_tooltip();
-        return UIDragElement::send_cursor(pressed, cursorpos);
+        return UIWindow::send_window_cursor(pressed, cursorpos);
     }
 
     void UIItemInventory::modify(InventoryType::Id type, int16_t slot, int8_t mode, int16_t arg)
@@ -393,9 +387,9 @@ namespace jrc
         UIElement::toggle_active();
     }
 
-    bool UIItemInventory::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UIItemInventory::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (UIDragElement::remove_cursor(clicked, cursorpos))
+        if (UIWindow::remove_window_cursor(clicked, cursorpos))
             return true;
 
         return slider.remove_cursor(clicked);

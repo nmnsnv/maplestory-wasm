@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../UIElement.h"
+#include "../UIWindow.h"
 
 #include "../../Data/QuestData.h"
 #include "../../Graphics/Text.h"
@@ -28,7 +28,7 @@
 
 namespace jrc
 {
-    class UINpcTalk : public UIElement
+    class UINpcTalk : public UIWindow
     {
     public:
         static constexpr Type TYPE = NPCTALK;
@@ -41,7 +41,7 @@ namespace jrc
         bool is_in_range(Point<int16_t> cursorpos) const override;
         void send_key(int32_t keycode, bool pressed, bool escape) override;
         void send_scroll(double yoffset) override;
-        CursorResult send_cursor(bool clicked, Point<int16_t> cursorpos) override;
+        CursorResult send_window_cursor(bool clicked, Point<int16_t> cursorpos) override;
 
         void change_text(
             int32_t npcid,

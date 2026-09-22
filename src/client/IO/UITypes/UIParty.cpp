@@ -133,13 +133,8 @@ namespace jrc
 		invite_field.update(position);
 	}
 
-	UIElement::CursorResult UIParty::send_cursor(bool clicked, Point<int16_t> cursorpos)
+	UIElement::CursorResult UIParty::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
 	{
-		if (dragged)
-		{
-			return UIDragElement::send_cursor(clicked, cursorpos);
-		}
-
 		if (invite_field.get_state() != Textfield::DISABLED)
 		{
 			Cursor::State field_state = invite_field.send_cursor(cursorpos, clicked);
@@ -149,7 +144,7 @@ namespace jrc
 			}
 		}
 
-		return UIDragElement::send_cursor(clicked, cursorpos);
+		return UIWindow::send_window_cursor(clicked, cursorpos);
 	}
 
 	void UIParty::send_key(int32_t keycode, bool pressed, bool escape)

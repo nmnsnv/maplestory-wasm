@@ -309,9 +309,9 @@ namespace jrc
         }
     }
 
-    bool UISkillbook::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UISkillbook::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (UIDragElement::remove_cursor(clicked, cursorpos))
+        if (UIWindow::remove_window_cursor(clicked, cursorpos))
         {
             return true;
         }
@@ -319,13 +319,8 @@ namespace jrc
         return slider.remove_cursor(clicked);
     }
 
-    UIElement::CursorResult UISkillbook::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UISkillbook::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (dragged)
-        {
-            return UIDragElement::send_cursor(clicked, cursorpos);
-        }
-
         Point<int16_t> cursor_relative = cursorpos - position;
         if (slider.isenabled())
         {
@@ -397,7 +392,7 @@ namespace jrc
             grabbing = false;
         }
 
-        return UIDragElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UISkillbook::send_key(int32_t, bool pressed, bool escape)
