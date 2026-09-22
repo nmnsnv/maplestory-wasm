@@ -559,6 +559,20 @@ namespace jrc
         quads.emplace_back(rect.l(), rect.r(), rect.t(), rect.b(), getoffset(bmp), color, angle);
     }
 
+    void GraphicsGL::draw_clipped(const nl::bitmap& bmp, const Rectangle<int16_t>& rect,
+        const Color& color, Range<int16_t> vertical)
+    {
+        if (locked || color.invisible() || !rect.overlaps(screen()) || rect.b() <= rect.t()) return;
+        const int16_t top = std::max(rect.t(), vertical.first());
+        const int16_t bottom = std::min(rect.b(), vertical.second());
+        if (top >= bottom) return;
+        Offset offset = getoffset(bmp);
+        const int32_t texture_height = offset.b - offset.t;
+        offset.b = offset.t + static_cast<int16_t>(texture_height * (bottom - rect.t()) / (rect.b() - rect.t()));
+        offset.t += static_cast<int16_t>(texture_height * (top - rect.t()) / (rect.b() - rect.t()));
+        quads.emplace_back(rect.l(), rect.r(), top, bottom, offset, color, 0.0f);
+    }
+
     Text::Layout GraphicsGL::createlayout(const std::string& text, Text::Font id,
         Text::Alignment alignment, int16_t maxwidth, bool formatted) {
 

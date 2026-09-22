@@ -61,6 +61,12 @@ namespace jrc
             .draw(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), args.get_angle());
     }
 
+    void Texture::draw_clipped(const DrawArgument& args, Range<int16_t> vertical) const
+    {
+        if (bitmap.id() == 0) return;
+        GraphicsGL::get().draw_clipped(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), vertical);
+    }
+
     void Texture::shift(Point<int16_t> amount)
     {
         origin -= amount;

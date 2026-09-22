@@ -32,6 +32,7 @@ namespace jrc
         ~Texture();
 
         void draw(const DrawArgument& args) const;
+        void draw_clipped(const DrawArgument& args, Range<int16_t> vertical) const;
         void shift(Point<int16_t> amount);
 
         bool is_valid() const;

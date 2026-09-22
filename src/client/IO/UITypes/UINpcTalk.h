@@ -17,6 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "../UIWindow.h"
+#include "../Components/NpcText.h"
 
 #include "../../Data/QuestData.h"
 #include "../../Graphics/Text.h"
@@ -114,14 +115,13 @@ namespace jrc
         void cycle_selection(int32_t direction);
 
         void parse_selections(const std::string& text, std::string& rendered_text);
-        static std::string strip_npc_tokens(const std::string& text);
         static std::string replace_macros(const std::string& source);
         static DialogueMode resolve_dialogue_mode(int8_t msgtype, bool has_navigation_flags);
         void refresh_selection_styles();
-        int16_t get_selection_text_height() const;
-        int16_t get_dialogue_content_height() const;
+        int32_t get_selection_text_height() const;
+        int32_t get_dialogue_content_height() const;
         int16_t get_dialogue_text_y() const;
-        int16_t get_options_start_y() const;
+        int32_t get_options_start_y() const;
         int32_t get_option_at(Point<int16_t> relative) const;
 
         enum Buttons
@@ -139,7 +139,7 @@ namespace jrc
         Texture bottom;
         Texture nametag;
 
-        Text text;
+        NpcText text;
         Texture speaker;
         Text name;
         int16_t height;
@@ -151,12 +151,12 @@ namespace jrc
         bool end_confirms_dialogue;
         std::string prompttext;
         std::vector<std::string> selection_texts;
-        std::vector<Text> selection_labels;
+        std::vector<NpcText> selection_labels;
         std::vector<int32_t> selections;
         int32_t selected;
         int32_t hovered_selection;
-        int16_t scroll_offset;
-        int16_t max_scroll;
+        int32_t scroll_offset;
+        int32_t max_scroll;
         std::unique_ptr<QuestDialogue> quest;
         std::function<void(size_t)> menu_selection;
     };

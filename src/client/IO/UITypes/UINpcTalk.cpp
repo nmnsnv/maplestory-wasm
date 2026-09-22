@@ -18,6 +18,7 @@
 #include "UINpcTalk.h"
 
 #include "../Components/MapleButton.h"
+#include "../Components/NpcDialogLayout.h"
 #include "../UI.h"
 
 #include "../../Console.h"
@@ -40,13 +41,11 @@ namespace jrc
 {
     namespace
     {
-        constexpr int16_t MIN_DIALOGUE_TILES = 8;
         constexpr int16_t TEXT_WIDTH = 320;
-        constexpr int16_t TEXT_VERTICAL_PADDING = 16;
+        constexpr int16_t TEXT_VERTICAL_PADDING = NpcDialogLayout::PADDING;
         constexpr int16_t BUTTON_MARGIN = 20;
         constexpr int16_t BUTTON_GAP = 6;
         constexpr int16_t DIALOG_TEXT_X = 156;
-        constexpr int16_t DIALOG_TEXT_Y_OFFSET = 16;
         constexpr int16_t OPTION_VERTICAL_GAP = 2;
         constexpr int16_t HOVER_UNDERLINE_THICKNESS = 1;
         constexpr int8_t SELECTION_DIALOGUE_TYPE = 4;
@@ -62,7 +61,6 @@ namespace jrc
             case 'b':  // blue
             case 'd':  // dark/purple
             case 'e':  // bold on
-            case 'f':  // dark-grey
             case 'g':  // green
             case 'k':  // black
             case 'n':  // normal
@@ -363,24 +361,24 @@ namespace jrc
         int16_t content_top = static_cast<int16_t>(top.height() + TEXT_VERTICAL_PADDING);
         int16_t content_bottom = static_cast<int16_t>(top.height() + height - TEXT_VERTICAL_PADDING);
 
-        int16_t text_y = static_cast<int16_t>(get_dialogue_text_y() - scroll_offset);
+        int32_t text_y = get_dialogue_text_y() - scroll_offset;
         if (text_y + text.height() > content_top && text_y < content_bottom)
         {
-            text.draw_clipped(position + Point<int16_t>(DIALOG_TEXT_X, text_y),
+            text.draw_clipped({position.x() + DIALOG_TEXT_X, position.y() + text_y},
                 {static_cast<int16_t>(position.y() + content_top), static_cast<int16_t>(position.y() + content_bottom)});
         }
 
         if (!selection_labels.empty())
         {
-            int16_t option_y = static_cast<int16_t>(get_options_start_y() - scroll_offset);
+            int32_t option_y = get_options_start_y() - scroll_offset;
             for (size_t i = 0; i < selection_labels.size(); ++i)
             {
-                const Text& option_label = selection_labels[i];
+                const NpcText& option_label = selection_labels[i];
 
                 // Only draw options within visible content area.
                 if (option_y + option_label.height() > content_top && option_y < content_bottom)
                 {
-                    option_label.draw_clipped(position + Point<int16_t>(DIALOG_TEXT_X, option_y),
+                    option_label.draw_clipped({position.x() + DIALOG_TEXT_X, position.y() + option_y},
                         {static_cast<int16_t>(position.y() + content_top), static_cast<int16_t>(position.y() + content_bottom)});
 
                     if (static_cast<int32_t>(i) == hovered_selection && option_y + option_label.height() < content_bottom)
@@ -410,15 +408,6 @@ namespace jrc
     {
         if (UIElement::is_in_range(cursorpos))
             return true;
-
-        if (active && dialogue_mode == DialogueMode::SELECTION && !selection_labels.empty())
-        {
-            Point<int16_t> relative = cursorpos - position;
-            int16_t text_y = get_dialogue_text_y();
-            Point<int16_t> rect_tl(DIALOG_TEXT_X, text_y);
-            Point<int16_t> rect_br(DIALOG_TEXT_X + TEXT_WIDTH, text_y + get_dialogue_content_height());
-            if (Rectangle<int16_t>(rect_tl, rect_br).contains(relative)) return true;
-        }
 
         for (const auto& button : buttons)
         {
@@ -789,18 +778,18 @@ namespace jrc
         if (dialogue_mode == DialogueMode::SELECTION)
         {
             parse_selections(processed_tx, prompttext);
-            text = { Text::A12M, Text::LEFT, Text::DARKGREY, prompttext, TEXT_WIDTH, false };
+            text = NpcText(prompttext, TEXT_WIDTH);
             selection_labels.reserve(selection_texts.size());
             for (const std::string& option_text : selection_texts)
             {
-                selection_labels.emplace_back(Text::A12M, Text::LEFT, Text::BLUE, option_text, TEXT_WIDTH, false);
+                selection_labels.emplace_back(option_text, TEXT_WIDTH, Text::BLUE);
             }
             refresh_selection_styles();
         }
         else
         {
-            prompttext = strip_npc_tokens(processed_tx);
-            text = { Text::A12M, Text::LEFT, Text::DARKGREY, prompttext, TEXT_WIDTH, false };
+            prompttext = processed_tx;
+            text = NpcText(prompttext, TEXT_WIDTH);
         }
 
         if (speakerbyte == 0)
@@ -820,31 +809,11 @@ namespace jrc
 
         scroll_offset = 0;
 
-        int16_t minimum_fill_height = MIN_DIALOGUE_TILES * fill.height();
-        int16_t content_h = get_dialogue_content_height();
-        int16_t required_fill_height = std::max<int16_t>(
-            minimum_fill_height,
-            static_cast<int16_t>(content_h + TEXT_VERTICAL_PADDING * 2)
-        );
-        vtile = std::max<int16_t>(
-            MIN_DIALOGUE_TILES,
-            static_cast<int16_t>((required_fill_height + fill.height() - 1) / fill.height())
-        );
-
-        // Cap dialog so it fits on screen (leave room for top/bottom chrome + margin).
-        int16_t max_fill = static_cast<int16_t>(
-            (Constants::viewheight() - top.height() - bottom.height() - 40) / fill.height()
-        );
-        if (max_fill > MIN_DIALOGUE_TILES && vtile > max_fill)
-        {
-            vtile = max_fill;
-        }
-
+        const auto layout = NpcDialogLayout::measure(get_dialogue_content_height(),
+            top.height(), fill.height(), bottom.height(), Constants::viewheight());
+        vtile = layout.tiles;
         height = vtile * fill.height();
-
-        // Calculate scrollable overflow.
-        int16_t visible_content = static_cast<int16_t>(height - TEXT_VERTICAL_PADDING * 2);
-        max_scroll = std::max<int16_t>(0, static_cast<int16_t>(content_h - visible_content));
+        max_scroll = layout.max_scroll;
 
         for (auto& button : buttons)
         {
@@ -872,17 +841,10 @@ namespace jrc
         {
             // Text-only NPC dialogue carries the Prev/Next flags in two trailing
             // bytes. When no flags are present the dialog expects a plain OK button.
-            bool has_prev = has_navigation_flags && (style & 0x00FF) != 0;
-            bool has_next = has_navigation_flags && (style & 0xFF00) != 0;
-
-            if (has_next)
-                place_button_from_right(NEXT);
-            if (has_prev)
-                place_button_from_right(PREV);
-            if (!has_prev && !has_next)
-            {
-                place_button_from_right(OK);
-            }
+            const auto navigation = NpcDialogLayout::navigation(style, has_navigation_flags);
+            if (navigation.next) place_button_from_right(NEXT);
+            if (navigation.ok) place_button_from_right(OK);
+            if (navigation.prev) place_button_from_right(PREV);
             break;
         }
         case DialogueMode::YES_NO:
@@ -967,10 +929,8 @@ namespace jrc
             return;
 
         constexpr int16_t SCROLL_STEP = 24;
-        scroll_offset = std::clamp<int16_t>(
-            static_cast<int16_t>(scroll_offset - static_cast<int16_t>(yoffset * SCROLL_STEP)),
-            0, max_scroll
-        );
+        scroll_offset = static_cast<int32_t>(std::clamp<double>(
+            scroll_offset - yoffset * SCROLL_STEP, 0, max_scroll));
     }
 
     UIElement::CursorResult UINpcTalk::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
@@ -1072,14 +1032,12 @@ namespace jrc
 
             selections.push_back(selection_id);
             selection_texts.push_back(
-                trim_selection_text(
-                    strip_npc_tokens(source.substr(option_start, option_end - option_start))
-                )
+                trim_selection_text(source.substr(option_start, option_end - option_start))
             );
             cursor = has_explicit_end ? option_end + 2 : option_end;
         }
 
-        rendered_text = strip_npc_tokens(rendered_text);
+        rendered_text = trim_selection_text(rendered_text);
     }
 
     void UINpcTalk::refresh_selection_styles()
@@ -1099,9 +1057,9 @@ namespace jrc
         }
     }
 
-    int16_t UINpcTalk::get_selection_text_height() const
+    int32_t UINpcTalk::get_selection_text_height() const
     {
-        int16_t selection_height = 0;
+        int32_t selection_height = 0;
         for (size_t i = 0; i < selection_labels.size(); ++i)
         {
             selection_height += selection_labels[i].height();
@@ -1113,9 +1071,9 @@ namespace jrc
         return selection_height;
     }
 
-    int16_t UINpcTalk::get_dialogue_content_height() const
+    int32_t UINpcTalk::get_dialogue_content_height() const
     {
-        int16_t content_height = text.height();
+        int32_t content_height = text.height();
         if (!selection_labels.empty())
         {
             if (!prompttext.empty())
@@ -1129,12 +1087,12 @@ namespace jrc
 
     int16_t UINpcTalk::get_dialogue_text_y() const
     {
-        return DIALOG_TEXT_Y_OFFSET + ((vtile * fill.height() - get_dialogue_content_height()) / 2);
+        return top.height() + TEXT_VERTICAL_PADDING;
     }
 
-    int16_t UINpcTalk::get_options_start_y() const
+    int32_t UINpcTalk::get_options_start_y() const
     {
-        int16_t options_y = get_dialogue_text_y() + text.height();
+        int32_t options_y = get_dialogue_text_y() + text.height();
         if (!prompttext.empty())
         {
             options_y += OPTION_VERTICAL_GAP;
@@ -1144,18 +1102,17 @@ namespace jrc
 
     int32_t UINpcTalk::get_option_at(Point<int16_t> relative) const
     {
-        int16_t options_y = static_cast<int16_t>(get_options_start_y() - scroll_offset);
+        const int16_t content_top = top.height() + TEXT_VERTICAL_PADDING;
+        const int16_t content_bottom = top.height() + height - TEXT_VERTICAL_PADDING;
+        if (relative.y() < content_top || relative.y() >= content_bottom ||
+            relative.x() < DIALOG_TEXT_X || relative.x() >= DIALOG_TEXT_X + TEXT_WIDTH)
+            return -1;
+        int32_t options_y = get_options_start_y() - scroll_offset;
         for (size_t i = 0; i < selection_labels.size(); ++i)
         {
-            int16_t option_height = selection_labels[i].height();
-            Rectangle<int16_t> option_rect(
-                Point<int16_t>(DIALOG_TEXT_X, options_y),
-                Point<int16_t>(DIALOG_TEXT_X + TEXT_WIDTH, options_y + option_height)
-            );
-            if (option_rect.contains(relative))
-            {
+            const int32_t option_height = selection_labels[i].height();
+            if (relative.y() >= options_y && relative.y() < options_y + option_height)
                 return static_cast<int32_t>(i);
-            }
 
             options_y += option_height;
             if (i + 1 < selection_labels.size())
@@ -1165,78 +1122,6 @@ namespace jrc
         }
 
         return -1;
-    }
-
-    std::string UINpcTalk::strip_npc_tokens(const std::string& source)
-    {
-        std::string stripped;
-        stripped.reserve(source.size());
-
-        size_t cursor = 0;
-        while (cursor < source.size())
-        {
-            if (source[cursor] != '#' || cursor + 1 >= source.size())
-            {
-                stripped.push_back(source[cursor]);
-                cursor++;
-                continue;
-            }
-
-            char token = source[cursor + 1];
-
-            if (token == '#')
-            {
-                stripped.push_back('#');
-                cursor += 2;
-                continue;
-            }
-
-            if (is_formatting_token(token))
-            {
-                cursor += 2;
-                continue;
-            }
-
-            if (std::isalpha(static_cast<unsigned char>(token)))
-            {
-                int32_t ignored_value = 0;
-                size_t token_end = 0;
-                if (try_parse_delimited_number(source, cursor + 2, token_end, ignored_value))
-                {
-                    cursor = token_end + 1;
-                    continue;
-                }
-
-                if (token == 'h' || token == 'H')
-                {
-                    size_t token_end_h = source.find('#', cursor + 2);
-                    if (token_end_h != std::string::npos)
-                    {
-                        cursor = token_end_h + 1;
-                        continue;
-                    }
-                }
-
-                cursor += 2;
-                continue;
-            }
-
-            if (std::isdigit(static_cast<unsigned char>(token)))
-            {
-                int32_t ignored_value = 0;
-                size_t token_end = 0;
-                if (try_parse_delimited_number(source, cursor + 1, token_end, ignored_value))
-                {
-                    cursor = token_end + 1;
-                    continue;
-                }
-            }
-
-            stripped.push_back(source[cursor]);
-            cursor++;
-        }
-
-        return stripped;
     }
 
     std::string UINpcTalk::replace_macros(const std::string& source)
@@ -1255,10 +1140,19 @@ namespace jrc
             }
 
             char token = source[cursor + 1];
+            const size_t image_end = NpcText::image_tag_end(source, cursor);
+            if (image_end != std::string::npos)
+            {
+                result.append(source, cursor, image_end - cursor);
+                cursor = image_end;
+                continue;
+            }
 
-            // Skip zero-parameter formatting tokens (#b, #e, #k, #n, #r, etc.)
+            // Preserve formatting for the rich text layout, without consuming
+            // the adjacent content (for example, the number in #e1000#k).
             if (is_formatting_token(token))
             {
+                result.append(source, cursor, 2);
                 cursor += 2;
                 continue;
             }
