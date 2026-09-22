@@ -35,7 +35,7 @@ namespace jrc
     class UIStateGame : public UIState
     {
     public:
-        UIStateGame();
+        explicit UIStateGame(bool cash_shop = false);
 
         void draw(float inter, Point<int16_t> cursor) const override;
         void update() override;
@@ -84,6 +84,7 @@ namespace jrc
         Tooltip::Parent tooltipparent;
 
         Optional<Icon> draggedicon;
+        bool cash_shop;
         int16_t view_width;
         int16_t view_height;
     };

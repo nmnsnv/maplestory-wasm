@@ -72,10 +72,15 @@ namespace jrc
 
     void UI::change_state(State id)
     {
+        remove_textfield();
+        is_key_down.clear();
         switch (id)
         {
         case LOGIN:
             state = std::make_unique<UIStateLogin>();
+            break;
+        case CASHSHOP:
+            state = std::make_unique<UIStateGame>(true);
             break;
         case GAME:
             state = std::make_unique<UIStateGame>();
@@ -194,6 +199,8 @@ namespace jrc
 
     void UI::send_key(int32_t keycode, bool pressed)
     {
+        if (!enabled && pressed)
+            return;
         bool escape = keycode == GLFW_KEY_ESCAPE;
 
         if (escape)
@@ -209,7 +216,9 @@ namespace jrc
                 UIElement::PARTY,
                 UIElement::STATSINFO,
                 UIElement::QUESTLOG,
-                UIElement::NOTICE
+                UIElement::NOTICE,
+                UIElement::CASHDIALOG,
+                UIElement::CASHSHOP
             };
 
             if (UIElement* front = state->get_front(escape_types))

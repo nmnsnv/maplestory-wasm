@@ -2298,13 +2298,28 @@ operation   byte    See CashOperationHandler
 [varies]    —       Depends on operation
 ```
 
-Key operations:
-- `0x03` = Buy item with NX (+ `sn: int`, `quantity: short`)
-- `0x04` = Gift item (+ `sn: int`, `recipient: string`, `message: string`)
-- `0x06` = Modify wish list
-- `0x1D` = Move item to locker
-- `0x1E` = Move item from locker to inventory
-- `0x21` = Buy item in package
+Operations verified against the local Cosmic handler (currency: `1` NX Credit,
+`2` Maple Points, `4` NX Prepaid):
+
+| Action | Payload after action byte |
+| --- | --- |
+| `0x03` Buy | reserved byte, currency int, commodity SN int |
+| `0x04` Gift | birthday YYYYMMDD int, SN int, recipient string, message string (1–73 bytes) |
+| `0x05` Wish list | exactly ten SN ints; pad unused entries with zero |
+| `0x06` Expand inventory | reserved byte, currency int, mode byte 0, inventory type byte; adds four slots for 4,000 |
+| `0x07` Expand storage | reserved byte, currency int, mode byte 0; adds four slots for 4,000 |
+| `0x08` Character slot | reserved byte, currency int, SN int |
+| `0x0D` Withdraw from locker | instance ID long |
+| `0x0E` Deposit into locker | instance ID long, inventory type byte |
+| `0x1D` Crush ring | dedicated birthday/payment/partner/message workflow |
+| `0x1E` Buy package | reserved byte, currency int, package SN int |
+| `0x20` Meso offer | SN int; SN category must be 8 |
+| `0x23` Friendship ring | dedicated birthday/payment/partner/message workflow |
+
+Purchases identify a **commodity SN**, not an item ID. Quantity and price come
+from the server commodity. There is no quantity field in a normal purchase.
+Transfers carry a long instance ID, though Cosmic consumes only its low int.
+Gift payment is always NX Prepaid. Name/world changes have dedicated actions.
 
 ---
 
@@ -2313,8 +2328,9 @@ Key operations:
 **Purpose:** Client enters a coupon code.
 
 ```
-Field   Type    Notes
-code    string  Coupon code string
+Field     Type     Notes
+reserved  byte[2]  Zero
+code      string   Coupon code string
 ```
 
 ---
@@ -2771,6 +2787,26 @@ timestamp    long    Current server time
 ### 0x007F — SET_CASH_SHOP
 
 **Purpose:** Sets up the Cash Shop UI. Contains character and account info needed for the CS.
+
+The shared character body begins after the nine-byte information mask/header
+and includes inventory, skills, quests, rings, teleport rocks, monster book,
+New Year cards, area info and a trailing short zero. It is followed by:
+
+```
+byte 1, account string, int 0
+ushort modifierCount
+  modifierCount * (SN int, modifier int, info byte)
+121 reserved bytes
+80 * (category int, gender int, SN int)  // 8 categories × 2 genders × 5 best sellers
+int 0, short 0, byte 0, int 75
+```
+
+Cash-equipped entries in the second equipped section use positive base slots
+on the wire; restore the `+100` offset in client inventory. Exit sends empty
+`CHANGE_MAP` (`0x26`). Cosmic replies with `CHANGE_CHANNEL` (`0x10`): success
+byte, IPv4 bytes, unsigned port short. Reconnect after packet dispatch returns,
+send `PLAYER_LOGIN` for the current character, and rebuild from `SET_FIELD`.
+
 
 ---
 
@@ -3635,6 +3671,34 @@ points    int    Prepaid NX balance
 ### 0x0145 — CASHSHOP_OPERATION
 
 **Purpose:** Various Cash Shop UI responses (purchase confirmation, inventory list, gift result, etc.).
+
+Each response starts with an action byte. A cash-item record is 55 bytes:
+`instanceID long, accountID int, characterID int, itemID int, SN int,
+count ushort, sender fixed[13], expiration FILETIME long, reserved long`.
+
+| Action | Body |
+| --- | --- |
+| `0x4B` Locker | ushort count, cash records, storage slots short, character slots short |
+| `0x4D` Gifts | ushort count; each: instance ID long, item ID int, sender fixed[13], message fixed[73] |
+| `0x4F`, `0x55` Wish list / saved | ten SN ints |
+| `0x57` Purchase | one cash record |
+| `0x59` Coupon | byte cash count, cash records, points int, normal-item count int, normal records (quantity short, flags short, item ID int), mesos int |
+| `0x5C` Failure | error byte |
+| `0x5E` Gift sent | recipient string, item ID int, count short, price int |
+| `0x60` Inventory expanded | type byte, capacity short |
+| `0x62`, `0x64` Storage / character expanded | capacity short |
+| `0x68` Withdraw | destination slot short, normal itemInfo including kind byte |
+| `0x6A` Deposit | one cash record |
+| `0x6C` Expiration | removed instance ID long |
+| `0x89` Package | byte count, cash records, short zero |
+| `0x8D` Meso purchase / NX coupon | int 1, short 1, byte 0x0B, byte 0, item ID int |
+
+`QUERY_CASH_RESULT` carries balances, and is also Cosmic's `enableCSActions`
+response. A balance packet alone does **not** acknowledge a purchase. Some
+rejected requests have no detailed failure response; never retry an uncertain
+purchase automatically. Initial gift creation happens after the locker snapshot,
+so a new shop session is needed to load complete records for new gifts.
+
 
 ---
 

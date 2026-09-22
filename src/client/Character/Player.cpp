@@ -150,14 +150,25 @@ namespace jrc
 
     void Player::change_equip(int16_t slot)
     {
-        if (int32_t itemid = inventory.get_item_id(InventoryType::EQUIPPED, slot))
-        {
+        const int16_t base_slot = slot > 100 ? slot - 100 : slot;
+        if (base_slot <= 0 || base_slot >= Equipslot::LENGTH)
+            return;
+        const auto type = static_cast<Equipslot::Id>(base_slot);
+        // Cash equipment covers the normal slot and removing it reveals the underlying item.
+        int32_t itemid = inventory.get_item_id(InventoryType::EQUIPPED, base_slot + 100);
+        if (!itemid)
+            itemid = inventory.get_item_id(InventoryType::EQUIPPED, base_slot);
+        if (itemid)
             look.add_equip(itemid);
-        }
         else
-        {
-            look.remove_equip(Equipslot::by_id(slot));
-        }
+            look.remove_equip(type);
+    }
+
+    void Player::refresh_equips()
+    {
+        for (auto slot : Equipslot::values)
+            if (slot != Equipslot::NONE && slot != Equipslot::TOP_DEFAULT && slot != Equipslot::BOTTOM_DEFAULT)
+                change_equip(slot);
     }
 
     void Player::use_item(int32_t itemid)

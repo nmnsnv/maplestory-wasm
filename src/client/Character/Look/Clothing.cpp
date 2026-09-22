@@ -117,6 +117,9 @@ namespace jrc
             break;
         }
 
+        if (eqslot == Equipslot::FACEACC)
+            load_face_accessory(src);
+
         for (auto iter : Stance::names)
         {
             Stance::Id stance = iter.first;
@@ -214,6 +217,76 @@ namespace jrc
             1002186
         };
         transparent = transparents.count(itemid) > 0;
+    }
+
+    void Clothing::load_face_accessory(nl::node source)
+    {
+        // Face accessories follow the face's expression timeline, not the body's
+        // movement poses. The default expression also omits the numbered frame node.
+        const auto load_frame = [this](Expression::Id expression, uint8_t frame, nl::node source_frame)
+        {
+            auto& parts = face_expressions[expression][frame];
+            for (auto part : source_frame)
+            {
+                if (part.data_type() != nl::node::type::bitmap)
+                    continue;
+
+                const std::string z = part["z"].get_string();
+                FaceLayer layer = FaceLayer::ABOVE_FACE;
+                if (z == "accessoryFaceBelowFace")
+                    layer = FaceLayer::BELOW_FACE;
+                else if (z == "accessoryFaceOverFaceBelowCap")
+                    layer = FaceLayer::ABOVE_FACE_BELOW_CAP;
+                else if (z == "accessoryFaceOverCap")
+                    layer = FaceLayer::ABOVE_CAP;
+
+                parts.push_back({layer, Texture(part)});
+                // CharLook supplies the moving head's brow anchor at draw time.
+                Point<int16_t> brow = part["map"]["brow"];
+                parts.back().texture.shift(-brow);
+            }
+        };
+
+        for (const auto expression : Expression::names)
+        {
+            nl::node expression_node = source[expression.second];
+            if (!expression_node)
+                continue;
+            if (expression.first == Expression::DEFAULT)
+            {
+                load_frame(expression.first, 0, expression_node);
+                continue;
+            }
+            for (uint16_t frame = 0; frame < 256; ++frame)
+            {
+                nl::node frame_node = expression_node[frame];
+                if (!frame_node)
+                    break;
+                load_frame(expression.first, static_cast<uint8_t>(frame), frame_node);
+            }
+        }
+    }
+
+    void Clothing::draw_face_accessory(Expression::Id expression, FaceLayer layer, uint8_t frame, const DrawArgument& args) const
+    {
+        auto expression_it = face_expressions.find(expression);
+        if (expression_it == face_expressions.end())
+            expression_it = face_expressions.find(Expression::DEFAULT);
+        if (expression_it == face_expressions.end())
+            return;
+
+        const auto& frames = expression_it->second;
+        auto frame_it = frames.find(frame);
+        // Static accessories must remain visible when a face has more animation frames.
+        // An explicitly present empty frame still means that the accessory is hidden.
+        if (frame_it == frames.end())
+            frame_it = frames.find(0);
+        if (frame_it == frames.end())
+            return;
+
+        for (const auto& part : frame_it->second)
+            if (part.layer == layer)
+                part.texture.draw(args);
     }
 
     void Clothing::draw(Stance::Id stance, Layer layer, uint8_t frame, const DrawArgument& args) const

@@ -17,7 +17,6 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "OutPacket.h"
 
-#include "Session.h"
 
 #include <chrono>
 
@@ -26,12 +25,6 @@ namespace jrc
     OutPacket::OutPacket(int16_t opcode)
     {
         write_short(opcode);
-    }
-
-    void OutPacket::dispatch()
-    {
-        Session::get().
-            write(bytes.data(), bytes.size());
     }
 
     void OutPacket::skip(size_t count)

@@ -102,16 +102,19 @@ namespace jrc
         return { stats, look, cid };
     }
 
-    StatsEntry LoginParser::parse_stats(InPacket& recv)
+    StatsEntry LoginParser::parse_stats(InPacket& recv, LookEntry* appearance)
     {
-        StatsEntry statsentry;
+        StatsEntry statsentry{};
 
         statsentry.name = recv.read_padded_string(13);
 
-        recv.read_bool(); // gender
-        recv.read_byte(); // skin
-        recv.read_int();  // face
-        recv.read_int();  // hair
+        LookEntry look{};
+        look.female = recv.read_bool();
+        look.skin = static_cast<uint8_t>(recv.read_byte());
+        look.faceid = recv.read_int();
+        look.hairid = recv.read_int();
+        if (appearance)
+            *appearance = look;
 
         for (size_t i = 0; i < 3; ++i)
         {

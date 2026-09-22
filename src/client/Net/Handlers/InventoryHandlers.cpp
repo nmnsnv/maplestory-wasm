@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "InventoryHandlers.h"
+#include "../../Gameplay/CashShop.h"
 
 #include "Helpers/ItemParser.h"
 
@@ -196,6 +197,7 @@ namespace jrc
             }
         }
 
+        ++CashShop::get().revision;
         Stage::get().get_player().recalc_stats(true);
         UI::get().enable();
 

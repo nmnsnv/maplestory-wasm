@@ -28,7 +28,7 @@
 #include "../../Gameplay/Stage.h"
 #include "../../Graphics/GraphicsGL.h"
 #include "../../IO/UI.h"
-#include "../../IO/UITypes/UICharSelect.h"
+#include "../../Gameplay/CashShop.h"
 #include "../../IO/Window.h"
 
 
@@ -82,44 +82,8 @@ namespace jrc
     {
         recv.skip(23);
 
-        int32_t cid = recv.read_int();
-
-        auto charselect = UI::get().get_element<UICharSelect>();
-        if (!charselect)
-        {
-            return;
-        }
-
-        const CharEntry& playerentry = charselect->get_character(cid);
-        if (playerentry.cid != cid)
-        {
-            return;
-        }
-
-        Stage::get().loadplayer(playerentry);
-
-        LoginParser::parse_stats(recv);
-
+        parse_character(recv);
         Player& player = Stage::get().get_player();
-
-        recv.read_byte(); // 'buddycap'
-        if (recv.read_bool())
-        {
-            recv.read_string(); // 'linkedname'
-        }
-
-        parse_inventory(recv, player.get_inventory());
-        parse_skillbook(recv, player.get_skills());
-        parse_cooldowns(recv, player);
-        parse_questlog(recv, player.get_quests());
-        parse_minigame(recv);
-        parse_ring1(recv);
-        parse_ring2(recv);
-        parse_ring3(recv);
-        parse_telerock(recv, player.get_telerock());
-        parse_monsterbook(recv, player.get_monsterbook());
-        parse_nyinfo(recv);
-        parse_areainfo(recv);
 
         if (recv.length() == 10)
         {
@@ -138,7 +102,35 @@ namespace jrc
 
         Sound(Sound::GAMESTART).play();
 
+        CashShop::get().closed();
         UI::get().change_state(UI::GAME);
+    }
+
+    void SetfieldHandler::parse_character(InPacket& recv) const
+    {
+        // SET_FIELD and SET_CASH_SHOP carry the same character body after different envelopes.
+        // Rebuild from that body so returning from Cash Shop never depends on the login UI.
+        CharEntry entry{};
+        entry.cid = recv.read_int();
+        entry.stats = LoginParser::parse_stats(recv, &entry.look);
+        Stage::get().loadplayer(entry);
+        Player& player = Stage::get().get_player();
+        recv.read_byte();
+        if (recv.read_bool())
+            recv.read_string();
+        parse_inventory(recv, player.get_inventory());
+        parse_skillbook(recv, player.get_skills());
+        parse_cooldowns(recv, player);
+        parse_questlog(recv, player.get_quests());
+        parse_minigame(recv);
+        parse_ring1(recv);
+        parse_ring2(recv);
+        parse_ring3(recv);
+        parse_telerock(recv, player.get_telerock());
+        parse_monsterbook(recv, player.get_monsterbook());
+        parse_nyinfo(recv);
+        parse_areainfo(recv);
+        player.refresh_equips();
     }
 
     void SetfieldHandler::parse_inventory(InPacket& recv, Inventory& invent) const
@@ -155,13 +147,14 @@ namespace jrc
         for (size_t i = 0; i < 3; ++i)
         {
             InventoryType::Id inv =
-                i == 0 ?
+                i < 2 ?
                     InventoryType::EQUIPPED :
                     InventoryType::EQUIP;
             int16_t pos = recv.read_short();
             while (pos != 0)
             {
-                int16_t slot = i == 1 ? -pos : pos;
+                // Cash-equipped positions are transmitted without their 100-slot offset.
+                int16_t slot = i == 1 ? pos + 100 : pos;
                 ItemParser::parse_item(recv, inv, slot, invent);
                 pos = recv.read_short();
             }
@@ -290,7 +283,7 @@ namespace jrc
         int16_t mgsize = recv.read_short();
         for (int16_t i = 0; i < mgsize; ++i)
         {
-            // TODO
+            recv.skip(20);
         }
     }
 
@@ -328,7 +321,12 @@ namespace jrc
         int16_t nysize = recv.read_short();
         for (int16_t i = 0; i < nysize; ++i)
         {
-            // TODO
+            recv.skip(8);
+            recv.read_string();
+            recv.skip(13);
+            recv.read_string();
+            recv.skip(10);
+            recv.read_string();
         }
     }
 

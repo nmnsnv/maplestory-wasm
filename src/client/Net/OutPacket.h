@@ -35,6 +35,7 @@ namespace jrc
         OutPacket(int16_t opcode);
 
         void dispatch();
+        const std::vector<int8_t>& data() const { return bytes; }
 
     protected:
         // Skip a number of bytes (filled with zeroes).

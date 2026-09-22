@@ -25,6 +25,7 @@
 #include "../../IO/UITypes/UIStatsInfo.h"
 #include "../../IO/UITypes/UISkillBook.h"
 #include "../../Net/Packets/GameplayPackets.h"
+#include "../../Gameplay/CashShop.h"
 
 namespace jrc
 {
@@ -60,6 +61,8 @@ namespace jrc
     {
         recv.read_bool(); // 'itemreaction'
         int32_t updatemask = recv.read_int();
+        if (updatemask == 0)
+            CashShop::get().entry_rejected();
 
         bool recalculate = false;
         for (auto iter : Maplestat::codes)

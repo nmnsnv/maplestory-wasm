@@ -70,8 +70,8 @@ namespace jrc
     class EquipItemPacket : public MoveItemPacket
     {
     public:
-        EquipItemPacket(int16_t src, Equipslot::Id dest)
-            : MoveItemPacket(InventoryType::EQUIP, src, -dest, 1) {}
+        EquipItemPacket(int16_t src, Equipslot::Id dest, bool cash = false)
+            : MoveItemPacket(InventoryType::EQUIP, src, -(dest + (cash ? 100 : 0)), 1) {}
     };
 
 

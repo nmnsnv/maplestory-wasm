@@ -18,6 +18,7 @@
 #include "PacketSwitch.h"
 
 #include "Handlers/CommonHandlers.h"
+#include "Handlers/CashShopHandlers.h"
 #include "Handlers/LoginHandlers.h"
 #include "Handlers/SetfieldHandlers.h"
 #include "Handlers/PlayerHandlers.h"
@@ -163,6 +164,11 @@ namespace jrc
     {
         // Common handlers
         emplace<PING, PingHandler>();
+
+        emplace<0x10, ChangeChannelHandler>();
+        emplace<0x7F, SetCashShopHandler>();
+        emplace<0x144, CashBalanceHandler>();
+        emplace<0x145, CashOperationHandler>();
 
         // Login handlers
         emplace<LOGIN_RESULT, LoginResultHandler>();

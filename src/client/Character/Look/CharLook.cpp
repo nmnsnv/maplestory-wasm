@@ -141,8 +141,10 @@ namespace jrc
             equips.draw(Equipslot::EARRINGS, interstance, Clothing::EARRINGS, interframe, args);
             body->draw(interstance, Body::HEAD, interframe, args);
             hair->draw(interstance, Hair::SHADE, interframe, args);
+            equips.draw_face_accessory(interexpression, Clothing::FaceLayer::BELOW_FACE, interexpframe, faceargs);
             face->draw(interexpression, interexpframe, faceargs);
-            equips.draw(Equipslot::FACEACC, interstance, Clothing::FACEACC, 0, faceargs);
+            equips.draw_face_accessory(interexpression, Clothing::FaceLayer::ABOVE_FACE_BELOW_CAP, interexpframe, faceargs);
+            equips.draw_face_accessory(interexpression, Clothing::FaceLayer::ABOVE_FACE, interexpframe, faceargs);
             equips.draw(Equipslot::EYEACC, interstance, Clothing::EYEACC, interframe, args);
             equips.draw(Equipslot::SHIELD, interstance, Clothing::SHIELD, interframe, args);
 
@@ -167,6 +169,7 @@ namespace jrc
                 break;
             }
 
+            equips.draw_face_accessory(interexpression, Clothing::FaceLayer::ABOVE_CAP, interexpframe, faceargs);
             equips.draw(Equipslot::WEAPON, interstance, Clothing::WEAPON_BELOW_ARM, interframe, args);
             bool twohanded = is_twohanded(interstance);
             if (twohanded)

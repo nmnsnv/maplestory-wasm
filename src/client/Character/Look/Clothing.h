@@ -18,6 +18,7 @@
 #pragma once
 #include "BodyDrawInfo.h"
 #include "EquipSlot.h"
+#include "Face.h"
 
 #include "../../Graphics/Texture.h"
 #include "../../Template/EnumMap.h"
@@ -45,11 +46,17 @@ namespace jrc
             NUM_LAYERS
         };
 
+        enum class FaceLayer
+        {
+            BELOW_FACE, ABOVE_FACE_BELOW_CAP, ABOVE_FACE, ABOVE_CAP
+        };
+
         // Construct a new equip.
         Clothing(int32_t itemid, const BodyDrawinfo& drawinfo);
 
         // Draw the equip.
         void draw(Stance::Id stance, Layer layer, uint8_t frame, const DrawArgument& args) const;
+        void draw_face_accessory(Expression::Id expression, FaceLayer layer, uint8_t frame, const DrawArgument& args) const;
         // Check if a part of the equip lies on the specified layer while in the specified stance.
         bool contains_layer(Stance::Id stance, Layer layer) const;
 
@@ -69,6 +76,14 @@ namespace jrc
         const std::string& get_vslot() const;
 
     private:
+        struct FacePart
+        {
+            FaceLayer layer;
+            Texture texture;
+        };
+        void load_face_accessory(nl::node source);
+
+        std::unordered_map<Expression::Id, std::unordered_map<uint8_t, std::vector<FacePart>>> face_expressions;
         EnumMap<Stance::Id, EnumMap<Layer, std::unordered_multimap<uint8_t, Texture>, NUM_LAYERS>> stances;
         int32_t itemid;
         Equipslot::Id eqslot;

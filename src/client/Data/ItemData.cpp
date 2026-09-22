@@ -57,6 +57,11 @@ namespace jrc
             category = "Cash";
             src = nl::nx::item["Cash"][strprefix + ".img"][strid]["info"];
             strsrc = nl::nx::string["Cash.img"][std::to_string(itemid)];
+            if (itemid / 10000 == 500)
+            {
+                src = nl::nx::item["Pet"][std::to_string(itemid) + ".img"]["info"];
+                strsrc = nl::nx::string["Pet.img"][std::to_string(itemid)];
+            }
             break;
         }
 

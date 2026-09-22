@@ -29,6 +29,7 @@
 
 #include <map>
 #include <unordered_map>
+#include <vector>
 
 namespace jrc
 {
@@ -107,6 +108,13 @@ namespace jrc
         // Return the id of an item. Returns 0 if the slot is empty.
         int32_t get_item_id(InventoryType::Id type, int16_t slot) const;
 
+        // Preserve server-issued identity across moves; local slot IDs are never sent to Cash Shop.
+        void set_cash_identity(InventoryType::Id type, int16_t slot, int64_t id, int64_t expiration);
+        int64_t get_cash_id(InventoryType::Id type, int16_t slot) const;
+        int64_t get_expiration(InventoryType::Id type, int16_t slot) const;
+        std::vector<int16_t> get_slots(InventoryType::Id type) const;
+        bool is_cash(InventoryType::Id type, int16_t slot) const;
+
         // Return a pointer to an equip.
         Optional<const Equip> get_equip(InventoryType::Id type, int16_t slot) const;
 
@@ -126,6 +134,8 @@ namespace jrc
             int32_t item_id;
             int16_t count;
             bool cash;
+            int64_t cash_id = 0;
+            int64_t expiration = 0;
         };
 
         EnumMap<InventoryType::Id, std::map<int16_t, Slot>> inventories;

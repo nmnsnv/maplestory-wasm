@@ -295,7 +295,7 @@ namespace jrc
 
             counter++;
         }
-        return counter < slotmaxima[type] ? counter : 0;
+        return counter <= slotmaxima[type] ? counter : 0;
     }
 
     int16_t Inventory::find_item(InventoryType::Id type, int32_t itemid) const
@@ -375,4 +375,40 @@ namespace jrc
             .print("Unknown move type: " + std::to_string(value));
         return MOVE_NONE;
     }
+    void Inventory::set_cash_identity(InventoryType::Id type, int16_t slot, int64_t id, int64_t expiration)
+    {
+        auto it = inventories[type].find(slot);
+        if (it != inventories[type].end())
+        {
+            it->second.cash_id = id;
+            it->second.expiration = expiration;
+        }
+    }
+
+    int64_t Inventory::get_cash_id(InventoryType::Id type, int16_t slot) const
+    {
+        auto it = inventories[type].find(slot);
+        return it == inventories[type].end() ? 0 : it->second.cash_id;
+    }
+
+    int64_t Inventory::get_expiration(InventoryType::Id type, int16_t slot) const
+    {
+        auto it = inventories[type].find(slot);
+        return it == inventories[type].end() ? 0 : it->second.expiration;
+    }
+
+    bool Inventory::is_cash(InventoryType::Id type, int16_t slot) const
+    {
+        auto it = inventories[type].find(slot);
+        return it != inventories[type].end() && it->second.cash;
+    }
+
+    std::vector<int16_t> Inventory::get_slots(InventoryType::Id type) const
+    {
+        std::vector<int16_t> slots;
+        for (const auto& entry : inventories[type])
+            slots.push_back(entry.first);
+        return slots;
+    }
+
 }

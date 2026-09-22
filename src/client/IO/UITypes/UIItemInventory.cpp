@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "UIItemInventory.h"
+#include "../../Gameplay/Stage.h"
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
@@ -238,7 +239,8 @@ namespace jrc
                 case InventoryType::EQUIP:
                     EquipItemPacket(
                         slot,
-                        inventory.find_equipslot(item_id)
+                        inventory.find_equipslot(item_id),
+                        inventory.is_cash(InventoryType::EQUIP, slot)
                     ).dispatch();
                     break;
                 case InventoryType::USE:
@@ -521,7 +523,7 @@ namespace jrc
         case InventoryType::EQUIP:
             if (eqsource == eqslot)
             {
-                EquipItemPacket(source, eqslot).dispatch();
+                EquipItemPacket(source, eqslot, Stage::get().get_player().get_inventory().is_cash(InventoryType::EQUIP, source)).dispatch();
             }
             break;
         case InventoryType::USE:

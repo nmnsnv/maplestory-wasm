@@ -77,6 +77,8 @@ namespace jrc
             WORLDMAP,
             QUESTLOG,
             QUESTTRACKER,
+            CASHSHOP,
+            CASHDIALOG,
             NUM_TYPES
         };
 
