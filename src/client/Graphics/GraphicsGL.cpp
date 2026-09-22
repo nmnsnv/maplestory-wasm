@@ -767,7 +767,8 @@ namespace jrc
 
 
     void GraphicsGL::drawtext(const DrawArgument& args, const std::string& text,
-        const Text::Layout& layout, Text::Font id, Text::Color colorid, Text::Background background) {
+        const Text::Layout& layout, Text::Font id, Text::Color colorid, Text::Background background,
+        const Range<int16_t>* vertical) {
 
         if (locked)
         {
@@ -801,6 +802,13 @@ namespace jrc
                 GLshort bottom = top + h - 2;
                 Color ntcolor{ 0.0f, 0.0f, 0.0f, 0.6f };
 
+                if (vertical)
+                {
+                    top = std::max<GLshort>(top, vertical->first());
+                    bottom = std::min<GLshort>(bottom, vertical->second());
+                    if (top >= bottom)
+                        continue;
+                }
                 quads.emplace_back(left, right, top, bottom, nulloffset, ntcolor, 0.0f);
                 quads.emplace_back(left - 1, left, top + 1, bottom - 1, nulloffset, ntcolor, 0.0f);
                 quads.emplace_back(right, right + 1, top + 1, bottom - 1, nulloffset, ntcolor, 0.0f);
@@ -868,7 +876,19 @@ namespace jrc
                         continue;
                     }
 
-                    quads.emplace_back(chx, chx + chw, chy, chy + chh, ch.offset, abscolor, 0.0f);
+                    GLshort bottom = chy + chh;
+                    Offset glyph = ch.offset;
+                    if (vertical)
+                    {
+                        GLshort top = std::max<GLshort>(chy, vertical->first());
+                        bottom = std::min<GLshort>(bottom, vertical->second());
+                        if (top >= bottom)
+                            continue;
+                        glyph.t += top - chy;
+                        glyph.b -= chy + chh - bottom;
+                        chy = top;
+                    }
+                    quads.emplace_back(chx, chx + chw, chy, bottom, glyph, abscolor, 0.0f);
                 }
             }
         }

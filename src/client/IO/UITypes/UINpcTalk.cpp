@@ -366,7 +366,8 @@ namespace jrc
         int16_t text_y = static_cast<int16_t>(get_dialogue_text_y() - scroll_offset);
         if (text_y + text.height() > content_top && text_y < content_bottom)
         {
-            text.draw(position + Point<int16_t>(DIALOG_TEXT_X, text_y));
+            text.draw_clipped(position + Point<int16_t>(DIALOG_TEXT_X, text_y),
+                {static_cast<int16_t>(position.y() + content_top), static_cast<int16_t>(position.y() + content_bottom)});
         }
 
         if (!selection_labels.empty())
@@ -379,9 +380,10 @@ namespace jrc
                 // Only draw options within visible content area.
                 if (option_y + option_label.height() > content_top && option_y < content_bottom)
                 {
-                    option_label.draw(position + Point<int16_t>(DIALOG_TEXT_X, option_y));
+                    option_label.draw_clipped(position + Point<int16_t>(DIALOG_TEXT_X, option_y),
+                        {static_cast<int16_t>(position.y() + content_top), static_cast<int16_t>(position.y() + content_bottom)});
 
-                    if (static_cast<int32_t>(i) == hovered_selection)
+                    if (static_cast<int32_t>(i) == hovered_selection && option_y + option_label.height() < content_bottom)
                     {
                         int16_t underline_width = std::min<int16_t>(
                             TEXT_WIDTH,

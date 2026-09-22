@@ -31,7 +31,7 @@ namespace jrc
         start = { x, vertical.first() };
         end = { x, vertical.second() };
 
-        nl::node src = nl::nx::ui["Basic.img"]["VScr" + std::to_string(type)];
+        nl::node src = nl::nx::ui["Basic.img"][type == 0 ? "VScr" : "VScr" + std::to_string(type)];
 
         nl::node dsrc = src["disabled"];
 
@@ -73,7 +73,7 @@ namespace jrc
         rowmax = rm - ur;
         if (rowmax > 0)
         {
-            rowheight = (vertical.length() - buttonheight * 2) / rowmax;
+            rowheight = static_cast<double>(vertical.length() - buttonheight * 2) / rowmax;
         }
         else
         {
@@ -96,7 +96,7 @@ namespace jrc
         next.set_position(end);
         if (rowmax > 0)
         {
-            rowheight = (vertical.length() - buttonheight * 2) / rowmax;
+            rowheight = static_cast<double>(vertical.length() - buttonheight * 2) / rowmax;
         }
         else
         {
@@ -121,8 +121,8 @@ namespace jrc
         else
         {
             dbase.draw({ position + start, fill });
-            dprev.draw({ position });
-            dnext.draw({ position });
+            dprev.draw({ position + start });
+            dnext.draw({ position + end });
         }
     }
 
@@ -143,20 +143,21 @@ namespace jrc
 
     Point<int16_t> Slider::getthumbpos() const
     {
-        int16_t y = row < rowmax ?
-            vertical.first() + row * rowheight + buttonheight
-            : vertical.second() - buttonheight * 2 - 2;
+        int16_t y = static_cast<int16_t>(vertical.first() + row * rowheight + buttonheight);
         return{ x, y };
     }
 
     Cursor::State Slider::send_cursor(Point<int16_t> cursor, bool pressed)
     {
+        // An empty list has no thumb or track position to divide by.
+        if (!enabled || rowmax <= 0)
+            return Cursor::IDLE;
         Point<int16_t> relative = cursor - start;
         if (scrolling)
         {
             if (pressed)
             {
-                int16_t thumby = row * rowheight + buttonheight * 2;
+                int16_t thumby = static_cast<int16_t>(row * rowheight + buttonheight + thumb.height() / 2);
                 int16_t delta = relative.y() - thumby;
                 if (delta > rowheight / 2 && row < rowmax)
                 {
@@ -175,7 +176,8 @@ namespace jrc
                 scrolling = false;
             }
         }
-        else if (relative.x() < 0 || relative.y() < 0 || relative.x() > 8 || relative.y() > vertical.second())
+        else if (relative.x() < 0 || relative.y() < 0 ||
+            relative.x() > next.width() || relative.y() > vertical.length() + buttonheight)
         {
             thumb.set_state(Button::NORMAL);
             next.set_state(Button::NORMAL);
@@ -253,7 +255,7 @@ namespace jrc
 
         if (pressed)
         {
-            auto yoffset = static_cast<double>(relative.y() - buttonheight * 2);
+            auto yoffset = static_cast<double>(relative.y() - buttonheight - thumb.height() / 2);
             auto cursorrow = static_cast<int16_t>(std::round(yoffset / rowheight));
             if (cursorrow < 0)
                 cursorrow = 0;
@@ -271,6 +273,7 @@ namespace jrc
                 onmoved(false);
             }
             row = cursorrow;
+            return Cursor::CLICKING;
         }
 
         return Cursor::IDLE;

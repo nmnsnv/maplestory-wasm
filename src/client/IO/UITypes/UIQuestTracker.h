@@ -1,35 +1,16 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "../UIElement.h"
-
 #include "../../Character/QuestLog.h"
-#include "../../Graphics/Geometry.h"
 #include "../../Graphics/Text.h"
+#include "../../Graphics/Texture.h"
 
+#include <set>
 #include <vector>
 
 namespace jrc
 {
     class Inventory;
 
-    // A persistent overlay anchored to the right of the screen that lists the
-    // player's in-progress quests and their hunting and gathering progress.
     class UIQuestTracker : public UIElement
     {
     public:
@@ -38,44 +19,47 @@ namespace jrc
         static constexpr bool TOGGLED = false;
 
         UIQuestTracker(const Inventory& inventory, const Questlog& questlog);
-
         void draw(float inter) const override;
         void update_screen(int16_t new_width, int16_t new_height) override;
-
-        // Never intercept the cursor so gameplay clicks pass through.
         bool is_in_range(Point<int16_t> cursorpos) const override;
-
         UIElement::Type get_type() const override;
-
-        // Rebuild the tracked quest list after the questlog changed.
         void refresh();
+        void toggle_quest(int16_t qid);
+
+    protected:
+        Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        enum Buttons : uint16_t { BT_JOURNAL, BT_AUTO, BT_MIN, BT_MAX, BT_QUEST0 };
         struct TrackedQuest
         {
+            int16_t qid;
             Text title;
-            std::vector<Text> lines;
+            Text objectives;
             int16_t height;
         };
-
         void reanchor();
+        void open_journal(int16_t qid);
 
-        static constexpr int16_t PANEL_WIDTH = 200;
-        static constexpr int16_t LINE_HEIGHT = 16;
-        static constexpr int16_t TITLE_HEIGHT = 18;
-        static constexpr int16_t BLOCK_GAP = 8;
-        static constexpr int16_t TOP_MARGIN = 100;
+        static constexpr int16_t PANEL_WIDTH = 223;
+        static constexpr int16_t TOP_MARGIN = 90;
         static constexpr int16_t RIGHT_MARGIN = 8;
         static constexpr size_t MAX_TRACKED = 5;
-        static constexpr size_t MAX_LINES = 4;
 
         const Inventory& inventory;
         const Questlog& questlog;
-
         int16_t screen_width;
         int16_t screen_height;
-
-        Text header;
+        bool minimized = false;
+        int16_t body_height = 0;
+        std::set<int16_t> excluded;
+        std::vector<int16_t> preferred;
         std::vector<TrackedQuest> tracked;
+        Texture top;
+        Texture center;
+        Texture bottom;
+        Text header;
+        Text empty;
+        Text more;
     };
 }

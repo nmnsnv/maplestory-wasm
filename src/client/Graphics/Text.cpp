@@ -74,6 +74,11 @@ namespace jrc
             .drawtext(args, text, layout, font, color, background);
     }
 
+    void Text::draw_clipped(const DrawArgument& args, Range<int16_t> vertical) const
+    {
+        GraphicsGL::get().drawtext(args, text, layout, font, color, background, &vertical);
+    }
+
     uint16_t Text::advance(size_t pos) const
     {
         return layout.advance(pos);

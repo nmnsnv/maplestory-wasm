@@ -1,484 +1,406 @@
-//////////////////////////////////////////////////////////////////////////////
-// This file is part of the Journey MMORPG client                           //
-// Copyright © 2015-2016 Daniel Allendorf                                   //
-//                                                                          //
-// This program is free software: you can redistribute it and/or modify     //
-// it under the terms of the GNU Affero General Public License as           //
-// published by the Free Software Foundation, either version 3 of the       //
-// License, or (at your option) any later version.                          //
-//                                                                          //
-// This program is distributed in the hope that it will be useful,          //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of           //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            //
-// GNU Affero General Public License for more details.                      //
-//                                                                          //
-// You should have received a copy of the GNU Affero General Public License //
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
-//////////////////////////////////////////////////////////////////////////////
 #include "UIQuestLog.h"
 
+#include "UIQuestTracker.h"
+#include "UINotice.h"
+#include "../UI.h"
 #include "../Components/AreaButton.h"
 #include "../Components/MapleButton.h"
-#include "../Components/TwoSpriteButton.h"
-
+#include "../Components/QuestText.h"
 #include "../../Character/CharStats.h"
 #include "../../Character/Inventory/Inventory.h"
-#include "../../Data/ItemData.h"
+#include "../../Constants.h"
 #include "../../Data/QuestData.h"
+#include "../../Graphics/GraphicsGL.h"
 #include "../../Net/Packets/QuestPackets.h"
-
 #include "nlnx/nx.hpp"
 #include "nlnx/node.hpp"
+
+#include <algorithm>
+#include <map>
 
 namespace jrc
 {
     namespace
     {
-        // At most this many startable quests are listed in the available tab.
-        constexpr size_t MAX_AVAILABLE = 100;
-
-        std::string mob_name(int32_t id)
+        Text row_label(std::string name, Text::Color color, int16_t width)
         {
-            std::string name = nl::nx::string["Mob.img"][std::to_string(id)]["name"].get_string();
-            return name.empty() ? ("Monster " + std::to_string(id)) : name;
+            Text label(Text::A11M, Text::LEFT, color, name, 0, false);
+            // List rows stay one line; the details pane contains the full title.
+            while (label.width() > width && !name.empty())
+            {
+                name.pop_back();
+                label.change_text(name + "...");
+            }
+            return label;
+        }
+
+        void fill(Point<int16_t> pos, int16_t width, int16_t height, float r, float g, float b)
+        {
+            GraphicsGL::get().drawrectangle(pos.x(), pos.y(), width, height, r, g, b, 1.0f);
         }
     }
 
     UIQuestLog::UIQuestLog(const CharStats& in_stats, const Inventory& in_inventory, const Questlog& in_questlog)
-        : UIDragElement({ WIDTH, 26 }),
-          stats(in_stats),
-          inventory(in_inventory),
-          questlog(in_questlog),
-          tab(TAB_IN_PROGRESS),
-          offset(0),
-          selected(-1)
+        : UIDragElement({WIDTH, 20}), stats(in_stats), inventory(in_inventory), questlog(in_questlog)
     {
-        nl::node quest = nl::nx::ui["UIWindow2.img"]["Quest"];
-        nl::node list = quest["list"];
-        nl::node info = quest["quest_info"];
-        nl::node backgrnd = list["backgrnd"];
-
-        has_assets = static_cast<bool>(backgrnd);
-
-        if (has_assets)
+        nl::node quest = nl::nx::ui["UIWindow.img"]["Quest"];
+        nl::node basic = nl::nx::ui["Basic.img"];
+        list_background = quest["backgrnd"];
+        detail_background = quest["backgrnd2"];
+        for (uint16_t i = 0; i < NUM_TABS; ++i)
         {
-            sprites.emplace_back(backgrnd);
-            sprites.emplace_back(list["backgrnd2"]);
-
-            notice[TAB_AVAILABLE] = list["notice0"];
-            notice[TAB_IN_PROGRESS] = list["notice1"];
-            notice[TAB_COMPLETED] = list["notice2"];
-
-            nl::node taben = list["Tab"]["enabled"];
-            nl::node tabdis = list["Tab"]["disabled"];
-            for (uint16_t i = 0; i < NUM_TABS; ++i)
-            {
-                buttons[BT_TAB0 + i] = std::make_unique<TwoSpriteButton>(
-                    tabdis[std::to_string(i)], taben[std::to_string(i)]
-                );
-            }
-
-            dimension = Texture(backgrnd).get_dimensions();
+            notices[i] = quest["notice" + std::to_string(i)];
+            tab_labels[i] = quest["Tab"]["enabled"][std::to_string(i)];
+            buttons[BT_TAB0 + i] = std::make_unique<AreaButton>(
+                Point<int16_t>(5 + 65 * i, 22), Point<int16_t>(64, 21));
         }
-        else
+        for (size_t i = 0; i < 2; ++i)
         {
-            background = { WIDTH, HEIGHT, Geometry::BLACK, 0.85f };
-            header = { WIDTH, 26, Geometry::WHITE, 0.12f };
-            tab_active = { static_cast<int16_t>(WIDTH / NUM_TABS), TAB_HEIGHT, Geometry::WHITE, 0.18f };
-
-            title = { Text::A12B, Text::LEFT, Text::WHITE, "Quest Log" };
-            tab_labels[TAB_AVAILABLE] = { Text::A11M, Text::CENTER, Text::WHITE, "Available" };
-            tab_labels[TAB_IN_PROGRESS] = { Text::A11M, Text::CENTER, Text::WHITE, "In Progress" };
-            tab_labels[TAB_COMPLETED] = { Text::A11M, Text::CENTER, Text::WHITE, "Completed" };
-
-            int16_t tab_width = WIDTH / NUM_TABS;
-            for (uint16_t i = 0; i < NUM_TABS; ++i)
-            {
-                buttons[BT_TAB0 + i] = std::make_unique<AreaButton>(
-                    Point<int16_t>(static_cast<int16_t>(i * tab_width), TAB_TOP),
-                    Point<int16_t>(tab_width, TAB_HEIGHT)
-                );
-            }
-
-            dimension = { WIDTH, HEIGHT };
+            std::string state = std::to_string(i);
+            tab_left[i] = basic["Tab3"]["left" + state];
+            tab_fill[i] = basic["Tab3"]["fill" + state];
+            tab_right[i] = basic["Tab3"]["right" + state];
         }
-
-        row_highlight = { static_cast<int16_t>(dimension.x() - 24), ROW_HEIGHT, Geometry::WHITE, has_assets ? 0.25f : 0.15f };
-
-        buttons[BT_CLOSE] = std::make_unique<MapleButton>(
-            nl::nx::ui["Basic.img"]["BtClose3"],
-            Point<int16_t>(static_cast<int16_t>(dimension.x() - 20), 6)
-        );
-
-        nl::node giveup = info["BtGiveup"];
-        if (giveup)
-        {
-            buttons[BT_FORFEIT] = std::make_unique<MapleButton>(
-                giveup,
-                Point<int16_t>(static_cast<int16_t>(dimension.x() / 2 - 30), static_cast<int16_t>(dimension.y() - 32))
-            );
-        }
-        else
-        {
-            forfeit_box = { 80, 20, Geometry::WHITE, 0.18f };
-            forfeit_label = { Text::A11M, Text::CENTER, Text::WHITE, "Forfeit" };
-            buttons[BT_FORFEIT] = std::make_unique<AreaButton>(
-                Point<int16_t>(static_cast<int16_t>(dimension.x() / 2 - 40), static_cast<int16_t>(dimension.y() - 32)),
-                Point<int16_t>(80, 20)
-            );
-        }
-
+        buttons[BT_CLOSE] = std::make_unique<MapleButton>(basic["BtClose"], WIDTH - 18, 6);
+        buttons[BT_DETAIL_CLOSE] = std::make_unique<MapleButton>(basic["BtMin"], WIDTH + DETAIL_WIDTH - 18, 6);
+        buttons[BT_FORFEIT] = std::make_unique<MapleButton>(quest["BtGiveup"], WIDTH + 243, 373);
+        buttons[BT_HELPER] = std::make_unique<MapleButton>(quest["BtAlert"], WIDTH + 151, 373);
         for (int16_t i = 0; i < ROWS; ++i)
-        {
             buttons[BT_ROW0 + i] = std::make_unique<AreaButton>(
-                Point<int16_t>(12, static_cast<int16_t>(LIST_TOP + i * ROW_HEIGHT)),
-                Point<int16_t>(static_cast<int16_t>(dimension.x() - 24), ROW_HEIGHT)
-            );
-        }
+                Point<int16_t>(8, LIST_TOP + i * ROW_HEIGHT), Point<int16_t>(210, ROW_HEIGHT));
 
-        empty_label = { Text::A11M, Text::CENTER, Text::LIGHTGREY, "", static_cast<uint16_t>(dimension.x() - 24) };
-
+        list_slider = {0, {48, 349}, 227, ROWS, 0, [this](bool up) {
+            offset += up ? -1 : 1;
+            update_rows();
+        }};
+        detail_slider = {0, {125, 349}, WIDTH + 287, 1, 0, [this](bool up) {
+            detail_offset += up ? -1 : 1;
+        }};
+        count_label = {Text::A11M, Text::LEFT, Text::DARKGREY};
         change_tab(TAB_IN_PROGRESS);
+        clamp_position();
     }
 
     void UIQuestLog::draw(float inter) const
     {
-        if (has_assets)
+        list_background.draw(position);
+        for (uint16_t i = 0; i < NUM_TABS; ++i)
         {
-            draw_sprites(inter);
+            const size_t state = i == tab ? 1 : 0;
+            Point<int16_t> pos = position + Point<int16_t>(5 + 65 * i, 22);
+            tab_left[state].draw(pos);
+            tab_fill[state].draw({pos + Point<int16_t>(tab_left[state].width(), 0),
+                Point<int16_t>(64 - tab_left[state].width() - tab_right[state].width(), tab_fill[state].height())});
+            tab_right[state].draw(pos + Point<int16_t>(64 - tab_right[state].width(), 0));
+            tab_labels[i].draw(pos + Point<int16_t>((64 - tab_labels[i].width()) / 2, 4));
         }
-        else
-        {
-            background.draw(position);
-            header.draw(position);
-            title.draw(position + Point<int16_t>(12, 5));
-
-            int16_t tab_width = WIDTH / NUM_TABS;
-            for (uint16_t i = 0; i < NUM_TABS; ++i)
-            {
-                Point<int16_t> tab_pos = position + Point<int16_t>(static_cast<int16_t>(i * tab_width), TAB_TOP);
-                if (i == tab)
-                {
-                    tab_active.draw(tab_pos);
-                }
-                tab_labels[i].draw(tab_pos + Point<int16_t>(static_cast<int16_t>(tab_width / 2), 3));
-            }
-        }
-
         if (entries.empty())
+            notices[tab].draw(position + Point<int16_t>((WIDTH - notices[tab].width()) / 2, 180));
+
+        for (int16_t i = 0; i < ROWS && offset + i < static_cast<int16_t>(rows.size()); ++i)
         {
-            if (has_assets && notice[tab].is_valid())
+            const auto& row = rows[offset + i];
+            Point<int16_t> pos = position + Point<int16_t>(8, LIST_TOP + i * ROW_HEIGHT);
+            if (row.qid < 0)
             {
-                // Center the notice in the list area. Adding the texture's own
-                // origin cancels the origin that Texture::draw subtracts, so the
-                // top-left lands exactly at the desired point.
-                Point<int16_t> ndim = notice[tab].get_dimensions();
-                int16_t mid_y = static_cast<int16_t>((LIST_TOP + dimension.y() - 20) / 2 - ndim.y() / 2);
-                Point<int16_t> desired = position + Point<int16_t>(
-                    static_cast<int16_t>((dimension.x() - ndim.x()) / 2),
-                    mid_y
-                );
-                notice[tab].draw(desired + notice[tab].get_origin());
+                fill(pos, 210, 19, 0.60f, 0.73f, 0.79f);
+                fill(pos + Point<int16_t>(3, 4), 11, 11, 0.22f, 0.52f, 0.67f);
+                fill(pos + Point<int16_t>(5, 9), 7, 1, 1, 1, 1);
+                if (collapsed.count(row.category))
+                    fill(pos + Point<int16_t>(8, 6), 1, 7, 1, 1, 1);
             }
             else
             {
-                empty_label.draw(position + Point<int16_t>(dimension.x() / 2, LIST_TOP + 60));
+                if (row.qid == selected)
+                    fill(pos + Point<int16_t>(16, 0), 194, 19, 0.20f, 0.40f, 0.60f);
+                row.icon.draw(pos + Point<int16_t>(2, 3));
             }
+            row.label.draw(pos + Point<int16_t>(18, 1));
         }
-        else
+        list_slider.draw(position);
+        count_label.draw(position + Point<int16_t>(10, 373));
+
+        if (selected >= 0)
         {
-            for (int16_t i = 0; i < ROWS; ++i)
+            Point<int16_t> detail = position + Point<int16_t>(WIDTH, 0);
+            detail_background.draw(detail);
+            detail_name.draw_clipped(detail + Point<int16_t>(28, 34), {static_cast<int16_t>(detail.y() + 31), static_cast<int16_t>(detail.y() + 83)});
+            detail_level.draw(detail + Point<int16_t>(28, 87));
+            npc_label.draw(detail + Point<int16_t>(238, 103));
+            if (npc.is_valid())
             {
-                int16_t index = offset + i;
-                if (index >= static_cast<int16_t>(entries.size()))
-                {
-                    break;
-                }
-
-                Point<int16_t> row_pos = position + Point<int16_t>(12, static_cast<int16_t>(LIST_TOP + i * ROW_HEIGHT));
-                if (entries[index] == selected)
-                {
-                    row_highlight.draw(row_pos);
-                }
-
-                entry_labels[index].draw(row_pos + Point<int16_t>(8, 1));
+                float scale = std::min({1.0f, 82.0f / npc.width(), 70.0f / npc.height()});
+                npc.draw({detail + Point<int16_t>(static_cast<int16_t>(238 - npc.width() * scale / 2),
+                    static_cast<int16_t>(100 - npc.height() * scale)), scale, scale});
             }
+            detail_body.draw_clipped(detail + Point<int16_t>(18, DETAIL_TOP - detail_offset * SCROLL_STEP),
+                {static_cast<int16_t>(position.y() + DETAIL_TOP), static_cast<int16_t>(position.y() + DETAIL_BOTTOM)});
+            detail_slider.draw(position);
         }
-
-        draw_detail(inter);
-
         draw_buttons(inter);
-    }
-
-    void UIQuestLog::draw_detail(float) const
-    {
-        if (selected < 0)
-        {
-            return;
-        }
-
-        detail_name.draw(position + Point<int16_t>(16, DETAIL_TOP));
-        detail_desc.draw(position + Point<int16_t>(16, DETAIL_TOP + 20));
-
-        for (size_t i = 0; i < req_lines.size(); ++i)
-        {
-            req_lines[i].draw(position + Point<int16_t>(20, static_cast<int16_t>(DETAIL_TOP + 78 + i * 16)));
-        }
-
-        if (!has_assets && tab == TAB_IN_PROGRESS && selected >= 0)
-        {
-            forfeit_box.draw(position + Point<int16_t>(dimension.x() / 2 - 40, dimension.y() - 32));
-            forfeit_label.draw(position + Point<int16_t>(dimension.x() / 2, dimension.y() - 29));
-        }
     }
 
     void UIQuestLog::send_key(int32_t, bool pressed, bool escape)
     {
         if (pressed && escape)
-        {
             deactivate();
-        }
     }
 
     void UIQuestLog::send_scroll(double yoffset)
     {
-        int16_t count = static_cast<int16_t>(entries.size());
-        if (count <= ROWS)
-        {
-            return;
-        }
-
-        int16_t shift = yoffset > 0 ? -1 : 1;
-        int16_t max_offset = count - ROWS;
-        int16_t new_offset = offset + shift;
-        if (new_offset < 0)
-        {
-            new_offset = 0;
-        }
-        else if (new_offset > max_offset)
-        {
-            new_offset = max_offset;
-        }
-
-        offset = new_offset;
-        update_rows();
+        if (over_detail && selected >= 0)
+            detail_slider.send_scroll(yoffset);
+        else
+            list_slider.send_scroll(yoffset);
     }
 
-    UIElement::Type UIQuestLog::get_type() const
+    UIElement::CursorResult UIQuestLog::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        return TYPE;
+        if (dragged)
+            return UIDragElement::send_cursor(clicked, cursorpos);
+        Point<int16_t> relative = cursorpos - position;
+        over_detail = relative.x() >= WIDTH;
+        Slider& slider = over_detail && selected >= 0 ? detail_slider : list_slider;
+        if (Cursor::State state = slider.send_cursor(relative, clicked))
+            return {state, true};
+        return UIDragElement::send_cursor(clicked, cursorpos);
     }
+
+    bool UIQuestLog::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    {
+        bool moved = UIDragElement::remove_cursor(clicked, cursorpos);
+        bool list = list_slider.remove_cursor(clicked);
+        bool detail = detail_slider.remove_cursor(clicked);
+        return moved || list || detail;
+    }
+
+    void UIQuestLog::update_screen(int16_t, int16_t)
+    {
+        clamp_position();
+    }
+
+    void UIQuestLog::clamp_position()
+    {
+        position.set_x(std::clamp<int16_t>(position.x(), 0, std::max<int16_t>(0, Constants::viewwidth() - dimension.x())));
+        position.set_y(std::clamp<int16_t>(position.y(), 0, std::max<int16_t>(0, Constants::viewheight() - HEIGHT - 30)));
+    }
+
+    UIElement::Type UIQuestLog::get_type() const { return TYPE; }
 
     void UIQuestLog::refresh()
     {
-        int16_t previous = selected;
         rebuild_entries();
-
-        bool still_present = false;
-        for (int16_t qid : entries)
-        {
-            if (qid == previous)
-            {
-                still_present = true;
-                break;
-            }
-        }
-        selected = still_present ? previous : -1;
-
-        int16_t count = static_cast<int16_t>(entries.size());
-        int16_t max_offset = count > ROWS ? count - ROWS : 0;
-        if (offset > max_offset)
-        {
-            offset = max_offset;
-        }
-
+        if (std::find(entries.begin(), entries.end(), selected) == entries.end())
+            selected = -1;
+        build_rows();
         build_detail();
         update_rows();
+    }
+
+    void UIQuestLog::show_quest(int16_t qid)
+    {
+        change_tab(questlog.is_active(qid) ? TAB_IN_PROGRESS : questlog.is_completed(qid) ? TAB_COMPLETED : TAB_AVAILABLE);
+        if (std::find(entries.begin(), entries.end(), qid) == entries.end())
+            return;
+        selected = qid;
+        collapsed.erase(QuestText::category(qid));
+        build_rows();
+        for (size_t i = 0; i < rows.size(); ++i)
+            if (rows[i].qid == qid)
+                offset = static_cast<int16_t>(i);
+        build_detail();
+        update_rows();
+        makeactive();
+        clamp_position();
     }
 
     Button::State UIQuestLog::button_pressed(uint16_t id)
     {
         switch (id)
         {
-        case BT_CLOSE:
-            deactivate();
-            return Button::NORMAL;
-        case BT_TAB0:
-        case BT_TAB1:
-        case BT_TAB2:
-            change_tab(id - BT_TAB0);
-            return has_assets ? Button::PRESSED : Button::NORMAL;
+        case BT_CLOSE: deactivate(); break;
+        case BT_DETAIL_CLOSE:
+            selected = -1;
+            build_rows();
+            update_rows();
+            break;
+        case BT_TAB0: case BT_TAB1: case BT_TAB2: change_tab(id - BT_TAB0); break;
         case BT_FORFEIT:
-            if (tab == TAB_IN_PROGRESS && selected >= 0)
+            if (selected >= 0 && questlog.is_active(selected))
             {
-                ForfeitQuestPacket(selected).dispatch();
+                const int16_t qid = selected;
+                UI::get().emplace<UIYesNo>("Forfeit this quest? Your progress will be lost.", [qid](bool yes) {
+                    if (yes)
+                        ForfeitQuestPacket(qid).dispatch();
+                });
             }
-            return Button::NORMAL;
+            break;
+        case BT_HELPER:
+            if (auto tracker = UI::get().get_element<UIQuestTracker>())
+                tracker->toggle_quest(selected);
+            break;
         default:
             if (id >= BT_ROW0)
-            {
                 select_row(id - BT_ROW0);
-            }
-            return Button::NORMAL;
+            break;
         }
+        return Button::NORMAL;
     }
 
     void UIQuestLog::change_tab(uint16_t new_tab)
     {
-        if (has_assets)
-        {
-            buttons[BT_TAB0 + tab]->set_state(Button::NORMAL);
-            buttons[BT_TAB0 + new_tab]->set_state(Button::PRESSED);
-        }
-
         tab = new_tab;
         offset = 0;
         selected = -1;
-        rebuild_entries();
-        build_detail();
-        update_rows();
+        detail_offset = 0;
+        refresh();
     }
 
     void UIQuestLog::rebuild_entries()
     {
-        entries.clear();
-        entry_labels.clear();
-
-        switch (tab)
+        std::set<int16_t> ids;
+        if (tab == TAB_IN_PROGRESS)
         {
-        case TAB_IN_PROGRESS:
-            for (const auto& entry : questlog.get_started())
-            {
-                entries.push_back(entry.first);
-            }
-            for (const auto& entry : questlog.get_in_progress())
-            {
-                entries.push_back(entry.first);
-            }
-            empty_label.change_text("No quests in progress.");
-            break;
-        case TAB_COMPLETED:
-            for (const auto& entry : questlog.get_completed())
-            {
-                entries.push_back(entry.first);
-            }
-            empty_label.change_text("No completed quests yet.");
-            break;
-        default:
+            for (const auto& entry : questlog.get_started()) ids.insert(entry.first);
+            for (const auto& entry : questlog.get_in_progress()) ids.insert(entry.first);
+        }
+        else if (tab == TAB_COMPLETED)
         {
-            uint16_t level = stats.get_stat(Maplestat::LEVEL);
-            uint16_t job_id = stats.get_job().get_id();
+            for (const auto& entry : questlog.get_completed()) ids.insert(entry.first);
+        }
+        else
+        {
             for (int32_t qid : QuestData::all_quests())
             {
-                if (entries.size() >= MAX_AVAILABLE)
-                {
-                    break;
-                }
-
-                // Only quests handed out by an npc can be accepted by
-                // talking to one; auto-started quests are not listed.
-                if (QuestData::get(qid).get_start_npc() <= 0)
-                {
-                    continue;
-                }
-
-                int16_t qid16 = static_cast<int16_t>(qid);
-                if (questlog.get_eligibility(qid16, true, level, job_id, inventory, stats.get_mapid())
-                    != Questlog::Eligibility::UNAVAILABLE)
-                {
-                    entries.push_back(qid16);
-                }
+                const auto& data = QuestData::get(qid);
+                if (data.get_start_npc() > 0 && questlog.get_eligibility(static_cast<int16_t>(qid), true,
+                    stats.get_stat(Maplestat::LEVEL), stats.get_job().get_id(), inventory, stats.get_mapid()) != Questlog::Eligibility::UNAVAILABLE)
+                    ids.insert(static_cast<int16_t>(qid));
             }
-            empty_label.change_text("Quests are offered by NPCs. Talk to them to begin an adventure.");
-            break;
         }
-        }
+        entries.assign(ids.begin(), ids.end());
+        count_label.change_text(std::to_string(entries.size()) + (entries.size() == 1 ? " quest" : " quests"));
+    }
 
-        Text::Color color = has_assets ? Text::DARKGREY : Text::WHITE;
-        for (int16_t qid : entries)
+    void UIQuestLog::build_rows()
+    {
+        rows.clear();
+        std::map<std::string, std::vector<int16_t>> groups;
+        for (int16_t qid : entries) groups[QuestText::category(qid)].push_back(qid);
+        const auto art = nl::nx::ui["UIWindow.img"]["Quest"];
+        for (auto& group : groups)
         {
-            const QuestData& data = QuestData::get(qid);
-            std::string name = data.is_valid() ? data.get_name() : ("Quest " + std::to_string(qid));
-            entry_labels.emplace_back(Text::A11M, Text::LEFT, color, name, static_cast<uint16_t>(dimension.x() - 32));
+            auto& quests = group.second;
+            std::sort(quests.begin(), quests.end(), [](int16_t a, int16_t b) {
+                return QuestData::get(a).get_name() < QuestData::get(b).get_name();
+            });
+            rows.push_back({-1, group.first, row_label(group.first + " (" + std::to_string(quests.size()) + ")", Text::WHITE, 189), {}});
+            if (collapsed.count(group.first)) continue;
+            for (int16_t qid : quests)
+            {
+                const auto& data = QuestData::get(qid);
+                nl::node icon = art[tab == TAB_AVAILABLE ? "icon0" : tab == TAB_COMPLETED ? "icon4" : "icon2"];
+                if (tab == TAB_IN_PROGRESS)
+                {
+                    bool ready = questlog.get_eligibility(qid, false, stats.get_stat(Maplestat::LEVEL),
+                        stats.get_job().get_id(), inventory, stats.get_mapid()) == Questlog::Eligibility::AVAILABLE;
+                    icon = art[ready ? "icon3" : "icon2"]["0"];
+                }
+                rows.push_back({qid, group.first, row_label(data.get_name(), qid == selected ? Text::WHITE : Text::DARKGREY, 189), Texture(icon)});
+            }
         }
     }
 
     void UIQuestLog::select_row(uint16_t row)
     {
-        int16_t index = offset + static_cast<int16_t>(row);
-        if (index < 0 || index >= static_cast<int16_t>(entries.size()))
+        size_t index = static_cast<size_t>(offset) + row;
+        if (index >= rows.size()) return;
+        const auto chosen = rows[index];
+        if (chosen.qid < 0)
         {
-            return;
+            if (!collapsed.erase(chosen.category)) collapsed.insert(chosen.category);
         }
-
-        selected = entries[index];
-        build_detail();
+        else
+        {
+            selected = chosen.qid;
+            detail_offset = 0;
+            build_detail();
+        }
+        build_rows();
         update_rows();
+        clamp_position();
     }
 
     void UIQuestLog::build_detail()
     {
-        req_lines.clear();
-        detail_name = {};
-        detail_desc = {};
-
-        if (selected < 0)
+        if (selected < 0) return;
+        const auto& data = QuestData::get(selected);
+        detail_name = {Text::A12B, Text::LEFT, Text::WHITE, data.get_name(), 155, false};
+        detail_level = {Text::A11M, Text::LEFT, Text::WHITE,
+            data.get_min_level() ? "Level " + std::to_string(data.get_min_level()) + "+" : "All levels", 155, false};
+        int32_t npcid = tab == TAB_AVAILABLE ? data.get_start_npc() : data.get_end_npc();
+        if (npcid <= 0) npcid = data.get_start_npc();
+        std::string npcfile = std::to_string(npcid);
+        if (npcfile.size() < 7) npcfile.insert(0, 7 - npcfile.size(), '0');
+        auto npcsrc = nl::nx::npc[npcfile + ".img"];
+        std::string link = npcsrc["info"]["link"].get_string();
+        if (!link.empty())
         {
-            return;
+            if (link.size() < 7) link.insert(0, 7 - link.size(), '0');
+            npcsrc = nl::nx::npc[link + ".img"];
         }
-
-        Text::Color name_color = has_assets ? Text::BLUE : Text::YELLOW;
-        Text::Color body_color = has_assets ? Text::DARKGREY : Text::LIGHTGREY;
-        Text::Color req_color = has_assets ? Text::DARKGREY : Text::WHITE;
-
-        const QuestData& data = QuestData::get(selected);
-        std::string name = data.is_valid() ? data.get_name() : ("Quest " + std::to_string(selected));
-        detail_name = { Text::A12B, Text::LEFT, name_color, name, static_cast<uint16_t>(dimension.x() - 28) };
-
-        QuestData::Phase phase =
-            tab == TAB_COMPLETED ? QuestData::COMPLETED :
-            tab == TAB_AVAILABLE ? QuestData::NOT_STARTED :
-            QuestData::IN_PROGRESS;
+        npc = Texture(npcsrc["stand"]["0"]);
+        // Normalize portrait origins so large NPCs can be fitted to the card.
+        npc.shift(npc.get_origin());
+        std::string npcname = QuestText::npc_name(npcid);
+        npc_label = {Text::A11M, Text::CENTER, Text::WHITE, "", 0, false};
+        auto fitted = row_label(npcname, Text::WHITE, 95);
+        npc_label.change_text(fitted.get_text());
+        auto phase = tab == TAB_AVAILABLE ? QuestData::NOT_STARTED : tab == TAB_COMPLETED ? QuestData::COMPLETED : QuestData::IN_PROGRESS;
         std::string desc = data.get_desc(phase);
-        if (desc.empty())
+        if (desc.empty()) desc = data.get_desc(QuestData::NOT_STARTED);
+        std::string body = QuestText::format(desc, stats.get_name(), inventory, questlog);
+        if (tab == TAB_IN_PROGRESS)
         {
-            desc = data.get_desc(QuestData::NOT_STARTED);
+            body += "\\n\\n#bQuest objectives#k\\n";
+            const auto& mobs = data.get_mob_requirements();
+            for (size_t i = 0; i < mobs.size(); ++i)
+            {
+                int32_t count = questlog.get_mob_progress(selected, i);
+                body += QuestText::mob_name(mobs[i].id) + ": " + (count >= mobs[i].count ? "#b" : "#r") +
+                    std::to_string(count) + "/" + std::to_string(mobs[i].count) + "#k\\n";
+            }
+            for (const auto& item : data.get_item_requirements())
+            {
+                int32_t count = inventory.count_items(item.id);
+                bool done = item.count <= 0 ? count == 0 : count >= item.count;
+                body += QuestText::item_name(item.id) + ": " + (done ? "#b" : "#r") +
+                    (item.count <= 0 ? "must have none (" + std::to_string(count) + " held)" :
+                    std::to_string(count) + "/" + std::to_string(item.count)) + "#k\\n";
+            }
+            if (!npcname.empty()) body += "\\nReturn to #b" + npcname + "#k.";
         }
-        detail_desc = { Text::A11M, Text::LEFT, body_color, desc, static_cast<uint16_t>(dimension.x() - 28) };
-
-        if (tab != TAB_IN_PROGRESS)
-        {
-            return;
-        }
-
-        const auto& mobs = data.get_mob_requirements();
-        for (size_t i = 0; i < mobs.size(); ++i)
-        {
-            std::string line = mob_name(mobs[i].id) + ": " +
-                std::to_string(questlog.get_mob_progress(selected, i)) + "/" + std::to_string(mobs[i].count);
-            req_lines.emplace_back(Text::A11M, Text::LEFT, req_color, line, static_cast<uint16_t>(dimension.x() - 36));
-        }
-
-        for (const auto& item : data.get_item_requirements())
-        {
-            const ItemData& idata = ItemData::get(item.id);
-            std::string item_name = idata.is_valid() ? idata.get_name() : ("Item " + std::to_string(item.id));
-            std::string line = item_name + ": " +
-                (item.count <= 0 ? "must have none (" + std::to_string(inventory.count_items(item.id)) + " held)" :
-                std::to_string(inventory.count_items(item.id)) + "/" + std::to_string(item.count));
-            req_lines.emplace_back(Text::A11M, Text::LEFT, req_color, line, static_cast<uint16_t>(dimension.x() - 36));
-        }
+        else if (tab == TAB_AVAILABLE && !npcname.empty())
+            body += "\\n\\nTalk to #b" + npcname + "#k to begin this quest.";
+        detail_body = {Text::A12M, Text::LEFT, Text::DARKGREY, body, 263};
+        int16_t steps = std::max(0, (detail_body.height() - (DETAIL_BOTTOM - DETAIL_TOP) + SCROLL_STEP - 1) / SCROLL_STEP);
+        detail_offset = std::min(detail_offset, steps);
+        detail_slider.setrows(detail_offset, 1, steps + 1);
+        detail_slider.setenabled(steps > 0);
     }
 
     void UIQuestLog::update_rows()
     {
-        int16_t count = static_cast<int16_t>(entries.size());
-        for (int16_t i = 0; i < ROWS; ++i)
-        {
-            buttons[BT_ROW0 + i]->set_active((offset + i) < count);
-        }
-
-        bool can_forfeit = tab == TAB_IN_PROGRESS && selected >= 0;
-        buttons[BT_FORFEIT]->set_active(can_forfeit);
+        int16_t count = static_cast<int16_t>(rows.size());
+        offset = std::clamp<int16_t>(offset, 0, std::max<int16_t>(0, count - ROWS));
+        list_slider.setrows(offset, ROWS, count);
+        list_slider.setenabled(count > ROWS);
+        for (int16_t i = 0; i < ROWS; ++i) buttons[BT_ROW0 + i]->set_active(offset + i < count);
+        bool in_progress = selected >= 0 && tab == TAB_IN_PROGRESS;
+        buttons[BT_FORFEIT]->set_active(in_progress);
+        buttons[BT_HELPER]->set_active(in_progress);
+        buttons[BT_DETAIL_CLOSE]->set_active(selected >= 0);
+        dimension = {static_cast<int16_t>(WIDTH + (selected >= 0 ? DETAIL_WIDTH : 0)), HEIGHT};
+        dragarea = {dimension.x(), 20};
     }
 }

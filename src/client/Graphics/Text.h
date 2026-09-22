@@ -115,6 +115,8 @@ namespace jrc
         Text();
 
         void draw(const DrawArgument& args) const;
+        // Clip glyphs to a vertical viewport without changing their layout.
+        void draw_clipped(const DrawArgument& args, Range<int16_t> vertical) const;
 
         void change_text(const std::string& text);
         void change_color(Color color);

@@ -4,6 +4,7 @@
 
 #include "../Data/QuestData.h"
 #include "../IO/UI.h"
+#include "../IO/Components/QuestText.h"
 #include "../IO/UITypes/UINpcTalk.h"
 #include "../Net/Packets/QuestPackets.h"
 #include "../Net/Packets/NpcInteractionPackets.h"
@@ -84,7 +85,9 @@ namespace jrc
         void show_progress(int32_t npcid, int16_t qid)
         {
             const QuestData& data = QuestData::get(qid);
-            std::string text = data.get_name() + "\r\n\r\n" + data.get_desc(QuestData::IN_PROGRESS);
+            const Player& player = Stage::get().get_player();
+            std::string text = data.get_name() + "\r\n\r\n" + QuestText::format(data.get_desc(QuestData::IN_PROGRESS),
+                player.get_stats().get_name(), player.get_inventory(), player.get_quests());
             if (data.get_end_npc() > 0)
                 text += "\r\n\r\nReturn to #p" + std::to_string(data.get_end_npc()) + "# when you meet the requirements.";
             if (auto talk = UI::get().get_element<UINpcTalk>())
