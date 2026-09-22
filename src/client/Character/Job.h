@@ -57,6 +57,7 @@ namespace jrc
         void change_job(uint16_t id);
         bool is_sub_job(uint16_t subid) const;
         bool can_use(int32_t skill_id) const;
+        bool can_equip(int16_t required_jobs) const;
         uint16_t get_id() const;
         uint16_t get_subjob(Level level) const;
         Level get_level() const;

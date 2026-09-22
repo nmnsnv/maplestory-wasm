@@ -76,6 +76,23 @@ namespace jrc
         return is_sub_job(required);
     }
 
+    bool Job::can_equip(int16_t required_jobs) const
+    {
+        if (required_jobs == 0)
+            return true;
+
+        // Equipment stores a class bitmask, not a job ID. The hundreds digit
+        // keeps advanced jobs, Cygnus Knights and Aran in their base class.
+        const uint16_t job_class = (id / 100) % 10;
+        if (required_jobs == -1)
+            return job_class == 0;
+
+        if (required_jobs < 0 || job_class < 1 || job_class > 5)
+            return false;
+
+        return (required_jobs & (1 << (job_class - 1))) != 0;
+    }
+
     uint16_t Job::get_id() const
     {
         return id;

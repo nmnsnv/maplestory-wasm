@@ -24,6 +24,7 @@
 #include "UIKeyConfig.h"
 
 #include "../../Data/ItemData.h"
+#include "../../Gameplay/Stage.h"
 #include "../../Net/Packets/InventoryPackets.h"
 #include "../../Util/Misc.h"
 
@@ -237,11 +238,10 @@ namespace jrc
                 switch (tab)
                 {
                 case InventoryType::EQUIP:
-                    EquipItemPacket(
+                    Stage::get().get_player().equip_item(
                         slot,
-                        inventory.find_equipslot(item_id),
-                        inventory.is_cash(InventoryType::EQUIP, slot)
-                    ).dispatch();
+                        inventory.find_equipslot(item_id)
+                    );
                     break;
                 case InventoryType::USE:
                     if (
@@ -523,7 +523,7 @@ namespace jrc
         case InventoryType::EQUIP:
             if (eqsource == eqslot)
             {
-                EquipItemPacket(source, eqslot, Stage::get().get_player().get_inventory().is_cash(InventoryType::EQUIP, source)).dispatch();
+                Stage::get().get_player().equip_item(source, eqslot);
             }
             break;
         case InventoryType::USE:

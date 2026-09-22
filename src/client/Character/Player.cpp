@@ -19,9 +19,11 @@
 #include "PlayerStates.h"
 
 #include "../Constants.h"
+#include "../Data/EquipData.h"
 #include "../Data/WeaponData.h"
 #include "../IO/UI.h"
 #include "../IO/UITypes/UIStatsInfo.h"
+#include "../IO/UITypes/UINotice.h"
 #include "../Net/Packets/GameplayPackets.h"
 #include "../Net/Packets/InventoryPackets.h"
 
@@ -169,6 +171,23 @@ namespace jrc
         for (auto slot : Equipslot::values)
             if (slot != Equipslot::NONE && slot != Equipslot::TOP_DEFAULT && slot != Equipslot::BOTTOM_DEFAULT)
                 change_equip(slot);
+    }
+
+    void Player::equip_item(int16_t slot, Equipslot::Id destination) const
+    {
+        const int32_t itemid = inventory.get_item_id(InventoryType::EQUIP, slot);
+        if (slot <= 0 || itemid == 0 || destination == Equipslot::NONE)
+            return;
+
+        const EquipData& data = EquipData::get(itemid);
+        if (!data.can_equip(stats))
+        {
+            UI::get().emplace<UIOk>("You do not meet the requirements to equip this item.", []() {});
+            return;
+        }
+
+        // Use the live inventory and stats for every input path, including swaps.
+        EquipItemPacket(slot, destination, inventory.is_cash(InventoryType::EQUIP, slot)).dispatch();
     }
 
     void Player::use_item(int32_t itemid)

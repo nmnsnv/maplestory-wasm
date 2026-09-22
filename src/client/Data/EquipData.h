@@ -25,6 +25,8 @@
 
 namespace jrc
 {
+    class CharStats;
+
     // Contains information about an equip.
     class EquipData : public Cache<EquipData>
     {
@@ -38,6 +40,9 @@ namespace jrc
         bool is_weapon() const;
         // Returns a required base stat.
         int16_t get_reqstat(Maplestat::Id stat) const;
+        // Share requirement checks between the tooltip and equip actions.
+        bool meets_requirement(Maplestat::Id stat, const CharStats& stats) const;
+        bool can_equip(const CharStats& stats) const;
         // Returns a default stat.
         int16_t get_defstat(Equipstat::Id stat) const;
         // Returns base upgrade slots for this equip.
