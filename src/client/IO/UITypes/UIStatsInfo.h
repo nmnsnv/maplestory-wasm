@@ -58,6 +58,7 @@ namespace jrc
         };
 
         void update_ap();
+        void set_detail(bool visible);
         void update_simple(StatLabel label, Maplestat::Id stat);
         void update_basevstotal(StatLabel label, Maplestat::Id bstat, Equipstat::Id tstat);
         void update_buffed(StatLabel label, Equipstat::Id stat);
@@ -73,6 +74,7 @@ namespace jrc
             BT_LUK,
             BT_DETAILOPEN,
             BT_DETAILCLOSE,
+            BT_CLOSE,
             NUM_BUTTONS
         };
 
@@ -92,6 +94,8 @@ namespace jrc
 
         std::vector<Texture> textures_detail;
         bool showdetail;
+        Point<int16_t> main_dimensions;
+        Point<int16_t> detail_dimensions;
 
         bool hasap;
 

@@ -14,6 +14,10 @@ namespace jrc
 
     protected:
         explicit UIWindow(Point<int16_t> dragarea = {0, 20});
+        std::optional<Rectangle<int16_t>> draw_bounds() const override
+        {
+            return Rectangle<int16_t>(position, position + dimension);
+        }
 
         // Custom controls run only when the window is not being dragged.
         virtual CursorResult send_window_cursor(bool down, Point<int16_t> cursorpos);

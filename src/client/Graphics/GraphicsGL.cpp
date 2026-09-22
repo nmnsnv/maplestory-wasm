@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "GraphicsGL.h"
+#include "DrawBounds.h"
 
 #include "../Configuration.h"
 #include "../Console.h"
@@ -903,6 +904,7 @@ namespace jrc
                         glyph.b -= chy + chh - bottom;
                         chy = top;
                     }
+                    DrawBounds::check({chx, static_cast<int16_t>(chx + chw), chy, bottom}, DrawBounds::Kind::TEXT);
                     quads.emplace_back(chx, chx + chw, chy, bottom, glyph, abscolor, 0.0f);
                 }
             }
@@ -916,6 +918,8 @@ namespace jrc
             return;
         }
 
+        if (a > 0.0f)
+            DrawBounds::check({x, static_cast<int16_t>(x + w), y, static_cast<int16_t>(y + h)}, DrawBounds::Kind::RECTANGLE);
         quads.emplace_back(x, x + w, y, y + h, nulloffset, Color{ r, g, b, a }, 0.0f);
     }
 

@@ -59,6 +59,8 @@ namespace jrc
         void set_active(bool active);
 
         bool is_active() const;
+        // Disabled buttons still render and must participate in layout checks.
+        bool is_visible() const { return active; }
         State get_state() const;
 
     protected:

@@ -22,9 +22,11 @@
 #include "Components/Icon.h"
 
 #include "../Graphics/Sprite.h"
+#include "../Graphics/DrawBounds.h"
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 
@@ -85,6 +87,9 @@ namespace jrc
         virtual ~UIElement() = default;
 
         virtual void draw(float inter) const;
+        // Root UI dispatchers use this entry point so custom draw overrides
+        // cannot accidentally bypass the window's layout diagnostics.
+        void draw_checked(float inter) const;
         virtual void update();
         virtual void update_screen(int16_t new_width, int16_t new_height);
 
@@ -114,6 +119,7 @@ namespace jrc
 
         void draw_sprites(float alpha) const;
         void draw_buttons(float alpha) const;
+        virtual std::optional<Rectangle<int16_t>> draw_bounds() const { return std::nullopt; }
 
         std::map<uint16_t, std::unique_ptr<Button>> buttons;
         std::vector<Sprite> sprites;
@@ -122,5 +128,8 @@ namespace jrc
         bool active;
         Type type;
         uint64_t handled_button_press_id;
+
+    private:
+        mutable std::set<std::pair<DrawBounds::Kind, size_t>> reported_draw_bounds;
     };
 }
