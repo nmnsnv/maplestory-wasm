@@ -19,6 +19,9 @@
 
 #include "Npc.h"
 
+#include "../QuestDelivery.h"
+#include "../Stage.h"
+
 #include "../../Net/Packets/NpcInteractionPackets.h"
 
 namespace jrc
@@ -32,6 +35,7 @@ namespace jrc
     {
         for (; !spawns.empty(); spawns.pop())
         {
+            quest_refresh_delay = 0;
             const NpcSpawn& spawn = spawns.front();
 
             int32_t oid = spawn.get_oid();
@@ -49,6 +53,25 @@ namespace jrc
         }
 
         npcs.update(physics);
+
+        // Poll the existing rules at a bounded rate so inventory, levels,
+        // cooldowns and quest packets all update markers without extra network
+        // requests or scanning every NPC's quest list on every animation frame.
+        if (quest_refresh_delay <= Constants::TIMESTEP)
+        {
+            const Player& player = Stage::get().get_player();
+            for (auto& entry : npcs)
+            {
+                auto* npc = static_cast<Npc*>(entry.second.get());
+                if (npc && npc->is_active())
+                    npc->set_quest_marker(player.get_quests().get_npc_marker(npc->get_id(),
+                        player.get_level(), player.get_stats().get_job().get_id(),
+                        player.get_inventory(), Stage::get().get_mapid()));
+            }
+            quest_refresh_delay = 500;
+        }
+        else
+            quest_refresh_delay -= Constants::TIMESTEP;
     }
 
     void MapNpcs::spawn(NpcSpawn&& spawn)
@@ -67,6 +90,7 @@ namespace jrc
     void MapNpcs::clear()
     {
         npcs.clear();
+        quest_refresh_delay = 0;
     }
 
     Cursor::State MapNpcs::send_cursor(bool pressed, Point<int16_t> position, Point<int16_t> viewpos)
@@ -78,9 +102,13 @@ namespace jrc
             {
                 if (pressed)
                 {
-                    // TODO: try finding dialogue first
-                    TalkToNPCPacket(npc->get_oid())
-                        .dispatch();
+                    // Body and marker hit tests intentionally share the same
+                    // conversation entry point.
+                    if (!QuestDelivery::offer_quests(npc->get_id(), npc->get_oid(), npc->isscripted()))
+                    {
+                        TalkToNPCPacket(npc->get_oid())
+                            .dispatch();
+                    }
                     return Cursor::IDLE;
                 }
                 else

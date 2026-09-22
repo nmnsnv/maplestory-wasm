@@ -135,14 +135,8 @@ namespace jrc
         }
     }
 
-    UIElement::CursorResult UIEquipInventory::send_cursor(bool pressed, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIEquipInventory::send_window_cursor(bool pressed, Point<int16_t> cursorpos)
     {
-        if (dragged)
-        {
-            clear_tooltip();
-            return UIDragElement::send_cursor(pressed, cursorpos);
-        }
-
         Equipslot::Id slot = slot_by_position(cursorpos);
         if (auto icon = icons[slot].get())
         {
@@ -162,7 +156,7 @@ namespace jrc
         }
 
         clear_tooltip();
-        return UIDragElement::send_cursor(pressed, cursorpos);
+        return UIWindow::send_window_cursor(pressed, cursorpos);
     }
 
     void UIEquipInventory::doubleclick(Point<int16_t> cursorpos)

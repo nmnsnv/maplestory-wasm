@@ -101,6 +101,9 @@ namespace jrc
         NPC_SHOP_ACTION = 61,
         STORAGE_ACTION  = 62,
 
+        // Quest
+        QUEST_ACTION = 0x6B,
+
         // Inventory
         GATHER_ITEMS = 69,
         SORT_ITEMS   = 70,

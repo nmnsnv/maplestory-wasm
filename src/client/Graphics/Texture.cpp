@@ -28,6 +28,10 @@ namespace jrc
     {
         if (src.data_type() == nl::node::type::bitmap)
         {
+            // A source link shares pixels, not placement. The referencing
+            // canvas keeps its own origin even when the artwork comes from a
+            // different window (for example, NPC OK reuses a shop button).
+            origin = src["origin"];
             std::string link = src["source"];
             if (!link.empty())
             {
@@ -40,7 +44,6 @@ namespace jrc
             }
 
             bitmap = src;
-            origin = src["origin"];
             dimensions = Point<int16_t>(bitmap.width(),  bitmap.height());
 
             GraphicsGL::get().addbitmap(bitmap);
@@ -59,6 +62,12 @@ namespace jrc
 
         GraphicsGL::get()
             .draw(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), args.get_angle());
+    }
+
+    void Texture::draw_clipped(const DrawArgument& args, Range<int16_t> vertical) const
+    {
+        if (bitmap.id() == 0) return;
+        GraphicsGL::get().draw_clipped(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), vertical);
     }
 
     void Texture::shift(Point<int16_t> amount)

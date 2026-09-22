@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../UIElement.h"
+#include "../UIWindow.h"
 #include "../Components/Textfield.h"
 
 #include "../../Graphics/Texture.h"
@@ -25,7 +25,7 @@
 
 namespace jrc
 {
-    class UINotice : public UIElement
+    class UINotice : public UIWindow
     {
     public:
         static constexpr Type TYPE = NOTICE;
@@ -103,7 +103,7 @@ namespace jrc
         void draw(float alpha) const override;
         void update() override;
 
-        CursorResult send_cursor(bool pressed, Point<int16_t> cursorpos) override;
+        CursorResult send_window_cursor(bool pressed, Point<int16_t> cursorpos) override;
         void send_key(int32_t keycode, bool pressed, bool escape) override;
 
     protected:

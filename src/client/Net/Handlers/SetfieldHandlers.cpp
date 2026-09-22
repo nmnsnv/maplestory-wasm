@@ -121,6 +121,12 @@ namespace jrc
         parse_nyinfo(recv);
         parse_areainfo(recv);
 
+        if (recv.length() == 10)
+        {
+            recv.read_short(); // trailing character-info field
+            player.get_quests().set_server_time(recv.read_long());
+        }
+
         player.recalc_stats(true);
 
         uint8_t portalid = player.get_stats().get_portal();

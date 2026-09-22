@@ -119,6 +119,8 @@ namespace jrc
 
         /// Return the character's level.
         uint16_t get_level() const override;
+        /// Return whether the character is female.
+        bool is_female() const;
         /// Return the character's level of a skill.
         int32_t get_skilllevel(int32_t skillid) const override;
         /// Return the character's attacking speed.
@@ -157,6 +159,8 @@ namespace jrc
         Skillbook& get_skills();
         /// Obtain a reference to the player's questlog.
         Questlog& get_quests();
+        /// Obtain a reference to the player's questlog.
+        const Questlog& get_quests() const;
         /// Obtain a reference to the player's telerock locations.
         Telerock& get_telerock();
         /// Obtain a reference to the player's monsterbook.
@@ -164,6 +168,7 @@ namespace jrc
 
     private:
         CharStats stats;
+        bool female;
         Inventory inventory;
         Skillbook skillbook;
         Questlog questlog;

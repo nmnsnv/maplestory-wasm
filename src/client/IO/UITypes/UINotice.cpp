@@ -214,7 +214,7 @@ namespace jrc
         numfield.update(position);
     }
 
-    UIElement::CursorResult UIEnterNumber::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIEnterNumber::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (numfield.get_state() == Textfield::NORMAL)
         {
@@ -224,7 +224,7 @@ namespace jrc
                 return { nstate, true };
             }
         }
-        return UIElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UIEnterNumber::send_key(int32_t keycode, bool pressed, bool escape)

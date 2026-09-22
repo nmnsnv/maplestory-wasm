@@ -1,5 +1,5 @@
 #pragma once
-#include "../UIElement.h"
+#include "../UIWindow.h"
 
 #include "../../Graphics/Geometry.h"
 #include "../../Graphics/Text.h"
@@ -30,7 +30,7 @@ namespace jrc
     };
 
 
-    class UIStatusMessenger : public UIElement
+    class UIStatusMessenger : public UIWindow
     {
     public:
         static constexpr Type TYPE = STATUSMESSENGER;
@@ -48,10 +48,11 @@ namespace jrc
         void clear_party_invite();
 
         bool is_in_range(Point<int16_t> cursorpos) const override;
-        bool remove_cursor(bool clicked, Point<int16_t> cursorpos) override;
+        bool remove_window_cursor(bool clicked, Point<int16_t> cursorpos) override;
 
     protected:
         Button::State button_pressed(uint16_t buttonid) override;
+        void position_changed() override;
 
     private:
         void update_layout();

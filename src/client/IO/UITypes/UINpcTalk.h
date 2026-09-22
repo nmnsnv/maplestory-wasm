@@ -16,16 +16,20 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../UIElement.h"
+#include "../UIWindow.h"
+#include "../Components/NpcText.h"
 
+#include "../../Data/QuestData.h"
 #include "../../Graphics/Text.h"
 #include "../../Graphics/Texture.h"
+#include <memory>
+#include <functional>
 #include <string>
 #include <vector>
 
 namespace jrc
 {
-    class UINpcTalk : public UIElement
+    class UINpcTalk : public UIWindow
     {
     public:
         static constexpr Type TYPE = NPCTALK;
@@ -38,7 +42,7 @@ namespace jrc
         bool is_in_range(Point<int16_t> cursorpos) const override;
         void send_key(int32_t keycode, bool pressed, bool escape) override;
         void send_scroll(double yoffset) override;
-        CursorResult send_cursor(bool clicked, Point<int16_t> cursorpos) override;
+        CursorResult send_window_cursor(bool clicked, Point<int16_t> cursorpos) override;
 
         void change_text(
             int32_t npcid,
@@ -48,6 +52,24 @@ namespace jrc
             int8_t speaker,
             const std::string& text
         );
+
+        // Begin a client-driven quest conversation. Lines are navigated with
+        // Next/Prev; the final line asks to accept (start) or hand in
+        // (complete) the quest and dispatches the matching quest action.
+        // reward_choices holds the selectable completion rewards, if any.
+        void show_quest(
+            int32_t npcid,
+            int16_t qid,
+            bool start,
+            const std::vector<std::string>& lines,
+            const std::vector<QuestData::ItemReward>& reward_choices
+        );
+        void show_menu(int32_t npcid, const std::vector<std::string>& options,
+            std::function<void(size_t)> on_select, const std::string& greeting);
+        void show_quest_info(int32_t npcid, const std::vector<std::string>& lines);
+        // Continue the local conversation only after a quest record update
+        // confirms that the server accepted the requested action.
+        void quest_action_result(int16_t qid, bool started);
 
     protected:
         Button::State button_pressed(uint16_t buttonid) override;
@@ -62,15 +84,44 @@ namespace jrc
             UNKNOWN
         };
 
+        // A client-driven quest conversation. While set, dialogue buttons
+        // navigate the stored lines and dispatch quest packets instead of
+        // NpcTalkMore packets.
+        struct QuestDialogue
+        {
+            int16_t qid = 0;
+            int32_t npcid = 0;
+            bool start = false;
+            std::vector<std::string> lines;
+            std::vector<QuestData::ItemReward> reward_choices;
+            size_t line_index = 0;
+            bool choosing_reward = false;
+            bool awaiting_result = false;
+            bool informational = false;
+        };
+
+        void set_dialogue(
+            int32_t npcid,
+            int8_t msgtype,
+            int16_t style,
+            bool has_navigation_flags,
+            int8_t speaker,
+            const std::string& text
+        );
+        void show_quest_line();
+        void show_quest_rewards();
+        void submit_quest(int16_t selection = -1);
+        Button::State quest_button_pressed(uint16_t buttonid);
+        void cycle_selection(int32_t direction);
+
         void parse_selections(const std::string& text, std::string& rendered_text);
-        static std::string strip_npc_tokens(const std::string& text);
         static std::string replace_macros(const std::string& source);
         static DialogueMode resolve_dialogue_mode(int8_t msgtype, bool has_navigation_flags);
         void refresh_selection_styles();
-        int16_t get_selection_text_height() const;
-        int16_t get_dialogue_content_height() const;
+        int32_t get_selection_text_height() const;
+        int32_t get_dialogue_content_height() const;
         int16_t get_dialogue_text_y() const;
-        int16_t get_options_start_y() const;
+        int32_t get_options_start_y() const;
         int32_t get_option_at(Point<int16_t> relative) const;
 
         enum Buttons
@@ -88,7 +139,7 @@ namespace jrc
         Texture bottom;
         Texture nametag;
 
-        Text text;
+        NpcText text;
         Texture speaker;
         Text name;
         int16_t height;
@@ -100,11 +151,13 @@ namespace jrc
         bool end_confirms_dialogue;
         std::string prompttext;
         std::vector<std::string> selection_texts;
-        std::vector<Text> selection_labels;
+        std::vector<NpcText> selection_labels;
         std::vector<int32_t> selections;
         int32_t selected;
         int32_t hovered_selection;
-        int16_t scroll_offset;
-        int16_t max_scroll;
+        int32_t scroll_offset;
+        int32_t max_scroll;
+        std::unique_ptr<QuestDialogue> quest;
+        std::function<void(size_t)> menu_selection;
     };
 }

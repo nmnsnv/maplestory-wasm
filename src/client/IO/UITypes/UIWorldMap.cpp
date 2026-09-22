@@ -177,9 +177,9 @@ namespace jrc
         }
     }
 
-    bool UIWorldMap::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UIWorldMap::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        bool removed = UIDragElement::remove_cursor(clicked, cursorpos);
+        bool removed = UIWindow::remove_window_cursor(clicked, cursorpos);
 
         if (!is_in_range(cursorpos))
         {
@@ -190,13 +190,8 @@ namespace jrc
         return removed;
     }
 
-    UIElement::CursorResult UIWorldMap::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIWorldMap::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (dragged)
-        {
-            return UIDragElement::send_cursor(clicked, cursorpos);
-        }
-
         Cursor::State text_state = search_text.send_cursor(cursorpos, clicked);
         if (text_state != Cursor::IDLE)
         {
@@ -228,7 +223,7 @@ namespace jrc
             }
         }
 
-        return UIDragElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UIWorldMap::send_key(int32_t, bool pressed, bool escape)

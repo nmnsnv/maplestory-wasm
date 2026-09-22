@@ -212,7 +212,7 @@ namespace jrc
         return Button::PRESSED;
     }
 
-    bool UIShop::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UIShop::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         if (buyslider.remove_cursor(clicked))
         {
@@ -224,10 +224,10 @@ namespace jrc
             return true;
         }
 
-        return UIElement::remove_cursor(clicked, cursorpos);
+        return UIWindow::remove_window_cursor(clicked, cursorpos);
     }
 
-    UIElement::CursorResult UIShop::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIShop::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
         Point<int16_t> cursoroffset = cursorpos - position;
         last_cursor_pos = cursoroffset;
@@ -275,7 +275,7 @@ namespace jrc
         {
             clear_tooltip();
         }
-        return UIElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UIShop::send_scroll(double yoffset)

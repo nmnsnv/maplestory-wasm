@@ -32,6 +32,8 @@
 #include "UITypes/UISkillBook.h"
 #include "UITypes/UIKeyConfig.h"
 #include "UITypes/UIWorldMap.h"
+#include "UITypes/UIQuestLog.h"
+#include "UITypes/UIQuestTracker.h"
 
 #include "../Constants.h"
 #include "../Character/Inventory/InventoryType.h"
@@ -83,6 +85,10 @@ namespace jrc
         emplace<UIStatusbar>(stats);
         emplace<UIMiniMap>(stats);
         emplace<UIBuffList>();
+        emplace<UIQuestTracker>(
+            inventory,
+            Stage::get().get_player().get_quests()
+        );
         emplace<UINpcTalk>();
         emplace<UIShop>(look, inventory);
         emplace<UIStorage>(inventory);
@@ -211,6 +217,13 @@ namespace jrc
                     emplace<UISkillbook>(
                         Stage::get().get_player().get_stats(),
                         Stage::get().get_player().get_skills()
+                    );
+                    break;
+                case KeyAction::QUESTLOG:
+                    emplace<UIQuestLog>(
+                        Stage::get().get_player().get_stats(),
+                        Stage::get().get_player().get_inventory(),
+                        Stage::get().get_player().get_quests()
                     );
                     break;
                 case KeyAction::KEYCONFIG:

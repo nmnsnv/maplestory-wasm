@@ -16,14 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../UIElement.h"
+#include "../UIWindow.h"
 
 #include "../../Graphics/Sprite.h"
 #include "../../Graphics/Texture.h"
 
 namespace jrc
 {
-    class UILoginNotice : public UIElement
+    class UILoginNotice : public UIWindow
     {
     public:
         static constexpr Type TYPE = LOGINNOTICE;

@@ -58,13 +58,16 @@ namespace jrc
         // Draw the bitmap with the given parameters.
         void draw(const nl::bitmap& bmp, const Rectangle<int16_t>& rect,
             const Color& color, float angle);
+        // Clip an axis-aligned image, preserving its texture coordinates.
+        void draw_clipped(const nl::bitmap& bmp, const Rectangle<int16_t>& rect,
+            const Color& color, Range<int16_t> vertical);
 
         // Create a layout for the text with the parameters specified.
         Text::Layout createlayout(const std::string& text, Text::Font font,
             Text::Alignment alignment, int16_t maxwidth, bool formatted);
         // Draw a text with the given parameters.
         void drawtext(const DrawArgument& args, const std::string& text, const Text::Layout& layout, Text::Font font,
-            Text::Color color, Text::Background back);
+            Text::Color color, Text::Background back, const Range<int16_t>* vertical = nullptr);
 
         // Draw a rectangle filled with the specified color.
         void drawrectangle(int16_t x, int16_t y, int16_t w, int16_t h, float r, float g, float b, float a);

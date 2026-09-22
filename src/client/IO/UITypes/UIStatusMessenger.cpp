@@ -39,7 +39,7 @@ namespace jrc
 
 
     UIStatusMessenger::UIStatusMessenger()
-        : UIElement(Point<int16_t>(), Point<int16_t>(INVITE_WIDTH, INVITE_HEIGHT), true),
+        : UIWindow({INVITE_WIDTH, 22}),
           status_anchor(),
           screen_width(Constants::viewwidth()),
           screen_height(Constants::viewheight()),
@@ -162,6 +162,8 @@ namespace jrc
             return false;
         }
 
+        if (in_drag_area(cursorpos)) return true;
+
         for (const auto& iter : buttons)
         {
             if (!iter.second || !iter.second->is_active())
@@ -178,9 +180,9 @@ namespace jrc
         return false;
     }
 
-    bool UIStatusMessenger::remove_cursor(bool clicked, Point<int16_t> cursorpos)
+    bool UIStatusMessenger::remove_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        UIElement::remove_cursor(clicked, cursorpos);
+        UIWindow::remove_window_cursor(clicked, cursorpos);
         return false;
     }
 
@@ -243,11 +245,15 @@ namespace jrc
         int32_t invite_x = static_cast<int32_t>(screen_width) - INVITE_WIDTH - SCREEN_PADDING;
         int32_t invite_y = static_cast<int32_t>(screen_height) - STATUSBAR_HEIGHT - INVITE_HEIGHT - SCREEN_PADDING;
 
-        position = Point<int16_t>(
+        dimension = {INVITE_WIDTH, INVITE_HEIGHT};
+        set_default_position(Point<int16_t>(
             static_cast<int16_t>(std::max(invite_x, static_cast<int32_t>(SCREEN_PADDING))),
             static_cast<int16_t>(std::max(invite_y, static_cast<int32_t>(SCREEN_PADDING)))
-        );
+        ));
+    }
 
+    void UIStatusMessenger::position_changed()
+    {
         int32_t status_x = std::max(
             static_cast<int32_t>(SCREEN_PADDING),
             static_cast<int32_t>(screen_width) - SCREEN_PADDING

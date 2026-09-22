@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include "../UIElement.h"
+#include "../UIWindow.h"
 
 #include "../../Graphics/Text.h"
 #include "../../Util/Randomizer.h"
@@ -26,7 +26,7 @@
 namespace jrc
 {
     // Keyboard which is used via the mouse. The game uses this for pic/pin input.
-    class UISoftkey : public UIElement
+    class UISoftkey : public UIWindow
     {
     public:
         using Callback = std::function<void(const std::string&)>;

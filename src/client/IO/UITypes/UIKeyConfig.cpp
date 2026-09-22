@@ -188,13 +188,8 @@ namespace jrc
         }
     }
 
-    UIElement::CursorResult UIKeyConfig::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    UIElement::CursorResult UIKeyConfig::send_window_cursor(bool clicked, Point<int16_t> cursorpos)
     {
-        if (dragged)
-        {
-            return UIDragElement::send_cursor(clicked, cursorpos);
-        }
-
         int32_t unbound_action = unbound_action_by_position(cursorpos);
         if (unbound_action >= 0)
         {
@@ -231,7 +226,7 @@ namespace jrc
             }
         }
 
-        return UIDragElement::send_cursor(clicked, cursorpos);
+        return UIWindow::send_window_cursor(clicked, cursorpos);
     }
 
     void UIKeyConfig::send_icon(const Icon& dropped, Point<int16_t> cursorpos)

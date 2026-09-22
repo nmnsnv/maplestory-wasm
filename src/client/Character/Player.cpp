@@ -62,7 +62,8 @@ namespace jrc
     }
 
     Player::Player(const CharEntry& entry)
-        : Char(entry.cid, entry.look, entry.stats.name), stats(entry.stats)
+        : Char(entry.cid, entry.look, entry.stats.name), stats(entry.stats),
+          female(entry.look.female)
     {
         attacking  = false;
         underwater = false;
@@ -72,7 +73,7 @@ namespace jrc
     }
 
     Player::Player()
-        : Char(0, {}, "") {}
+        : Char(0, {}, ""), female(false) {}
 
     void Player::respawn(Point<int16_t> pos, bool uw)
     {
@@ -515,6 +516,11 @@ namespace jrc
         return stats.get_stat(Maplestat::LEVEL);
     }
 
+    bool Player::is_female() const
+    {
+        return female;
+    }
+
     int32_t Player::get_skilllevel(int32_t skillid) const
     {
         return skillbook.get_level(skillid);
@@ -606,6 +612,11 @@ namespace jrc
     }
 
     Questlog& Player::get_quests()
+    {
+        return questlog;
+    }
+
+    const Questlog& Player::get_quests() const
     {
         return questlog;
     }
