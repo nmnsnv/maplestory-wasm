@@ -19,9 +19,12 @@
 #include <cstdint>
 #include <string>
 #include <map>
+#include <chrono>
 
 namespace jrc
 {
+    class Inventory;
+
     // Class that stores information on the questlog of an individual character.
     class Questlog
     {
@@ -42,6 +45,19 @@ namespace jrc
         bool update_progress(int16_t qid, const std::string& quest_data);
         // Return the current progress string of an active quest (empty if none).
         std::string get_progress(int16_t qid) const;
+        // Return the kill count for the mob requirement at the given index,
+        // decoded from the progress string. Returns 0 if not present.
+        int32_t get_mob_progress(int16_t qid, size_t index) const;
+
+        enum class Eligibility { UNAVAILABLE, AVAILABLE, SERVER_CHECK };
+        // SERVER_CHECK keeps quests with conditions not replicated to the
+        // client reachable without prematurely declaring them ready to hand in.
+        Eligibility get_eligibility(int16_t qid, bool start, uint16_t level,
+            uint16_t job_id, const Inventory& inventory, int32_t map_id) const;
+
+        // SET_FIELD and quest completion timestamps share the server's clock,
+        // including its timezone offset. Use that clock for repeat cooldowns.
+        void set_server_time(int64_t filetime);
 
         // Move an active quest to the completed list.
         void complete(int16_t qid, int64_t time);
@@ -63,5 +79,8 @@ namespace jrc
         std::map<int16_t, std::pair<int16_t, std::string>> in_progress;
         std::map<int16_t, int64_t> completed;
         std::map<int16_t, int32_t> timers;
+        int64_t server_filetime = 0;
+        std::chrono::steady_clock::time_point server_time_received;
+        int64_t current_server_time() const;
     };
 }

@@ -19,6 +19,8 @@
 
 #include "Npc.h"
 
+#include "../QuestDelivery.h"
+
 #include "../../Net/Packets/NpcInteractionPackets.h"
 
 namespace jrc
@@ -78,9 +80,12 @@ namespace jrc
             {
                 if (pressed)
                 {
-                    // TODO: try finding dialogue first
-                    TalkToNPCPacket(npc->get_oid())
-                        .dispatch();
+                    // The quest menu also offers the NPC's normal services.
+                    if (!QuestDelivery::offer_quests(npc->get_id(), npc->get_oid()))
+                    {
+                        TalkToNPCPacket(npc->get_oid())
+                            .dispatch();
+                    }
                     return Cursor::IDLE;
                 }
                 else

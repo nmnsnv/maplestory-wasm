@@ -28,6 +28,9 @@
 
 namespace jrc
 {
+    class CharStats;
+    class Inventory;
+
     // The quest journal. Lists the player's available, in-progress and
     // completed quests and allows forfeiting an active quest. Renders with the
     // authentic UIWindow2.img/Quest artwork, falling back to a simple frame
@@ -39,7 +42,7 @@ namespace jrc
         static constexpr bool FOCUSED = false;
         static constexpr bool TOGGLED = true;
 
-        UIQuestLog(const Questlog& questlog);
+        UIQuestLog(const CharStats& stats, const Inventory& inventory, const Questlog& questlog);
 
         void draw(float inter) const override;
 
@@ -89,6 +92,8 @@ namespace jrc
         static constexpr int16_t TAB_TOP = 23;
         static constexpr int16_t TAB_HEIGHT = 22;
 
+        const CharStats& stats;
+        const Inventory& inventory;
         const Questlog& questlog;
 
         bool has_assets;

@@ -8,6 +8,7 @@
 #include "../../IO/UI.h"
 #include "../../IO/Messages.h"
 #include "../../IO/UITypes/UIParty.h"
+#include "../../IO/UITypes/UINpcTalk.h"
 #include "../../IO/UITypes/UIQuestLog.h"
 #include "../../IO/UITypes/UIQuestTracker.h"
 #include "../../IO/UITypes/UIStatusMessenger.h"
@@ -479,11 +480,18 @@ namespace jrc
             }
             else if (status == 2)
             {
-                quests.complete(qid, 0);
+                int64_t time = recv.length() >= 8 ? recv.read_long() : 0;
+                quests.complete(qid, time);
             }
             else
             {
                 quests.remove_active(qid);
+            }
+
+            if (status == 1 || status == 2)
+            {
+                if (auto talk = UI::get().get_element<UINpcTalk>())
+                    talk->quest_action_result(qid, status == 1);
             }
 
             if (auto questlog = UI::get().get_element<UIQuestLog>())

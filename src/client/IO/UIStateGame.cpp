@@ -85,7 +85,10 @@ namespace jrc
         emplace<UIStatusbar>(stats);
         emplace<UIMiniMap>(stats);
         emplace<UIBuffList>();
-        emplace<UIQuestTracker>(Stage::get().get_player().get_quests());
+        emplace<UIQuestTracker>(
+            inventory,
+            Stage::get().get_player().get_quests()
+        );
         emplace<UINpcTalk>();
         emplace<UIShop>(look, inventory);
         emplace<UIStorage>(inventory);
@@ -218,6 +221,8 @@ namespace jrc
                     break;
                 case KeyAction::QUESTLOG:
                     emplace<UIQuestLog>(
+                        Stage::get().get_player().get_stats(),
+                        Stage::get().get_player().get_inventory(),
                         Stage::get().get_player().get_quests()
                     );
                     break;

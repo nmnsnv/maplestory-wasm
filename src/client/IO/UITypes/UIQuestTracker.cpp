@@ -18,6 +18,8 @@
 #include "UIQuestTracker.h"
 
 #include "../../Constants.h"
+#include "../../Character/Inventory/Inventory.h"
+#include "../../Data/ItemData.h"
 #include "../../Data/QuestData.h"
 
 #include "nlnx/nx.hpp"
@@ -27,24 +29,6 @@ namespace jrc
 {
     namespace
     {
-        int32_t progress_count_at(const std::string& progress, size_t index)
-        {
-            size_t pos = index * 3;
-            if (pos + 3 > progress.size())
-            {
-                return -1;
-            }
-
-            try
-            {
-                return std::stoi(progress.substr(pos, 3));
-            }
-            catch (...)
-            {
-                return -1;
-            }
-        }
-
         std::string mob_name(int32_t id)
         {
             std::string name = nl::nx::string["Mob.img"][std::to_string(id)]["name"].get_string();
@@ -52,8 +36,9 @@ namespace jrc
         }
     }
 
-    UIQuestTracker::UIQuestTracker(const Questlog& in_questlog)
-        : questlog(in_questlog),
+    UIQuestTracker::UIQuestTracker(const Inventory& in_inventory, const Questlog& in_questlog)
+        : inventory(in_inventory),
+          questlog(in_questlog),
           screen_width(Constants::viewwidth()),
           screen_height(Constants::viewheight())
     {
@@ -140,17 +125,25 @@ namespace jrc
             TrackedQuest quest;
             quest.title = { Text::A11M, Text::LEFT, Text::YELLOW, name, static_cast<uint16_t>(PANEL_WIDTH - 12) };
 
-            std::string progress = questlog.get_progress(qid);
             const auto& mobs = data.get_mob_requirements();
             for (size_t i = 0; i < mobs.size() && quest.lines.size() < MAX_LINES; ++i)
             {
-                int32_t current = progress_count_at(progress, i);
-                if (current < 0)
-                {
-                    current = 0;
-                }
                 std::string line = mob_name(mobs[i].id) + ": " +
-                    std::to_string(current) + "/" + std::to_string(mobs[i].count);
+                    std::to_string(questlog.get_mob_progress(qid, i)) + "/" + std::to_string(mobs[i].count);
+                quest.lines.emplace_back(Text::A11M, Text::LEFT, Text::WHITE, line, static_cast<uint16_t>(PANEL_WIDTH - 18));
+            }
+
+            for (const auto& item : data.get_item_requirements())
+            {
+                if (quest.lines.size() >= MAX_LINES)
+                {
+                    break;
+                }
+                const ItemData& idata = ItemData::get(item.id);
+                std::string item_name = idata.is_valid() ? idata.get_name() : ("Item " + std::to_string(item.id));
+                std::string line = item_name + ": " +
+                    (item.count <= 0 ? "must have none (" + std::to_string(inventory.count_items(item.id)) + " held)" :
+                    std::to_string(inventory.count_items(item.id)) + "/" + std::to_string(item.count));
                 quest.lines.emplace_back(Text::A11M, Text::LEFT, Text::WHITE, line, static_cast<uint16_t>(PANEL_WIDTH - 18));
             }
 

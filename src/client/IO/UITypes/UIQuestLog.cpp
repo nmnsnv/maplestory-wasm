@@ -21,6 +21,8 @@
 #include "../Components/MapleButton.h"
 #include "../Components/TwoSpriteButton.h"
 
+#include "../../Character/CharStats.h"
+#include "../../Character/Inventory/Inventory.h"
 #include "../../Data/ItemData.h"
 #include "../../Data/QuestData.h"
 #include "../../Net/Packets/QuestPackets.h"
@@ -32,23 +34,8 @@ namespace jrc
 {
     namespace
     {
-        int32_t progress_count_at(const std::string& progress, size_t index)
-        {
-            size_t pos = index * 3;
-            if (pos + 3 > progress.size())
-            {
-                return -1;
-            }
-
-            try
-            {
-                return std::stoi(progress.substr(pos, 3));
-            }
-            catch (...)
-            {
-                return -1;
-            }
-        }
+        // At most this many startable quests are listed in the available tab.
+        constexpr size_t MAX_AVAILABLE = 100;
 
         std::string mob_name(int32_t id)
         {
@@ -57,8 +44,10 @@ namespace jrc
         }
     }
 
-    UIQuestLog::UIQuestLog(const Questlog& in_questlog)
+    UIQuestLog::UIQuestLog(const CharStats& in_stats, const Inventory& in_inventory, const Questlog& in_questlog)
         : UIDragElement({ WIDTH, 26 }),
+          stats(in_stats),
+          inventory(in_inventory),
           questlog(in_questlog),
           tab(TAB_IN_PROGRESS),
           offset(0),
@@ -376,8 +365,33 @@ namespace jrc
             empty_label.change_text("No completed quests yet.");
             break;
         default:
+        {
+            uint16_t level = stats.get_stat(Maplestat::LEVEL);
+            uint16_t job_id = stats.get_job().get_id();
+            for (int32_t qid : QuestData::all_quests())
+            {
+                if (entries.size() >= MAX_AVAILABLE)
+                {
+                    break;
+                }
+
+                // Only quests handed out by an npc can be accepted by
+                // talking to one; auto-started quests are not listed.
+                if (QuestData::get(qid).get_start_npc() <= 0)
+                {
+                    continue;
+                }
+
+                int16_t qid16 = static_cast<int16_t>(qid);
+                if (questlog.get_eligibility(qid16, true, level, job_id, inventory, stats.get_mapid())
+                    != Questlog::Eligibility::UNAVAILABLE)
+                {
+                    entries.push_back(qid16);
+                }
+            }
             empty_label.change_text("Quests are offered by NPCs. Talk to them to begin an adventure.");
             break;
+        }
         }
 
         Text::Color color = has_assets ? Text::DARKGREY : Text::WHITE;
@@ -421,7 +435,10 @@ namespace jrc
         std::string name = data.is_valid() ? data.get_name() : ("Quest " + std::to_string(selected));
         detail_name = { Text::A12B, Text::LEFT, name_color, name, static_cast<uint16_t>(dimension.x() - 28) };
 
-        QuestData::Phase phase = tab == TAB_COMPLETED ? QuestData::COMPLETED : QuestData::IN_PROGRESS;
+        QuestData::Phase phase =
+            tab == TAB_COMPLETED ? QuestData::COMPLETED :
+            tab == TAB_AVAILABLE ? QuestData::NOT_STARTED :
+            QuestData::IN_PROGRESS;
         std::string desc = data.get_desc(phase);
         if (desc.empty())
         {
@@ -434,18 +451,11 @@ namespace jrc
             return;
         }
 
-        std::string progress = questlog.get_progress(selected);
-
         const auto& mobs = data.get_mob_requirements();
         for (size_t i = 0; i < mobs.size(); ++i)
         {
-            int32_t current = progress_count_at(progress, i);
-            if (current < 0)
-            {
-                current = 0;
-            }
             std::string line = mob_name(mobs[i].id) + ": " +
-                std::to_string(current) + "/" + std::to_string(mobs[i].count);
+                std::to_string(questlog.get_mob_progress(selected, i)) + "/" + std::to_string(mobs[i].count);
             req_lines.emplace_back(Text::A11M, Text::LEFT, req_color, line, static_cast<uint16_t>(dimension.x() - 36));
         }
 
@@ -453,7 +463,9 @@ namespace jrc
         {
             const ItemData& idata = ItemData::get(item.id);
             std::string item_name = idata.is_valid() ? idata.get_name() : ("Item " + std::to_string(item.id));
-            std::string line = "Collect " + item_name + " x" + std::to_string(item.count);
+            std::string line = item_name + ": " +
+                (item.count <= 0 ? "must have none (" + std::to_string(inventory.count_items(item.id)) + " held)" :
+                std::to_string(inventory.count_items(item.id)) + "/" + std::to_string(item.count));
             req_lines.emplace_back(Text::A11M, Text::LEFT, req_color, line, static_cast<uint16_t>(dimension.x() - 36));
         }
     }

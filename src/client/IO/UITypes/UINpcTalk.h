@@ -18,8 +18,11 @@
 #pragma once
 #include "../UIElement.h"
 
+#include "../../Data/QuestData.h"
 #include "../../Graphics/Text.h"
 #include "../../Graphics/Texture.h"
+#include <memory>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -49,6 +52,24 @@ namespace jrc
             const std::string& text
         );
 
+        // Begin a client-driven quest conversation. Lines are navigated with
+        // Next/Prev; the final line asks to accept (start) or hand in
+        // (complete) the quest and dispatches the matching quest action.
+        // reward_choices holds the selectable completion rewards, if any.
+        void show_quest(
+            int32_t npcid,
+            int16_t qid,
+            bool start,
+            const std::vector<std::string>& lines,
+            const std::vector<QuestData::ItemReward>& reward_choices
+        );
+        void show_menu(int32_t npcid, const std::vector<std::string>& options,
+            std::function<void(size_t)> on_select);
+        void show_quest_info(int32_t npcid, const std::vector<std::string>& lines);
+        // Continue the local conversation only after a quest record update
+        // confirms that the server accepted the requested action.
+        void quest_action_result(int16_t qid, bool started);
+
     protected:
         Button::State button_pressed(uint16_t buttonid) override;
 
@@ -61,6 +82,36 @@ namespace jrc
             SELECTION,
             UNKNOWN
         };
+
+        // A client-driven quest conversation. While set, dialogue buttons
+        // navigate the stored lines and dispatch quest packets instead of
+        // NpcTalkMore packets.
+        struct QuestDialogue
+        {
+            int16_t qid = 0;
+            int32_t npcid = 0;
+            bool start = false;
+            std::vector<std::string> lines;
+            std::vector<QuestData::ItemReward> reward_choices;
+            size_t line_index = 0;
+            bool choosing_reward = false;
+            bool awaiting_result = false;
+            bool informational = false;
+        };
+
+        void set_dialogue(
+            int32_t npcid,
+            int8_t msgtype,
+            int16_t style,
+            bool has_navigation_flags,
+            int8_t speaker,
+            const std::string& text
+        );
+        void show_quest_line();
+        void show_quest_rewards();
+        void submit_quest(int16_t selection = -1);
+        Button::State quest_button_pressed(uint16_t buttonid);
+        void cycle_selection(int32_t direction);
 
         void parse_selections(const std::string& text, std::string& rendered_text);
         static std::string strip_npc_tokens(const std::string& text);
@@ -106,5 +157,7 @@ namespace jrc
         int32_t hovered_selection;
         int16_t scroll_offset;
         int16_t max_scroll;
+        std::unique_ptr<QuestDialogue> quest;
+        std::function<void(size_t)> menu_selection;
     };
 }

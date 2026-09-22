@@ -59,8 +59,13 @@ namespace jrc
     {
         int16_t qid = recv.read_short();
 
+        // The completion timestamp arrives with the quest record update;
+        // only mark the quest here if that packet was not received yet.
         Questlog& quests = Stage::get().get_player().get_quests();
-        quests.complete(qid, 0);
+        if (!quests.is_completed(qid))
+        {
+            quests.complete(qid, 0);
+        }
 
         quest_ui::notify(Text::YELLOW, "Quest completed: " + quest_ui::quest_name(qid));
         quest_ui::refresh();

@@ -18,6 +18,7 @@
 #include "UINpcTalk.h"
 
 #include "../Components/MapleButton.h"
+#include "../UI.h"
 
 #include "../../Console.h"
 #include "../../Constants.h"
@@ -25,6 +26,7 @@
 #include "../../Gameplay/Stage.h"
 #include "../../Graphics/GraphicsGL.h"
 #include "../../Net/Packets/NpcInteractionPackets.h"
+#include "../../Net/Packets/QuestPackets.h"
 #include "../../Util/Misc.h"
 
 #include "nlnx/nx.hpp"
@@ -425,8 +427,57 @@ namespace jrc
         return false;
     }
 
+    void UINpcTalk::cycle_selection(int32_t direction)
+    {
+        if (selections.empty())
+        {
+            return;
+        }
+
+        int32_t count = static_cast<int32_t>(selections.size());
+        selected = (selected + direction + count) % count;
+        refresh_selection_styles();
+    }
+
     Button::State UINpcTalk::button_pressed(uint16_t buttonid)
     {
+        if (menu_selection)
+        {
+            switch (buttonid)
+            {
+            case OK:
+                if (selected >= 0 && static_cast<size_t>(selected) < selections.size())
+                {
+                    const size_t choice = static_cast<size_t>(selections[selected]);
+                    // The callback may replace this dialog with a quest. Move
+                    // it out before invocation so its captures stay alive.
+                    auto on_select = std::move(menu_selection);
+                    menu_selection = {};
+                    active = false;
+                    on_select(choice);
+                }
+                break;
+            case NEXT:
+                cycle_selection(1);
+                break;
+            case PREV:
+                cycle_selection(-1);
+                break;
+            case NO:
+            case END:
+                menu_selection = {};
+                active = false;
+                break;
+            default:
+                break;
+            }
+            return Button::PRESSED;
+        }
+        if (quest)
+        {
+            return quest_button_pressed(buttonid);
+        }
+
         switch (buttonid)
         {
         case OK:
@@ -445,11 +496,7 @@ namespace jrc
         case NEXT:
             if (dialogue_mode == DialogueMode::SELECTION)
             {
-                if (!selections.empty())
-                {
-                    selected = (selected + 1) % static_cast<int32_t>(selections.size());
-                    refresh_selection_styles();
-                }
+                cycle_selection(1);
             }
             else if (dialogue_mode == DialogueMode::TEXT)
             {
@@ -460,12 +507,7 @@ namespace jrc
         case PREV:
             if (dialogue_mode == DialogueMode::SELECTION)
             {
-                if (!selections.empty())
-                {
-                    selected = (selected + static_cast<int32_t>(selections.size()) - 1)
-                        % static_cast<int32_t>(selections.size());
-                    refresh_selection_styles();
-                }
+                cycle_selection(-1);
             }
             else if (dialogue_mode == DialogueMode::TEXT)
             {
@@ -502,6 +544,144 @@ namespace jrc
         return Button::PRESSED;
     }
 
+    Button::State UINpcTalk::quest_button_pressed(uint16_t buttonid)
+    {
+        if (quest->awaiting_result)
+            return Button::PRESSED;
+        if (quest->choosing_reward)
+        {
+            switch (buttonid)
+            {
+            case OK:
+            {
+                if (selected >= 0 && static_cast<size_t>(selected) < selections.size())
+                    submit_quest(static_cast<int16_t>(selections[selected]));
+                break;
+            }
+            case NEXT:
+                cycle_selection(1);
+                break;
+            case PREV:
+                cycle_selection(-1);
+                break;
+            case NO:
+            case END:
+                quest.reset();
+                active = false;
+                break;
+            default:
+                break;
+            }
+            return Button::PRESSED;
+        }
+
+        bool last_line = quest->line_index + 1 >= quest->lines.size();
+        switch (buttonid)
+        {
+        case NEXT:
+            if (!last_line)
+            {
+                quest->line_index++;
+                show_quest_line();
+            }
+            break;
+        case PREV:
+            if (quest->line_index > 0)
+            {
+                quest->line_index--;
+                show_quest_line();
+            }
+            break;
+        case OK:
+        case YES:
+            if (!last_line)
+            {
+                break;
+            }
+            if (quest->informational)
+            {
+                quest.reset();
+                active = false;
+            }
+            else if (!quest->start && !quest->reward_choices.empty())
+            {
+                show_quest_rewards();
+            }
+            else
+            {
+                submit_quest();
+            }
+            break;
+        case NO:
+            if (!quest->informational)
+            {
+                auto lines = QuestData::get(quest->qid).get_dialog_branch(quest->start, "no");
+                if (!lines.empty())
+                {
+                    show_quest_info(quest->npcid, lines);
+                    break;
+                }
+            }
+            quest.reset();
+            active = false;
+            break;
+        case END:
+            quest.reset();
+            active = false;
+            break;
+        default:
+            break;
+        }
+        return Button::PRESSED;
+    }
+
+    void UINpcTalk::submit_quest(int16_t selection)
+    {
+        const int16_t qid = quest->qid;
+        const int32_t npcid = quest->npcid;
+        const bool start = quest->start;
+        quest->awaiting_result = true;
+        active = false;
+        if (start)
+            StartQuestPacket(qid, npcid).dispatch();
+        else
+            CompleteQuestPacket(qid, npcid, selection).dispatch();
+    }
+
+    void UINpcTalk::quest_action_result(int16_t qid, bool started)
+    {
+        if (!quest || !quest->awaiting_result || quest->qid != qid || quest->start != started)
+            return;
+        const int32_t npcid = quest->npcid;
+        auto lines = QuestData::get(qid).get_dialog_branch(started, "yes");
+        quest.reset();
+        if (!lines.empty())
+            show_quest_info(npcid, lines);
+    }
+
+    void UINpcTalk::show_menu(int32_t npcid, const std::vector<std::string>& options,
+        std::function<void(size_t)> on_select)
+    {
+        quest.reset();
+        menu_selection = std::move(on_select);
+        std::string text = "What would you like to do?\r\n";
+        for (size_t i = 0; i < options.size(); ++i)
+            text += "#L" + std::to_string(i) + "#" + options[i] + "#l\r\n";
+        set_dialogue(npcid, SELECTION_DIALOGUE_TYPE, 0, false, 0, text);
+        active = true;
+    }
+
+    void UINpcTalk::show_quest_info(int32_t npcid, const std::vector<std::string>& lines)
+    {
+        menu_selection = {};
+        quest = std::make_unique<QuestDialogue>();
+        quest->npcid = npcid;
+        quest->lines = lines.empty() ? std::vector<std::string>{"Keep working on this quest."} : lines;
+        quest->informational = true;
+        show_quest_line();
+        active = true;
+    }
+
     void UINpcTalk::change_text(
         int32_t npcid,
         int8_t msgtype,
@@ -511,7 +691,90 @@ namespace jrc
         const std::string& tx
     )
     {
+        // A dialogue pushed by the server replaces any client-driven quest
+        // conversation which may still be open.
+        quest.reset();
+        menu_selection = {};
+        set_dialogue(npcid, msgtype, style, has_navigation_flags, speakerbyte, tx);
+    }
+
+    void UINpcTalk::show_quest(
+        int32_t npcid,
+        int16_t qid,
+        bool start,
+        const std::vector<std::string>& lines,
+        const std::vector<QuestData::ItemReward>& reward_choices
+    )
+    {
+        menu_selection = {};
+        quest = std::make_unique<QuestDialogue>();
+        quest->qid = qid;
+        quest->npcid = npcid;
+        quest->start = start;
+        quest->lines = lines;
+        quest->reward_choices = reward_choices;
+
+        if (quest->lines.empty())
+        {
+            quest->lines.push_back(
+                start ? "Will you accept this quest?" : "You have completed the quest."
+            );
+        }
+
+        show_quest_line();
+        active = true;
+    }
+
+    void UINpcTalk::show_quest_line()
+    {
+        bool last_line = quest->line_index + 1 >= quest->lines.size();
+        const std::string& line = quest->lines[quest->line_index];
+
+        if (last_line && !quest->informational)
+        {
+            // The final line carries the accept/decline (or hand-in) prompt.
+            set_dialogue(quest->npcid, 12, 0, false, 0, line);
+        }
+        else
+        {
+            int16_t style = static_cast<int16_t>(
+                (quest->line_index > 0 && !last_line ? 0x0001 : 0) | (!last_line ? 0x0100 : 0)
+            );
+            set_dialogue(quest->npcid, 0, style, true, 0, line);
+        }
+    }
+
+    void UINpcTalk::show_quest_rewards()
+    {
+        std::string text = "You may choose one of the following rewards:\r\n";
+        for (size_t i = 0; i < quest->reward_choices.size(); ++i)
+        {
+            const QuestData::ItemReward& reward = quest->reward_choices[i];
+            text += "#L" + std::to_string(i) + "##t" + std::to_string(reward.id) + "#";
+            if (reward.count > 1)
+            {
+                text += " x " + std::to_string(reward.count);
+            }
+            text += "#l\r\n";
+        }
+
+        quest->choosing_reward = true;
+        set_dialogue(quest->npcid, SELECTION_DIALOGUE_TYPE, 0, false, 0, text);
+    }
+
+    void UINpcTalk::set_dialogue(
+        int32_t npcid,
+        int8_t msgtype,
+        int16_t style,
+        bool has_navigation_flags,
+        int8_t speakerbyte,
+        const std::string& tx
+    )
+    {
         std::string processed_tx = replace_macros(tx);
+        // A menu selection can replace the dialog during a mouse press.
+        // Require a new press before any control on the replacement fires.
+        handled_button_press_id = UI::get().get_cursor_press_id();
         dialogue_mode = resolve_dialogue_mode(msgtype, has_navigation_flags);
 
         selections.clear();
@@ -678,6 +941,21 @@ namespace jrc
         }
 
         active = false;
+
+        if (menu_selection)
+        {
+            menu_selection = {};
+            return;
+        }
+
+        // Client-driven quest conversations have no server-side session to
+        // close; simply dismissing the dialog declines the quest.
+        if (quest)
+        {
+            quest.reset();
+            return;
+        }
+
         NpcTalkMorePacket::close(type).dispatch();
     }
 
@@ -695,6 +973,8 @@ namespace jrc
 
     UIElement::CursorResult UINpcTalk::send_cursor(bool clicked, Point<int16_t> cursorpos)
     {
+        if (clicked && handled_button_press_id == UI::get().get_cursor_press_id())
+            return { Cursor::CLICKING, true };
         if (active && dialogue_mode == DialogueMode::SELECTION && !selection_labels.empty())
         {
             Point<int16_t> relative = cursorpos - position;
@@ -722,6 +1002,7 @@ namespace jrc
             {
                 if (clicked)
                 {
+                    handled_button_press_id = UI::get().get_cursor_press_id();
                     button_pressed(OK);
                 }
                 return { clicked ? Cursor::CLICKING : Cursor::CANCLICK, true };

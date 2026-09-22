@@ -26,8 +26,10 @@
 
 namespace jrc
 {
+    class Inventory;
+
     // A persistent overlay anchored to the right of the screen that lists the
-    // player's in-progress quests and their hunting progress.
+    // player's in-progress quests and their hunting and gathering progress.
     class UIQuestTracker : public UIElement
     {
     public:
@@ -35,7 +37,7 @@ namespace jrc
         static constexpr bool FOCUSED = false;
         static constexpr bool TOGGLED = false;
 
-        UIQuestTracker(const Questlog& questlog);
+        UIQuestTracker(const Inventory& inventory, const Questlog& questlog);
 
         void draw(float inter) const override;
         void update_screen(int16_t new_width, int16_t new_height) override;
@@ -67,6 +69,7 @@ namespace jrc
         static constexpr size_t MAX_TRACKED = 5;
         static constexpr size_t MAX_LINES = 4;
 
+        const Inventory& inventory;
         const Questlog& questlog;
 
         int16_t screen_width;

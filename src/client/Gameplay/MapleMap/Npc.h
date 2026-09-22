@@ -61,6 +61,11 @@ namespace jrc
             return func;
         }
 
+        int32_t get_id() const
+        {
+            return npcid;
+        }
+
     private:
         std::map<std::string, Animation> animations;
         std::map<std::string, std::vector<std::string>> lines;

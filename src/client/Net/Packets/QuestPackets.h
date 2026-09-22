@@ -52,13 +52,20 @@ namespace jrc
         }
     };
 
-    // Requests that a quest is completed at the given npc.
+    // Requests that a quest is completed at the given npc. For quests where
+    // the player picks one of several rewards, selection is the index among
+    // the eligible selectable rewards; pass -1 when there is no choice.
     class CompleteQuestPacket : public QuestActionPacket
     {
     public:
-        CompleteQuestPacket(int16_t qid, int32_t npcid) : QuestActionPacket(COMPLETE, qid)
+        CompleteQuestPacket(int16_t qid, int32_t npcid, int16_t selection = -1)
+            : QuestActionPacket(COMPLETE, qid)
         {
             write_int(npcid);
+            if (selection >= 0)
+            {
+                write_short(selection);
+            }
         }
     };
 
@@ -67,5 +74,27 @@ namespace jrc
     {
     public:
         explicit ForfeitQuestPacket(int16_t qid) : QuestActionPacket(FORFEIT, qid) {}
+    };
+
+    // Requests that the server runs the quest's start script.
+    class ScriptedStartQuestPacket : public QuestActionPacket
+    {
+    public:
+        ScriptedStartQuestPacket(int16_t qid, int32_t npcid)
+            : QuestActionPacket(SCRIPTED_START, qid)
+        {
+            write_int(npcid);
+        }
+    };
+
+    // Requests that the server runs the quest's completion script.
+    class ScriptedCompleteQuestPacket : public QuestActionPacket
+    {
+    public:
+        ScriptedCompleteQuestPacket(int16_t qid, int32_t npcid)
+            : QuestActionPacket(SCRIPTED_COMPLETE, qid)
+        {
+            write_int(npcid);
+        }
     };
 }

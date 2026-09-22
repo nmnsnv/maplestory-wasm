@@ -27,6 +27,8 @@
 #include "../../IO/UITypes/UIStorage.h"
 #include "../../IO/UITypes/UIEquipInventory.h"
 #include "../../IO/UITypes/UIItemInventory.h"
+#include "../../IO/UITypes/UIQuestLog.h"
+#include "../../IO/UITypes/UIQuestTracker.h"
 
 
 namespace jrc
@@ -196,5 +198,15 @@ namespace jrc
 
         Stage::get().get_player().recalc_stats(true);
         UI::get().enable();
+
+        // Gathering quests track inventory counts; keep their displays fresh.
+        if (auto questlog = UI::get().get_element<UIQuestLog>())
+        {
+            questlog->refresh();
+        }
+        if (auto tracker = UI::get().get_element<UIQuestTracker>())
+        {
+            tracker->refresh();
+        }
     }
 }
