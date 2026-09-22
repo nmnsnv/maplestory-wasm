@@ -21,6 +21,8 @@
 #include "../Constants.h"
 #include "../Audio/Audio.h"
 
+#include <iostream>
+
 namespace jrc
 {
     UIElement::UIElement(Point<int16_t> p, Point<int16_t> d, bool a)
@@ -36,6 +38,37 @@ namespace jrc
     {
         draw_sprites(alpha);
         draw_buttons(alpha);
+    }
+
+    void UIElement::draw_checked(float alpha) const
+    {
+        const auto bounds = draw_bounds();
+        DrawBounds scope(bounds, [this, &bounds](DrawBounds::Kind kind, size_t id, const Rectangle<int16_t>& rect)
+        {
+            // Key by the control/asset rather than its absolute coordinates:
+            // dragging an invalid window must not generate a warning per frame.
+            if (!reported_draw_bounds.emplace(kind, id).second)
+                return;
+            static constexpr const char* kinds[] = {"button", "texture", "text", "rectangle"};
+            static constexpr const char* windows[] = {
+                "NONE", "LOGIN", "LOGINWAIT", "LOGINNOTICE", "WORLDSELECT", "CHARSELECT",
+                "CHARCREATION", "SOFTKEYBOARD", "STATUSMESSENGER", "STATUSBAR", "BUFFLIST",
+                "NOTICE", "NPCTALK", "SHOP", "STORAGE", "STATSINFO", "ITEMINVENTORY",
+                "EQUIPINVENTORY", "SKILLBOOK", "KEYCONFIG", "PARTY", "MINIMAP", "WORLDMAP",
+                "QUESTLOG", "QUESTTRACKER", "CASHSHOP", "CASHDIALOG"
+            };
+            static_assert(sizeof(windows) / sizeof(*windows) == NUM_TYPES);
+            std::cerr << "[UI layout] " << windows[type] << ' ' << kinds[static_cast<size_t>(kind)]
+                << " #" << id << " bounds (" << rect.l() - position.x() << ',' << rect.t() - position.y()
+                << " .. " << rect.r() - position.x() << ',' << rect.b() - position.y()
+                << ") exceed window bounds (" << bounds->l() - position.x() << ',' << bounds->t() - position.y()
+                << " .. " << bounds->r() - position.x() << ',' << bounds->b() - position.y()
+                << "). Check canvas origins, control offsets and window dimensions.\n";
+        });
+        for (const auto& entry : buttons)
+            if (entry.second && entry.second->is_visible())
+                DrawBounds::check(entry.second->bounds(position), DrawBounds::Kind::BUTTON, entry.first);
+        draw(alpha);
     }
 
     void UIElement::draw_sprites(float alpha) const

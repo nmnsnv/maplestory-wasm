@@ -17,6 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "Texture.h"
 #include "GraphicsGL.h"
+#include "DrawBounds.h"
 
 #include "../Configuration.h"
 
@@ -60,14 +61,21 @@ namespace jrc
         if (id == 0)
             return;
 
-        GraphicsGL::get()
-            .draw(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), args.get_angle());
+        const auto rect = args.get_rectangle(origin, dimensions);
+        if (!args.get_color().invisible())
+            DrawBounds::check(rect, DrawBounds::Kind::TEXTURE, id);
+        GraphicsGL::get().draw(bitmap, rect, args.get_color(), args.get_angle());
     }
 
     void Texture::draw_clipped(const DrawArgument& args, Range<int16_t> vertical) const
     {
         if (bitmap.id() == 0) return;
-        GraphicsGL::get().draw_clipped(bitmap, args.get_rectangle(origin, dimensions), args.get_color(), vertical);
+        const auto rect = args.get_rectangle(origin, dimensions);
+        const auto top = std::max(rect.t(), vertical.first());
+        const auto bottom = std::min(rect.b(), vertical.second());
+        if (top < bottom && !args.get_color().invisible())
+            DrawBounds::check({rect.l(), rect.r(), top, bottom}, DrawBounds::Kind::TEXTURE, bitmap.id());
+        GraphicsGL::get().draw_clipped(bitmap, rect, args.get_color(), vertical);
     }
 
     void Texture::shift(Point<int16_t> amount)

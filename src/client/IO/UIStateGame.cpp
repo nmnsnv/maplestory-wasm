@@ -109,7 +109,7 @@ namespace jrc
             auto& element = elements[type];
             if (element && element->is_active())
             {
-                element->draw(inter);
+                element->draw_checked(inter);
             }
         }
 

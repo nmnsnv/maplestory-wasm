@@ -24,6 +24,8 @@
 
 #include "nlnx/nx.hpp"
 
+#include <algorithm>
+
 
 namespace jrc
 {
@@ -46,6 +48,8 @@ namespace jrc
         abilities[LEGENDARY] = detail["abilityTitle"]["legendary"]["0"];
         abilities[NONE]      = detail["abilityTitle"]["normal"]["0"];
 
+        // Each canvas already encodes its row in its origin, including linked
+        // artwork. Additional offsets would move the controls out of the panel.
         buttons[BT_HP]  = std::make_unique<MapleButton>(src["BtHpUp"]);
         buttons[BT_MP]  = std::make_unique<MapleButton>(src["BtMpUp"]);
         buttons[BT_STR] = std::make_unique<MapleButton>(src["BtStrUp"]);
@@ -56,12 +60,13 @@ namespace jrc
         buttons[BT_DETAILOPEN]  = std::make_unique<MapleButton>(src["BtDetailOpen"]);
         buttons[BT_DETAILCLOSE] = std::make_unique<MapleButton>(src["BtDetailClose"]);
         buttons[BT_DETAILCLOSE]->set_active(false);
+        buttons[BT_CLOSE] = std::make_unique<MapleButton>(nl::nx::ui["Basic.img"]["BtClose"], 194, 6);
 
         update_ap();
 
         for (size_t i = 0; i < NUMLABELS; ++i)
         {
-            statlabels[i] = Text(Text::A11M, Text::LEFT, Text::LIGHTGREY);
+            statlabels[i] = Text(Text::A11M, Text::LEFT, Text::DARKGREY);
         }
         statoffsets[NAME]      = Point<int16_t>( 73, 27 );
         statoffsets[JOB]       = Point<int16_t>( 73, 45 );
@@ -92,11 +97,9 @@ namespace jrc
         statoffsets[HONOR]     = Point<int16_t>( 73, 353);
 
         update_all_stats();
-        update_stat(Maplestat::JOB);
-        update_stat(Maplestat::FAME);
-
-        dimension  = Point<int16_t>(212, 318);
-        showdetail = false;
+        main_dimensions = Texture(src["backgrnd"]).get_dimensions();
+        detail_dimensions = textures_detail.front().get_dimensions();
+        set_detail(false);
     }
 
     void UIStatsinfo::draw(float alpha) const
@@ -105,7 +108,7 @@ namespace jrc
 
         if (showdetail)
         {
-            Point<int16_t> detail_pos(position + Point<int16_t>(213, 0));
+            Point<int16_t> detail_pos(position + Point<int16_t>(main_dimensions.x() + 1, 0));
             for (auto& texture : textures_detail)
             {
                 texture.draw(detail_pos);
@@ -119,7 +122,7 @@ namespace jrc
             Point<int16_t> labelpos = position + statoffsets[i];
             if (i >= NUMNORMAL)
             {
-                labelpos.shift_x(213);
+                labelpos.shift_x(main_dimensions.x() + 1);
             }
 
             statlabels[i].draw(labelpos);
@@ -136,6 +139,8 @@ namespace jrc
 
     void UIStatsinfo::update_all_stats()
     {
+        update_stat(Maplestat::JOB);
+        update_stat(Maplestat::FAME);
         update_simple(AP, Maplestat::AP);
         if (hasap ^ (stats.get_stat(Maplestat::AP) > 0))
         {
@@ -160,7 +165,7 @@ namespace jrc
         }
         else
         {
-            statlabels[DAMAGE].change_color(Text::LIGHTGREY);
+            statlabels[DAMAGE].change_color(Text::DARKGREY);
         }
 
         update_buffed(ATTACK, Equipstat::WATK);
@@ -189,7 +194,8 @@ namespace jrc
             statlabels[JOB].change_text(stats.get_jobname());
             break;
         case Maplestat::FAME:
-            update_simple(FAME, Maplestat::FAME);
+            // Fame is signed on the wire, although the shared stat store uses uint16_t.
+            statlabels[FAME].change_text(std::to_string(static_cast<int16_t>(stats.get_stat(Maplestat::FAME))));
             break;
         default:
             break;
@@ -201,20 +207,19 @@ namespace jrc
         switch (id)
         {
         case BT_DETAILOPEN:
-            showdetail = true;
-            buttons[BT_DETAILOPEN]->set_active(false);
-            buttons[BT_DETAILCLOSE]->set_active(true);
+            set_detail(true);
             break;
         case BT_DETAILCLOSE:
-            showdetail = false;
-            buttons[BT_DETAILCLOSE]->set_active(false);
-            buttons[BT_DETAILOPEN]->set_active(true);
+            set_detail(false);
+            break;
+        case BT_CLOSE:
+            deactivate();
             break;
         case BT_HP:
-            send_apup(Maplestat::HP);
+            send_apup(Maplestat::MAXHP);
             break;
         case BT_MP:
-            send_apup(Maplestat::MP);
+            send_apup(Maplestat::MAXMP);
             break;
         case BT_STR:
             send_apup(Maplestat::STR);
@@ -236,6 +241,9 @@ namespace jrc
 
     void UIStatsinfo::send_apup(Maplestat::Id stat) const
     {
+        if (stats.get_stat(Maplestat::AP) == 0)
+            return;
+
         SpendApPacket(stat).dispatch();
         UI::get().disable();
     }
@@ -244,15 +252,6 @@ namespace jrc
     {
         bool nowap = stats.get_stat(Maplestat::AP) > 0;
         Button::State newstate = nowap ? Button::NORMAL : Button::DISABLED;
-
-        // Keep the AP controls on a single layout and let the button state
-        // swap the texture. MapleButton already normalizes per-state origins.
-        buttons[BT_HP ]->set_position(Point<int16_t>(20, -36));
-        buttons[BT_MP ]->set_position(Point<int16_t>(20, -18));
-        buttons[BT_STR]->set_position(Point<int16_t>(20,  51));
-        buttons[BT_DEX]->set_position(Point<int16_t>(20,  69));
-        buttons[BT_INT]->set_position(Point<int16_t>(20,  87));
-        buttons[BT_LUK]->set_position(Point<int16_t>(20, 105));
 
         // Beginner AP assignment is controlled by the server: when starter AP
         // is manual, Cosmic exposes spendable AP through the normal stat pool.
@@ -266,6 +265,19 @@ namespace jrc
         buttons[BT_INT]->set_state(newstate);
 
         hasap = nowap;
+    }
+
+    void UIStatsinfo::set_detail(bool visible)
+    {
+        showdetail = visible;
+        buttons[BT_DETAILOPEN]->set_active(!visible);
+        buttons[BT_DETAILCLOSE]->set_active(visible);
+        dimension = main_dimensions;
+        if (visible)
+            dimension = {static_cast<int16_t>(main_dimensions.x() + 1 + detail_dimensions.x()),
+                std::max(main_dimensions.y(), detail_dimensions.y())};
+        // The expanded panel must participate in input routing and screen clamping.
+        keep_on_screen();
     }
 
     void UIStatsinfo::update_simple(StatLabel label, Maplestat::Id stat)
@@ -301,6 +313,7 @@ namespace jrc
         int32_t total = stats.get_total(stat);
         int32_t delta = stats.get_buffdelta(stat);
 
+        statlabels[label].change_color(delta > 0 ? Text::RED : delta < 0 ? Text::BLUE : Text::DARKGREY);
         std::string stattext = std::to_string(total);
         if (delta)
         {
@@ -308,14 +321,10 @@ namespace jrc
             if (delta > 0)
             {
                 stattext += " + " + std::to_string(delta);
-
-                statlabels[label].change_color(Text::RED);
             }
             else if (delta < 0)
             {
                 stattext += " - " + std::to_string(-delta);
-
-                statlabels[label].change_color(Text::BLUE);
             }
             stattext += ")";
         }

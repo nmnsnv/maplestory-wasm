@@ -42,7 +42,7 @@ namespace jrc
         {
             UIElement* element = iter.second.get();
             if (element && element->is_active())
-                element->draw(inter);
+                element->draw_checked(inter);
         }
     }
 
