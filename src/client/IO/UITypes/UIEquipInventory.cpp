@@ -16,11 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "UIEquipInventory.h"
-#include "../Components/AreaButton.h"
-#include "../../Graphics/Geometry.h"
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
+#include "../Components/TwoSpriteButton.h"
 
 #include "../../Data/ItemData.h"
 #include "../../Net/Packets/InventoryPackets.h"
@@ -30,171 +29,133 @@
 namespace jrc
 {
     UIEquipInventory::UIEquipInventory(const Inventory& invent) :
-        UIDragElement<PosEQINV>(Point<int16_t>(184, 20)), inventory(invent) {
-
-        iconpositions[Equipslot::CAP]      = Point<int16_t>( 43,  25);
-        iconpositions[Equipslot::FACEACC]  = Point<int16_t>( 43,  91);
-        iconpositions[Equipslot::EYEACC]   = Point<int16_t>( 43,  68);
-        iconpositions[Equipslot::EARRINGS] = Point<int16_t>(109,  91);
-        iconpositions[Equipslot::TOP]      = Point<int16_t>( 43, 124);
-        iconpositions[Equipslot::PANTS]    = Point<int16_t>( 43, 157);
-        iconpositions[Equipslot::SHOES]    = Point<int16_t>( 76, 190);
-        iconpositions[Equipslot::GLOVES]   = Point<int16_t>( 10, 157);
-        iconpositions[Equipslot::CAPE]     = Point<int16_t>( 10, 124);
-        iconpositions[Equipslot::SHIELD]   = Point<int16_t>(142, 124);
-        iconpositions[Equipslot::WEAPON]   = Point<int16_t>(109, 124);
-        iconpositions[Equipslot::RING]     = Point<int16_t>(109, 157);
-        iconpositions[Equipslot::RING2]    = Point<int16_t>(142, 157);
-        iconpositions[Equipslot::RING3]    = Point<int16_t>(109,  91);
-        iconpositions[Equipslot::RING4]    = Point<int16_t>(142,  91);
-        iconpositions[Equipslot::PENDANT]  = Point<int16_t>( 76, 124);
-        iconpositions[Equipslot::TAMEDMOB] = Point<int16_t>(142,  91);
-        iconpositions[Equipslot::SADDLE]   = Point<int16_t>( 76, 124);
-        iconpositions[Equipslot::MEDAL]    = Point<int16_t>( 10,  58);
-        iconpositions[Equipslot::BELT]     = Point<int16_t>( 76, 157);
-
-        nl::node source = nl::nx::ui["UIWindow2.img"]["Equip"]["character"];
-        nl::node petsource = nl::nx::ui["UIWindow2.img"]["Equip"]["pet"];
-
-        sprites.emplace_back(source["backgrnd"]);
+        UIDragElement<PosEQINV>({0, 20}), inventory(invent)
+    {
+        nl::node source = nl::nx::ui["UIWindow4.img"]["Equip"];
+        // This native compact frame fits the six equipment rows without the
+        // unused footer of the taller variant. Both share the same chrome.
+        Texture frame(source["Zero_Cash"]["backgrnd"]);
+        dimension = frame.get_dimensions();
+        sprites.emplace_back(source["Zero_Cash"]["backgrnd"]);
         sprites.emplace_back(source["backgrnd2"]);
-        sprites.emplace_back(source["backgrnd3_Kanna"]);
-        sprites.emplace_back(source["cashPendant"]);
-        sprites.emplace_back(source["charmPocket"]);
-        sprites.emplace_back(source["emblem"]);
+        sprites.emplace_back(source["tabbar"]);
+        layouts[BT_EQUIP] = EquipInventoryLayout(source["Equip"], false);
+        layouts[BT_CASH] = EquipInventoryLayout(source["Cash"], true);
 
-        buttons[BT_TOGGLEPETS] = std::make_unique<MapleButton>(source["BtPet"]);
+        for (uint16_t tab : {BT_EQUIP, BT_CASH})
+            buttons[tab] = std::make_unique<TwoSpriteButton>(
+                source["Tab"]["disabled"][tab], source["Tab"]["enabled"][tab]);
+        buttons[BT_EQUIP]->set_state(Button::PRESSED);
+        buttons[BT_CLOSE] = std::make_unique<MapleButton>(nl::nx::ui["Basic.img"]["BtClose"], dimension.x() - 18, 6);
+        unavailable_tabs[0] = source["Tab"]["disabled"]["2"];
+        unavailable_tabs[1] = source["Tab"]["disabled"]["3"];
 
-        textures_pet.emplace_back(petsource["backgrnd"]);
-        textures_pet.emplace_back(petsource["backgrnd2"]);
-        textures_pet.emplace_back(petsource["backgrnd3"]);
-
-        // Leave the native Pet button's artwork and hitbox unobstructed.
-        buttons[BT_TOGGLECASH] = std::make_unique<AreaButton>(CASH_TOGGLE_POSITION, CASH_TOGGLE_SIZE);
         load_icons();
-
-        dimension = { 184, 290 };
-        active = true;
-        showpetequips = false;
+        keep_on_screen();
     }
 
     void UIEquipInventory::draw(float alpha) const
     {
         UIElement::draw(alpha);
-        ColorBox(CASH_TOGGLE_SIZE.x(), CASH_TOGGLE_SIZE.y(), Geometry::BLACK, 0.12f).draw(position + CASH_TOGGLE_POSITION);
-        Text(Text::A11B, Text::CENTER, Text::DARKGREY, showcash ? "Cash equipment" : "Equipment")
-            .draw(position + CASH_TOGGLE_POSITION + Point<int16_t>(CASH_TOGGLE_SIZE.x() / 2, 4));
-
-        for (auto iter : icons)
-        {
-            if (iter.second)
-                iter.second->draw(position + iconpositions[iter.first]);
-        }
-
-        if (showpetequips)
-        {
-            Point<int16_t> position_pet(position + Point<int16_t>(184, 0));
-            for (auto& texture : textures_pet)
-            {
-                texture.draw(position_pet);
-            }
-        }
+        for (const Texture& tab : unavailable_tabs)
+            tab.draw({position, 0.45f});
+        layouts[selected_tab].draw(position);
+        for (const auto& slot : layouts[selected_tab].get_slots())
+            if (slot.equip_slot != Equipslot::NONE && icons[slot.equip_slot])
+                icons[slot.equip_slot]->draw(position + slot.icon_position());
     }
 
     Button::State UIEquipInventory::button_pressed(uint16_t id)
     {
-        switch (id)
+        if (id == BT_CLOSE)
         {
-        case BT_TOGGLECASH:
-            UI::get().cancel_drag();
-            showcash = !showcash;
-            load_icons();
+            toggle_active();
             return Button::NORMAL;
-        case BT_TOGGLEPETS:
-            showpetequips = !showpetequips;
-            return Button::NORMAL;
-        default:
+        }
+        if (id == BT_EQUIP || id == BT_CASH)
+        {
+            if (id != selected_tab)
+            {
+                // Release the icon before replacing its owning slot objects.
+                UI::get().cancel_drag();
+                buttons[selected_tab]->set_state(Button::NORMAL);
+                selected_tab = id;
+                load_icons();
+            }
             return Button::PRESSED;
         }
-    }
-
-    void UIEquipInventory::update_slot(Equipslot::Id slot)
-    {
-        if (slot == Equipslot::NONE || slot >= Equipslot::LENGTH) return;
-        const int16_t inventory_slot = slot + (showcash ? 100 : 0);
-        if (int32_t item_id = inventory.get_item_id(InventoryType::EQUIPPED, inventory_slot))
-        {
-            const Texture& texture = ItemData::get(item_id).get_icon(false);
-            icons[slot] = std::make_unique<Icon>(
-                std::make_unique<EquipIcon>(inventory_slot),
-                texture,
-                -1
-                );
-        }
-        else if (icons[slot])
-        {
-            icons[slot].reset();
-        }
-
-        clear_tooltip();
+        return Button::NORMAL;
     }
 
     void UIEquipInventory::load_icons()
     {
         icons.clear();
-
-        for (auto iter : Equipslot::values)
+        for (const auto& slot : layouts[selected_tab].get_slots())
         {
-            update_slot(iter);
+            if (slot.equip_slot == Equipslot::NONE)
+                continue;
+            if (int32_t item_id = inventory.get_item_id(InventoryType::EQUIPPED, slot.inventory_slot))
+                icons[slot.equip_slot] = std::make_unique<Icon>(
+                    std::make_unique<EquipIcon>(slot.inventory_slot, inventory),
+                    ItemData::get(item_id).get_icon(false), -1);
         }
+        clear_tooltip();
     }
 
     UIElement::CursorResult UIEquipInventory::send_window_cursor(bool pressed, Point<int16_t> cursorpos)
     {
-        Equipslot::Id slot = slot_by_position(cursorpos);
-        if (auto icon = icons[slot].get())
+        const Point<int16_t> relative = cursorpos - position;
+        if (const auto* slot = layouts[selected_tab].slot_at(relative))
         {
-            if (pressed)
+            if (slot->equip_slot == Equipslot::NONE)
             {
-                icon->start_drag(cursorpos - position - iconpositions[slot]);
-                UI::get().drag_icon(icon);
-
-                clear_tooltip();
-                return { Cursor::GRABBING, true };
+                UI::get().show_text(Tooltip::EQUIPINVENTORY, "This equipment slot is not available.");
+                return {Cursor::IDLE, true};
             }
-            else
+            if (auto* icon = icons[slot->equip_slot].get())
             {
-                show_equip(slot);
-                return { Cursor::CANGRAB, true };
+                if (pressed)
+                {
+                    icon->start_drag(relative - slot->icon_position());
+                    UI::get().drag_icon(icon);
+                    clear_tooltip();
+                    return {Cursor::GRABBING, true};
+                }
+                UI::get().show_equip(Tooltip::EQUIPINVENTORY, slot->inventory_slot);
+                return {Cursor::CANGRAB, true};
             }
         }
-
+        for (const Texture& tab : unavailable_tabs)
+        {
+            Point<int16_t> top_left = Point<int16_t>() - tab.get_origin();
+            if (Rectangle<int16_t>(top_left, top_left + tab.get_dimensions()).contains(relative))
+            {
+                UI::get().show_text(Tooltip::EQUIPINVENTORY, "This equipment tab is not available yet.");
+                return {Cursor::IDLE, true};
+            }
+        }
         clear_tooltip();
         return UIWindow::send_window_cursor(pressed, cursorpos);
     }
 
     void UIEquipInventory::doubleclick(Point<int16_t> cursorpos)
     {
-        Equipslot::Id slot = slot_by_position(cursorpos);
-        if (icons[slot])
-        {
-            if (int16_t freeslot = inventory.find_free_slot(InventoryType::EQUIP))
-            {
-                UnequipItemPacket(slot + (showcash ? 100 : 0), freeslot).dispatch();
-            }
-        }
+        if (const auto* slot = layouts[selected_tab].slot_at(cursorpos - position))
+            if (slot->equip_slot != Equipslot::NONE && icons[slot->equip_slot])
+                if (int16_t freeslot = inventory.find_free_slot(InventoryType::EQUIP))
+                    UnequipItemPacket(slot->inventory_slot, freeslot).dispatch();
     }
 
     void UIEquipInventory::send_icon(const Icon& icon, Point<int16_t> cursorpos)
     {
-        if (Equipslot::Id slot = slot_by_position(cursorpos))
-        {
-            icon.drop_on_equips(slot);
-        }
+        if (const auto* slot = layouts[selected_tab].slot_at(cursorpos - position))
+            if (slot->equip_slot != Equipslot::NONE)
+                icon.drop_on_equips(slot->equip_slot);
     }
 
     void UIEquipInventory::toggle_active()
     {
+        UI::get().cancel_drag();
         clear_tooltip();
         UIElement::toggle_active();
     }
@@ -202,31 +163,18 @@ namespace jrc
     void UIEquipInventory::send_key(int32_t, bool pressed, bool escape)
     {
         if (pressed && escape)
-        {
             toggle_active();
-        }
     }
 
-    void UIEquipInventory::modify(int16_t pos, int8_t mode, int16_t arg)
+    void UIEquipInventory::modify(int16_t, int8_t mode, int16_t)
     {
-        Equipslot::Id eqpos = Equipslot::by_id(pos > 100 ? pos - 100 : pos);
-        Equipslot::Id eqarg = Equipslot::by_id(arg > 100 ? arg - 100 : arg);
-        switch (mode)
+        if (mode == Inventory::ADD || mode == Inventory::SWAP || mode == Inventory::REMOVE)
         {
-        case 0:
-        case 3:
-            update_slot(eqpos);
-            break;
-        case 2:
-            update_slot(eqpos);
-            update_slot(eqarg);
-            break;
+            // Moves can replace both a normal and a cash slot in one response.
+            // Read the committed inventory so neither tab retains stale icons.
+            UI::get().cancel_drag();
+            load_icons();
         }
-    }
-
-    void UIEquipInventory::show_equip(Equipslot::Id slot)
-    {
-        UI::get().show_equip(Tooltip::EQUIPINVENTORY, slot + (showcash ? 100 : 0));
     }
 
     void UIEquipInventory::clear_tooltip()
@@ -234,27 +182,7 @@ namespace jrc
         UI::get().clear_tooltip(Tooltip::EQUIPINVENTORY);
     }
 
-    Equipslot::Id UIEquipInventory::slot_by_position(Point<int16_t> cursorpos) const
-    {
-        for (auto iter : iconpositions)
-        {
-            Rectangle<int16_t> iconrect = Rectangle<int16_t>(
-                position + iter.second,
-                position + iter.second + Point<int16_t>(32, 32)
-                );
-            if (iconrect.contains(cursorpos))
-            {
-                return iter.first;
-            }
-        }
-        return Equipslot::NONE;
-    }
-
-
-    UIEquipInventory::EquipIcon::EquipIcon(int16_t s)
-    {
-        source = s;
-    }
+    UIEquipInventory::EquipIcon::EquipIcon(int16_t slot, const Inventory& invent) : source(slot), inventory(invent) {}
 
     void UIEquipInventory::EquipIcon::drop_on_stage() const
     {
@@ -265,19 +193,12 @@ namespace jrc
     {
         if (tab != InventoryType::EQUIP)
             return;
-
         if (equip)
         {
-            if (eqslot == source)
-            {
-                EquipItemPacket(slot, eqslot)
-                    .dispatch();
-            }
+            if (eqslot == source % 100)
+                EquipItemPacket(slot, eqslot, inventory.is_cash(InventoryType::EQUIP, slot)).dispatch();
         }
         else
-        {
-            UnequipItemPacket(source, slot)
-                .dispatch();
-        }
+            UnequipItemPacket(source, slot).dispatch();
     }
 }

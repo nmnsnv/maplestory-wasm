@@ -18,7 +18,7 @@
 #pragma once
 #include "../UIDragElement.h"
 
-#include "../Components/EquipTooltip.h"
+#include "../Components/EquipInventoryLayout.h"
 #include "../Components/Icon.h"
 
 #include "../../Character/Inventory/Inventory.h"
@@ -50,19 +50,13 @@ namespace jrc
         Button::State button_pressed(uint16_t buttonid) override;
 
     private:
-        static constexpr Point<int16_t> CASH_TOGGLE_POSITION{62, 260};
-        static constexpr Point<int16_t> CASH_TOGGLE_SIZE{110, 22};
-
-        void show_equip(Equipslot::Id slot);
         void clear_tooltip();
         void load_icons();
-        void update_slot(Equipslot::Id slot);
-        Equipslot::Id slot_by_position(Point<int16_t> position) const;
 
         class EquipIcon : public Icon::Type
         {
         public:
-            EquipIcon(int16_t source);
+            EquipIcon(int16_t source, const Inventory& inventory);
 
             void drop_on_stage() const override;
             void drop_on_equips(Equipslot::Id) const override {}
@@ -70,21 +64,21 @@ namespace jrc
 
         private:
             int16_t source;
+            const Inventory& inventory;
         };
 
         enum Buttons
         {
-            BT_TOGGLECASH,
-            BT_TOGGLEPETS
+            BT_EQUIP,
+            BT_CASH,
+            BT_CLOSE
         };
 
         const Inventory& inventory;
 
-        std::vector<Texture> textures_pet;
-        EnumMap<Equipslot::Id, Point<int16_t>> iconpositions;
+        EquipInventoryLayout layouts[2];
+        Texture unavailable_tabs[2];
         EnumMap<Equipslot::Id, std::unique_ptr<Icon>> icons;
-
-        bool showpetequips;
-        bool showcash = false;
+        uint16_t selected_tab = BT_EQUIP;
     };
 }
