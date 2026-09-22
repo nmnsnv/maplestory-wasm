@@ -50,6 +50,9 @@ namespace jrc
         Button::State button_pressed(uint16_t buttonid) override;
 
     private:
+        static constexpr Point<int16_t> CASH_TOGGLE_POSITION{62, 260};
+        static constexpr Point<int16_t> CASH_TOGGLE_SIZE{110, 22};
+
         void show_equip(Equipslot::Id slot);
         void clear_tooltip();
         void load_icons();

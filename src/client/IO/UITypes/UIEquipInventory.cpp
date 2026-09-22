@@ -69,7 +69,8 @@ namespace jrc
         textures_pet.emplace_back(petsource["backgrnd2"]);
         textures_pet.emplace_back(petsource["backgrnd3"]);
 
-        buttons[BT_TOGGLECASH] = std::make_unique<AreaButton>(Point<int16_t>(12, 260), Point<int16_t>(70, 22));
+        // Leave the native Pet button's artwork and hitbox unobstructed.
+        buttons[BT_TOGGLECASH] = std::make_unique<AreaButton>(CASH_TOGGLE_POSITION, CASH_TOGGLE_SIZE);
         load_icons();
 
         dimension = { 184, 290 };
@@ -80,8 +81,9 @@ namespace jrc
     void UIEquipInventory::draw(float alpha) const
     {
         UIElement::draw(alpha);
-        ColorBox(70, 22, Geometry::BLACK, 0.12f).draw(position + Point<int16_t>(12, 260));
-        Text(Text::A11B, Text::CENTER, Text::DARKGREY, showcash ? "Cash" : "Equipment").draw(position + Point<int16_t>(47, 264));
+        ColorBox(CASH_TOGGLE_SIZE.x(), CASH_TOGGLE_SIZE.y(), Geometry::BLACK, 0.12f).draw(position + CASH_TOGGLE_POSITION);
+        Text(Text::A11B, Text::CENTER, Text::DARKGREY, showcash ? "Cash equipment" : "Equipment")
+            .draw(position + CASH_TOGGLE_POSITION + Point<int16_t>(CASH_TOGGLE_SIZE.x() / 2, 4));
 
         for (auto iter : icons)
         {
