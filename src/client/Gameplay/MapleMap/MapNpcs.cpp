@@ -102,8 +102,9 @@ namespace jrc
             {
                 if (pressed)
                 {
-                    // The quest menu also offers the NPC's normal services.
-                    if (!QuestDelivery::offer_quests(npc->get_id(), npc->get_oid()))
+                    // Body and marker hit tests intentionally share the same
+                    // conversation entry point.
+                    if (!QuestDelivery::offer_quests(npc->get_id(), npc->get_oid(), npc->isscripted()))
                     {
                         TalkToNPCPacket(npc->get_oid())
                             .dispatch();

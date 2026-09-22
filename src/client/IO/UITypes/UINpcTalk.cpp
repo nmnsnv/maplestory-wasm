@@ -662,11 +662,11 @@ namespace jrc
     }
 
     void UINpcTalk::show_menu(int32_t npcid, const std::vector<std::string>& options,
-        std::function<void(size_t)> on_select)
+        std::function<void(size_t)> on_select, const std::string& greeting)
     {
         quest.reset();
         menu_selection = std::move(on_select);
-        std::string text = "What would you like to do?\r\n";
+        std::string text = (greeting.empty() ? "What would you like to do?" : greeting) + "\r\n\r\n";
         for (size_t i = 0; i < options.size(); ++i)
             text += "#L" + std::to_string(i) + "#" + options[i] + "#l\r\n";
         set_dialogue(npcid, SELECTION_DIALOGUE_TYPE, 0, false, 0, text);

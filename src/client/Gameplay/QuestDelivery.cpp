@@ -1,5 +1,6 @@
 #include "QuestDelivery.h"
 
+#include "QuestConversation.h"
 #include "Stage.h"
 
 #include "../Data/QuestData.h"
@@ -9,7 +10,10 @@
 #include "../Net/Packets/QuestPackets.h"
 #include "../Net/Packets/NpcInteractionPackets.h"
 
-#include <set>
+#include "nlnx/node.hpp"
+#include "nlnx/nx.hpp"
+
+#include <algorithm>
 
 namespace jrc
 {
@@ -69,16 +73,10 @@ namespace jrc
             }
         }
 
-        enum class Action { START, COMPLETE, PROGRESS };
-        struct QuestOption
+        QuestConversation conversation_for(int32_t npcid, bool has_services)
         {
-            int16_t qid;
-            Action action;
-        };
-
-        Questlog::Eligibility eligibility(const Player& player, int16_t qid, bool start)
-        {
-            return player.get_quests().get_eligibility(qid, start, player.get_level(),
+            const Player& player = Stage::get().get_player();
+            return QuestConversation::build(npcid, has_services, player.get_quests(), player.get_level(),
                 player.get_stats().get_job().get_id(), player.get_inventory(), Stage::get().get_mapid());
         }
 
@@ -90,83 +88,82 @@ namespace jrc
                 player.get_stats().get_name(), player.get_inventory(), player.get_quests());
             if (data.get_end_npc() > 0)
                 text += "\r\n\r\nReturn to #p" + std::to_string(data.get_end_npc()) + "# when you meet the requirements.";
+            // Progress can be the first dialog opened after clicking an NPC;
+            // it must not depend on a chooser having created the window.
+            UI::get().emplace<UINpcTalk>();
+            UI::get().enable();
             if (auto talk = UI::get().get_element<UINpcTalk>())
                 talk->show_quest_info(npcid, {text});
         }
+
+        void open_quest(int32_t npcid, const QuestConversation::Option& option)
+        {
+            if (option.action == QuestConversation::Action::PROGRESS)
+            {
+                show_progress(npcid, option.qid);
+                return;
+            }
+            const QuestData& data = QuestData::get(option.qid);
+            const bool start = option.action == QuestConversation::Action::START;
+            UI::get().enable();
+            if (start && data.is_start_scripted())
+                ScriptedStartQuestPacket(option.qid, npcid).dispatch();
+            else if (!start && data.is_end_scripted())
+                ScriptedCompleteQuestPacket(option.qid, npcid).dispatch();
+            else
+                open_dialog(npcid, option.qid, start, Stage::get().get_player());
+        }
     }
 
-    bool QuestDelivery::offer_quests(int32_t npcid, int32_t oid)
+    bool QuestDelivery::offer_quests(int32_t npcid, int32_t oid, bool has_services)
     {
-        const Player& player = Stage::get().get_player();
-        const Questlog& quests = player.get_quests();
-        std::vector<QuestOption> options;
-        // The normal NPC script must remain reachable even when a quest is
-        // declined, cannot be handed in, or is rejected by the server.
-        std::vector<std::string> labels = {"Talk to #p" + std::to_string(npcid) + "#"};
-        std::set<int16_t> active_quests;
-        for (const auto& entry : quests.get_started())
-            active_quests.insert(entry.first);
-        for (const auto& entry : quests.get_in_progress())
-            active_quests.insert(entry.first);
-
-        for (int16_t qid : active_quests)
-        {
-            const QuestData& data = QuestData::get(qid);
-            if (!data.is_valid() || (data.get_end_npc() != npcid && data.get_start_npc() != npcid))
-                continue;
-            const auto status = eligibility(player, qid, false);
-            const bool hand_in = data.get_end_npc() == npcid && status != Questlog::Eligibility::UNAVAILABLE;
-            options.push_back({qid, hand_in ? Action::COMPLETE : Action::PROGRESS});
-            labels.push_back((!hand_in ? "In progress: " :
-                status == Questlog::Eligibility::SERVER_CHECK ? "Check completion: " : "Complete: ") + data.get_name());
-        }
-
-        for (int32_t qid : QuestData::quests_by_npc(npcid))
-        {
-            const int16_t quest_id = static_cast<int16_t>(qid);
-            if (eligibility(player, quest_id, true) == Questlog::Eligibility::UNAVAILABLE)
-                continue;
-            options.push_back({quest_id, Action::START});
-            labels.push_back("Available: " + QuestData::get(qid).get_name());
-        }
-
-        if (options.empty())
+        const QuestConversation conversation = conversation_for(npcid, has_services);
+        if (conversation.route() == QuestConversation::Route::NPC)
             return false;
+        if (conversation.route() == QuestConversation::Route::QUEST)
+        {
+            open_quest(npcid, conversation.options.front());
+            return true;
+        }
 
+        using Action = QuestConversation::Action;
+        std::vector<std::string> labels;
+        for (const auto& option : conversation.options)
+        {
+            if (option.action == Action::TALK)
+            {
+                labels.push_back("Talk to #p" + std::to_string(npcid) + "#");
+                continue;
+            }
+            const std::string prefix = option.action == Action::PROGRESS ? "In progress: " :
+                option.action == Action::START ? "Available: " :
+                option.eligibility == Questlog::Eligibility::SERVER_CHECK ? "Check completion: " : "Complete: ";
+            labels.push_back(prefix + QuestData::get(option.qid).get_name());
+        }
         const int32_t map_id = Stage::get().get_mapid();
         UI::get().emplace<UINpcTalk>();
         UI::get().enable();
         if (auto talk = UI::get().get_element<UINpcTalk>())
         {
-            talk->show_menu(npcid, labels, [npcid, oid, map_id, options](size_t selection) {
-                if (Stage::get().get_mapid() != map_id)
+            talk->show_menu(npcid, labels, [npcid, oid, map_id, has_services, options = conversation.options](size_t selection) {
+                if (Stage::get().get_mapid() != map_id || selection >= options.size())
                     return;
-                if (selection == 0)
+                const auto selected = options[selection];
+                if (selected.action == Action::TALK)
                 {
                     TalkToNPCPacket(oid).dispatch();
                     return;
                 }
-                if (selection > options.size())
-                    return;
-                const QuestOption option = options[selection - 1];
-                const Player& current = Stage::get().get_player();
-                const bool start = option.action == Action::START;
-                // Inventory and quest state may have changed since the menu
-                // opened; recheck before selecting a completion conversation.
-                if (option.action == Action::PROGRESS ||
-                    eligibility(current, option.qid, start) == Questlog::Eligibility::UNAVAILABLE)
-                {
-                    show_progress(npcid, option.qid);
-                    return;
-                }
-                const QuestData& data = QuestData::get(option.qid);
-                if (start && data.is_start_scripted())
-                    ScriptedStartQuestPacket(option.qid, npcid).dispatch();
-                else if (!start && data.is_end_scripted())
-                    ScriptedCompleteQuestPacket(option.qid, npcid).dispatch();
-                else
-                    open_dialog(npcid, option.qid, start, current);
-            });
+                // Rebuild from current state: hand-ins may lose requirements,
+                // progress may become ready, or a quest may disappear entirely.
+                const auto current = conversation_for(npcid, has_services);
+                const auto option = std::find_if(current.options.begin(), current.options.end(),
+                    [selected](const QuestConversation::Option& candidate) {
+                        return candidate.action != Action::TALK && candidate.qid == selected.qid;
+                    });
+                if (option != current.options.end())
+                    open_quest(npcid, *option);
+            }, nl::nx::string["Npc.img"][std::to_string(npcid)]["d0"].get_string());
         }
         return true;
     }

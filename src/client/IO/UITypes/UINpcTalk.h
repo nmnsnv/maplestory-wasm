@@ -64,7 +64,7 @@ namespace jrc
             const std::vector<QuestData::ItemReward>& reward_choices
         );
         void show_menu(int32_t npcid, const std::vector<std::string>& options,
-            std::function<void(size_t)> on_select);
+            std::function<void(size_t)> on_select, const std::string& greeting);
         void show_quest_info(int32_t npcid, const std::vector<std::string>& lines);
         // Continue the local conversation only after a quest record update
         // confirms that the server accepted the requested action.

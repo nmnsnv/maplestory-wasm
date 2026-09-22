@@ -9,10 +9,8 @@ namespace jrc
     // game files and dispatches the resulting quest action.
     namespace QuestDelivery
     {
-        // If the npc can collect or offer a quest for the player, offer a menu
-        // including the normal NPC script and return
-        // true. Returns false if the npc has no quest business with the
-        // player, in which case a regular npc talk should be started.
-        bool offer_quests(int32_t npcid, int32_t oid);
+        // Both NPC and marker clicks open a lone quest directly or a chooser
+        // for several quests. Returns false when regular NPC talk should run.
+        bool offer_quests(int32_t npcid, int32_t oid, bool has_services);
     }
 }
