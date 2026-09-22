@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "Session.h"
+#include "OutPacket.h"
 
 #include "../Configuration.h"
 #include "../Console.h"
@@ -52,6 +53,11 @@ namespace jrc
             );
             return configured_server_ip;
         }
+    }
+
+    void OutPacket::dispatch()
+    {
+        Session::get().write(bytes.data(), bytes.size());
     }
 
     Session::Session()
@@ -122,6 +128,8 @@ namespace jrc
         {
             std::string target_address = resolve_channel_address(address);
             const char* target_port = (port != nullptr) ? port : "";
+            length = 0;
+            pos = 0;
             init(target_address.c_str(), target_port);
         }
         else

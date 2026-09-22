@@ -71,6 +71,7 @@ namespace jrc
 
         enum Buttons
         {
+            BT_TOGGLECASH,
             BT_TOGGLEPETS
         };
 
@@ -81,5 +82,6 @@ namespace jrc
         EnumMap<Equipslot::Id, std::unique_ptr<Icon>> icons;
 
         bool showpetequips;
+        bool showcash = false;
     };
 }

@@ -590,7 +590,7 @@ namespace jrc
         size_t offset = 0;
         while (offset < length)
         {
-            size_t last = text.find_first_of(" \\#", offset + 1);
+            size_t last = text.find_first_of(" \\#\n\r", offset + 1);
             if (last == std::string::npos)
                 last = length;
 
@@ -627,8 +627,9 @@ namespace jrc
 
         Text::Font  last_font  = fontid;
         Text::Color last_color = color;
-        size_t skip = 0;
-        bool linebreak = false;
+        // Plain dialog text uses real newlines; Maple's escaped formatting remains optional.
+        bool linebreak = text[first] == '\n' || text[first] == '\r';
+        size_t skip = linebreak ? 1 : 0;
         if (formatted)
         {
             switch (text[first])

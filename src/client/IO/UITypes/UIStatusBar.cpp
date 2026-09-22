@@ -157,6 +157,9 @@ namespace jrc
     {
         switch (id)
         {
+        case BT_CASHSHOP:
+            UI::get().send_menu(KeyAction::CASHSHOP);
+            return Button::NORMAL;
         case BT_STATS:
             UI::get().send_menu(KeyAction::CHARSTATS);
             return Button::NORMAL;

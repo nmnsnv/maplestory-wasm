@@ -38,7 +38,8 @@ namespace jrc
         enum State
         {
             LOGIN,
-            GAME
+            GAME,
+            CASHSHOP
         };
 
         UI();

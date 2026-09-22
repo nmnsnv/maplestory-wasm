@@ -68,6 +68,7 @@ namespace jrc
         void recalc_stats(bool equipchanged);
         /// Change the equipment at the specified slot and recalculate stats.
         void change_equip(int16_t slot);
+        void refresh_equips();
         /// Use the item from the player's inventory with the given id.
         void use_item(int32_t itemid);
 

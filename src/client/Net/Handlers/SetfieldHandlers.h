@@ -28,6 +28,7 @@ namespace jrc
     {
     public:
         void handle(InPacket& recv) const override;
+        void parse_character(InPacket& recv) const;
 
     private:
         void transition(int32_t mapid, uint8_t portalid) const;

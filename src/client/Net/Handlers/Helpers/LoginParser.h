@@ -26,7 +26,7 @@ namespace jrc
         Account parse_account(InPacket& recv);
         World parse_world(InPacket& recv);
         CharEntry parse_charentry(InPacket& recv);
-        StatsEntry parse_stats(InPacket& recv);
+        StatsEntry parse_stats(InPacket& recv, LookEntry* appearance = nullptr);
         LookEntry parse_look(InPacket& recv);
     }
 }

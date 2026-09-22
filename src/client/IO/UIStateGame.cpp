@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "UIStateGame.h"
+#include "UITypes/UICashShop.h"
+#include "../Gameplay/CashShop.h"
 #include "UI.h"
 
 #include "UITypes/UIStatusMessenger.h"
@@ -69,13 +71,19 @@ namespace jrc
         }
     }
 
-    UIStateGame::UIStateGame()
+    UIStateGame::UIStateGame(bool cash_shop) : cash_shop(cash_shop)
     {
         focused       = UIElement::NONE;
         cursor_captured = UIElement::NONE;
         tooltipparent = Tooltip::NONE;
         view_width    = Constants::viewwidth();
         view_height   = Constants::viewheight();
+
+        if (cash_shop)
+        {
+            emplace<UICashShop>();
+            return;
+        }
 
         const CharLook&  look      = Stage::get().get_player().get_look();
         const CharStats& stats     = Stage::get().get_player().get_stats();
@@ -155,6 +163,7 @@ namespace jrc
 
     void UIStateGame::doubleclick(Point<int16_t> pos)
     {
+        if (!cash_shop && CashShop::get().active()) return;
         if (UIElement* front = get_front(pos))
         {
             front->doubleclick(pos);
@@ -163,6 +172,7 @@ namespace jrc
 
     void UIStateGame::rightclick(Point<int16_t> pos)
     {
+        if (!cash_shop && CashShop::get().active()) return;
         if (UIElement* front = get_front(pos))
         {
             front->rightclick(pos);
@@ -182,6 +192,15 @@ namespace jrc
             focused = UIElement::NONE;
         }
 
+        if (cash_shop)
+        {
+            if (auto* shop = get(UIElement::CASHSHOP))
+                shop->send_key(action, pressed, escape);
+            return;
+        }
+        if (CashShop::get().active())
+            return;
+
         if (pressed && type == KeyType::ACTION && action == KeyAction::RETURN)
         {
             if (auto statusbar = UI::get().get_element<UIStatusbar>())
@@ -198,6 +217,9 @@ namespace jrc
             {
                 switch (action)
                 {
+                case KeyAction::CASHSHOP:
+                    CashShop::get().enter();
+                    break;
                 case KeyAction::CHARSTATS:
                     emplace<UIStatsinfo>(
                         Stage::get().get_player().get_stats()
@@ -290,6 +312,7 @@ namespace jrc
 
     Cursor::State UIStateGame::send_cursor(Cursor::State mst, Point<int16_t> pos)
     {
+        if (!cash_shop && CashShop::get().active()) return Cursor::IDLE;
         if (draggedicon)
         {
             switch (mst)
@@ -614,6 +637,9 @@ namespace jrc
 
     UIElement* UIStateGame::get_front(Point<int16_t> pos)
     {
+        if (cash_shop)
+            if (auto* modal = get(focused); modal && modal->is_active())
+                return modal;
         auto begin = elementorder.rbegin();
         auto end   = elementorder.rend();
         for (auto iter = begin; iter != end; ++iter)

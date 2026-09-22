@@ -27,6 +27,7 @@
 #include "Character/Char.h"
 #include "Gameplay/Combat/DamageNumber.h"
 #include "Gameplay/Stage.h"
+#include "Gameplay/CashShop.h"
 #include "IO/UI.h"
 #include "IO/Window.h"
 #include "Net/Session.h"
@@ -104,7 +105,9 @@ namespace jrc
     {
         Window::get().check_events();
         Window::get().update();
-        Stage::get().update();
+        CashShop::get().update();
+        if (!CashShop::get().active())
+            Stage::get().update();
         UI::get().update();
         Session::get().read();
     }
@@ -112,7 +115,8 @@ namespace jrc
     void draw(float alpha)
     {
         Window::get().begin();
-        Stage::get().draw(alpha);
+        if (CashShop::get().state != CashShop::State::OPEN && CashShop::get().state != CashShop::State::EXITING)
+            Stage::get().draw(alpha);
         UI::get().draw(alpha);
         Window::get().end();
     }

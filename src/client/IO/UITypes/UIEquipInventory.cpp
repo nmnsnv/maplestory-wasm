@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "UIEquipInventory.h"
+#include "../Components/AreaButton.h"
+#include "../../Graphics/Geometry.h"
 
 #include "../UI.h"
 #include "../Components/MapleButton.h"
@@ -67,6 +69,7 @@ namespace jrc
         textures_pet.emplace_back(petsource["backgrnd2"]);
         textures_pet.emplace_back(petsource["backgrnd3"]);
 
+        buttons[BT_TOGGLECASH] = std::make_unique<AreaButton>(Point<int16_t>(12, 260), Point<int16_t>(70, 22));
         load_icons();
 
         dimension = { 184, 290 };
@@ -77,6 +80,8 @@ namespace jrc
     void UIEquipInventory::draw(float alpha) const
     {
         UIElement::draw(alpha);
+        ColorBox(70, 22, Geometry::BLACK, 0.12f).draw(position + Point<int16_t>(12, 260));
+        Text(Text::A11B, Text::CENTER, Text::DARKGREY, showcash ? "Cash" : "Equipment").draw(position + Point<int16_t>(47, 264));
 
         for (auto iter : icons)
         {
@@ -98,6 +103,11 @@ namespace jrc
     {
         switch (id)
         {
+        case BT_TOGGLECASH:
+            UI::get().cancel_drag();
+            showcash = !showcash;
+            load_icons();
+            return Button::NORMAL;
         case BT_TOGGLEPETS:
             showpetequips = !showpetequips;
             return Button::NORMAL;
@@ -108,18 +118,20 @@ namespace jrc
 
     void UIEquipInventory::update_slot(Equipslot::Id slot)
     {
-        if (int32_t item_id = inventory.get_item_id(InventoryType::EQUIPPED, slot))
+        if (slot == Equipslot::NONE || slot >= Equipslot::LENGTH) return;
+        const int16_t inventory_slot = slot + (showcash ? 100 : 0);
+        if (int32_t item_id = inventory.get_item_id(InventoryType::EQUIPPED, inventory_slot))
         {
             const Texture& texture = ItemData::get(item_id).get_icon(false);
             icons[slot] = std::make_unique<Icon>(
-                std::make_unique<EquipIcon>(slot),
+                std::make_unique<EquipIcon>(inventory_slot),
                 texture,
                 -1
                 );
         }
         else if (icons[slot])
         {
-            icons[slot].release();
+            icons[slot].reset();
         }
 
         clear_tooltip();
@@ -166,7 +178,7 @@ namespace jrc
         {
             if (int16_t freeslot = inventory.find_free_slot(InventoryType::EQUIP))
             {
-                UnequipItemPacket(slot, freeslot).dispatch();
+                UnequipItemPacket(slot + (showcash ? 100 : 0), freeslot).dispatch();
             }
         }
     }
@@ -195,8 +207,8 @@ namespace jrc
 
     void UIEquipInventory::modify(int16_t pos, int8_t mode, int16_t arg)
     {
-        Equipslot::Id eqpos = Equipslot::by_id(pos);
-        Equipslot::Id eqarg = Equipslot::by_id(arg);
+        Equipslot::Id eqpos = Equipslot::by_id(pos > 100 ? pos - 100 : pos);
+        Equipslot::Id eqarg = Equipslot::by_id(arg > 100 ? arg - 100 : arg);
         switch (mode)
         {
         case 0:
@@ -212,7 +224,7 @@ namespace jrc
 
     void UIEquipInventory::show_equip(Equipslot::Id slot)
     {
-        UI::get().show_equip(Tooltip::EQUIPINVENTORY, slot);
+        UI::get().show_equip(Tooltip::EQUIPINVENTORY, slot + (showcash ? 100 : 0));
     }
 
     void UIEquipInventory::clear_tooltip()
