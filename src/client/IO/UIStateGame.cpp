@@ -390,11 +390,6 @@ namespace jrc
                     }
                 }
 
-                if (tooltip_parent_for_type(fronttype) != tooltipparent)
-                {
-                    clear_tooltip(tooltipparent);
-                }
-
                 if (front)
                 {
                     if (clicked)
@@ -451,6 +446,13 @@ namespace jrc
 
     void UIStateGame::clear_cursors(bool clicked, Point<int16_t> pos, UIElement::Type except)
     {
+        // Focused dialogs and captured clicks bypass normal hover dispatch,
+        // but must still dismiss tooltips belonging to another window.
+        if (tooltip_parent_for_type(except) != tooltipparent)
+        {
+            clear_tooltip(tooltipparent);
+        }
+
         for (const auto& type : elementorder)
         {
             if (type == except)
@@ -578,6 +580,10 @@ namespace jrc
 
             if (is_focused)
             {
+                // A modal can open during an inventory click. Clear both the
+                // hover and capture so mouse-up cannot restore its old tooltip.
+                clear_tooltip(tooltipparent);
+                cursor_captured = UIElement::NONE;
                 focused = type;
             }
 
