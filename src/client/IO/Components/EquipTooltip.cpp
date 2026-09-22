@@ -179,54 +179,19 @@ namespace jrc
 
         for (auto& ms : requirements)
         {
-            canequip[ms] = stats.get_stat(ms) >= equipdata.get_reqstat(ms);
+            canequip[ms] = equipdata.meets_requirement(ms, stats);
             std::string reqstr = std::to_string(equipdata.get_reqstat(ms));
             reqstr.insert(0, 3 - reqstr.size(), '0');
             reqstatstrings[ms] = reqstr;
         }
 
         okjobs.clear();
-        switch (equipdata.get_reqstat(Maplestat::JOB))
+        const int16_t required_jobs = equipdata.get_reqstat(Maplestat::JOB);
+        canequip[Maplestat::JOB] = equipdata.meets_requirement(Maplestat::JOB, stats);
+        for (int32_t job_class = 0; job_class <= 5; ++job_class)
         {
-        case 0: // Common
-            okjobs.push_back(0);
-            okjobs.push_back(1);
-            okjobs.push_back(2);
-            okjobs.push_back(3);
-            okjobs.push_back(4);
-            okjobs.push_back(5);
-            canequip[Maplestat::JOB] = true;
-            break;
-        case 1: // Warrior
-            okjobs.push_back(1);
-            canequip[Maplestat::JOB] = (stats.get_stat(Maplestat::JOB) / 100 == 1) || (stats.get_stat(Maplestat::JOB) / 100 >= 20);
-            break;
-        case 2: // Magician
-            okjobs.push_back(2);
-            canequip[Maplestat::JOB] = stats.get_stat(Maplestat::JOB) / 100 == 2;
-            break;
-        case 3: // Magician, Warrior
-            okjobs.push_back(1);
-            okjobs.push_back(2);
-            canequip[Maplestat::JOB] =
-                (stats.get_stat(Maplestat::JOB) / 100 == 1) ||
-                (stats.get_stat(Maplestat::JOB) / 100 >= 20) ||
-                (stats.get_stat(Maplestat::JOB) / 100 == 2);
-            break;
-        case 4: // Bowman
-            okjobs.push_back(3);
-            canequip[Maplestat::JOB] = stats.get_stat(Maplestat::JOB) / 100 == 3;
-            break;
-        case 8: // Thief
-            okjobs.push_back(4);
-            canequip[Maplestat::JOB] = stats.get_stat(Maplestat::JOB) / 100 == 4;
-            break;
-        case 16: // Pirate
-            okjobs.push_back(5);
-            canequip[Maplestat::JOB] = stats.get_stat(Maplestat::JOB) / 100 == 5;
-            break;
-        default:
-            canequip[Maplestat::JOB] = false;
+            if (Job(static_cast<uint16_t>(job_class * 100)).can_equip(required_jobs))
+                okjobs.push_back(job_class);
         }
 
         prank = equip.get_potrank();

@@ -69,6 +69,8 @@ namespace jrc
         /// Change the equipment at the specified slot and recalculate stats.
         void change_equip(int16_t slot);
         void refresh_equips();
+        /// Validate equipment requirements before requesting an inventory move.
+        void equip_item(int16_t slot, Equipslot::Id destination) const;
         /// Use the item from the player's inventory with the given id.
         void use_item(int32_t itemid);
 

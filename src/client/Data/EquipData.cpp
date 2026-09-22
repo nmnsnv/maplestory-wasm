@@ -17,6 +17,8 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "EquipData.h"
 
+#include "../Character/CharStats.h"
+
 #include "nlnx/nx.hpp"
 #include "nlnx/node.hpp"
 
@@ -32,6 +34,7 @@ namespace jrc
         cash = src["cash"].get_bool();
         tradeblock = src["tradeBlock"].get_bool();
         slots = src["tuc"];
+        reqstats.clear();
         reqstats[Maplestat::LEVEL] = src["reqLevel"];
         reqstats[Maplestat::JOB] = src["reqJob"];
         reqstats[Maplestat::STR] = src["reqSTR"];
@@ -117,6 +120,43 @@ namespace jrc
     int16_t EquipData::get_reqstat(Maplestat::Id stat) const
     {
         return reqstats[stat];
+    }
+
+    bool EquipData::meets_requirement(Maplestat::Id stat, const CharStats& stats) const
+    {
+        const int16_t required = get_reqstat(stat);
+        switch (stat)
+        {
+        case Maplestat::JOB:
+            return stats.get_job().can_equip(required);
+        // Equipped bonuses count toward equipment requirements.
+        case Maplestat::STR:
+            return stats.get_total(Equipstat::STR) >= required;
+        case Maplestat::DEX:
+            return stats.get_total(Equipstat::DEX) >= required;
+        case Maplestat::INT:
+            return stats.get_total(Equipstat::INT) >= required;
+        case Maplestat::LUK:
+            return stats.get_total(Equipstat::LUK) >= required;
+        case Maplestat::LEVEL:
+            return stats.get_stat(stat) >= required;
+        default:
+            return false;
+        }
+    }
+
+    bool EquipData::can_equip(const CharStats& stats) const
+    {
+        if (!is_valid())
+            return false;
+
+        for (const auto stat : { Maplestat::JOB, Maplestat::LEVEL,
+            Maplestat::STR, Maplestat::DEX, Maplestat::INT, Maplestat::LUK })
+        {
+            if (!meets_requirement(stat, stats))
+                return false;
+        }
+        return true;
     }
 
     int16_t EquipData::get_defstat(Equipstat::Id stat) const

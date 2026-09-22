@@ -22,6 +22,7 @@
 #include "../Components/TwoSpriteButton.h"
 
 #include "../../Data/ItemData.h"
+#include "../../Gameplay/Stage.h"
 #include "../../Net/Packets/InventoryPackets.h"
 
 #include "nlnx/nx.hpp"
@@ -196,7 +197,9 @@ namespace jrc
         if (equip)
         {
             if (eqslot == source % 100)
-                EquipItemPacket(slot, eqslot, inventory.is_cash(InventoryType::EQUIP, slot)).dispatch();
+            {
+                Stage::get().get_player().equip_item(slot, eqslot);
+            }
         }
         else
             UnequipItemPacket(source, slot).dispatch();
