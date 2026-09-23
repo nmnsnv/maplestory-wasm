@@ -75,16 +75,20 @@ namespace jrc
         /// Read a number and advance the buffer position.
         T read()
         {
-            size_t count = sizeof(T) / sizeof(int8_t);
-            T all = 0;
+            constexpr size_t count = sizeof(T);
+            // Check the entire field before dereferencing bytes so malformed
+            // packets cannot read past the buffer or leave a partial cursor.
+            if (count > length())
+                throw PacketError("Stack underflow at " + std::to_string(pos));
+
+            uint64_t all = 0;
             for (size_t i = 0; i < count; ++i)
             {
-                T val = static_cast<uint8_t>(bytes[pos]);
-                all += val << (8 * i);
-
-                skip(1);
+                const auto value = static_cast<uint8_t>(bytes[pos + i]);
+                all |= static_cast<uint64_t>(value) << (8 * i);
             }
-            return all;
+            pos += count;
+            return static_cast<T>(all);
         }
 
         template <typename T>

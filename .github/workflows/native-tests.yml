@@ -1,0 +1,55 @@
+name: native-tests
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+concurrency:
+  group: native-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: native-tests-${{ matrix.os }}-${{ matrix.mode }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            mode: debug
+            flags: ''
+          - os: macos-latest
+            mode: release
+            flags: --release
+          - os: ubuntu-latest
+            mode: sanitizers
+            flags: --sanitize
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache pinned test dependency
+        uses: actions/cache@v4
+        with:
+          path: build/tests/**/_deps/doctest-*
+          key: doctest-2.4.11-${{ runner.os }}-${{ matrix.mode }}
+      - name: Build and run self-contained client tests
+        run: ./scripts/run_tests.sh ${{ matrix.flags }}
+      - name: Upload reports and failure logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-tests-${{ matrix.os }}-${{ matrix.mode }}
+          path: |
+            build/tests/**/reports/*.xml
+            build/tests/**/Testing/Temporary/*.log
+            build/tests/**/work/**/artifacts/**
+          if-no-files-found: warn
