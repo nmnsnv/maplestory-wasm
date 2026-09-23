@@ -3,10 +3,8 @@
 #include "client/IO/Components/NpcText.h"
 #include "client/IO/Components/NpcDialogLayout.h"
 #include "client/Data/ItemData.h"
-#include "nlnx/file.hpp"
 #include "nlnx/nx.hpp"
 
-#include <algorithm>
 #include <fstream>
 #include <iostream>
 

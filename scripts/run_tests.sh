@@ -66,6 +66,13 @@ mkdir -p "$TEST_BUILD_DIR/reports"
 # Keep a previous successful report from masquerading as the current run.
 rm -f "$TEST_BUILD_DIR/reports/junit.xml"
 cmake -S "$TEST_REPO_DIR/tests" -B "$TEST_BUILD_DIR" "${TEST_CMAKE_ARGS[@]}"
+# Give clangd a stable location across native build variants. Container commands
+# use paths such as /app and /opt/doctest, which cannot be used by the host editor.
+if [[ "${JOURNEY_TEST_CONTAINER:-0}" != 1 ]]; then
+    mkdir -p "$TEST_REPO_DIR/build/tests/clangd"
+    cmake -E copy_if_different "$TEST_BUILD_DIR/compile_commands.json" \
+        "$TEST_REPO_DIR/build/tests/clangd/compile_commands.json"
+fi
 cmake --build "$TEST_BUILD_DIR" --parallel "$TEST_JOBS"
 UBSAN_OPTIONS="${UBSAN_OPTIONS:-halt_on_error=1:print_stacktrace=1}" \
     ctest --test-dir "$TEST_BUILD_DIR" --parallel "$TEST_JOBS" \

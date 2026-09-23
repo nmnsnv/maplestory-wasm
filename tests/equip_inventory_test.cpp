@@ -6,10 +6,8 @@
 #include "client/IO/Components/MapleButton.h"
 #include "client/IO/Components/TwoSpriteButton.h"
 #include "client/Data/ItemData.h"
-#include "nlnx/file.hpp"
 #include "nlnx/nx.hpp"
 
-#include <algorithm>
 #include <map>
 
 namespace

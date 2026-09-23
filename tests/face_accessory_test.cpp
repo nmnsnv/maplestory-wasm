@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 #include "client/Character/Look/CharLook.h"
 #include "client/Audio/Audio.h"
-#include "nlnx/file.hpp"
 #include "nlnx/nx.hpp"
 
 #include <algorithm>

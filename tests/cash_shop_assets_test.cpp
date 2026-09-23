@@ -2,7 +2,6 @@
 #include <doctest/doctest.h>
 #include "client/Data/CashShopCatalog.h"
 #include "nlnx/nx.hpp"
-#include "nlnx/file.hpp"
 #include "nlnx/node.hpp"
 #include "nlnx/bitmap.hpp"
 #include <iostream>

@@ -2,7 +2,6 @@
 #include <doctest/doctest.h>
 #include "client/Character/CharStats.h"
 #include "client/Data/EquipData.h"
-#include "nlnx/file.hpp"
 #include "nlnx/nx.hpp"
 
 

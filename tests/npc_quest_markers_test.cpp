@@ -4,7 +4,6 @@
 #include "client/Character/Inventory/Inventory.h"
 #include "client/Character/QuestLog.h"
 #include "client/Gameplay/MapleMap/Npc.h"
-#include "nlnx/file.hpp"
 #include "nlnx/nx.hpp"
 
 #include <vector>

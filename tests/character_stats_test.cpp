@@ -2,12 +2,10 @@
 #include "support/assets.h"
 #include <doctest/doctest.h>
 #include "client/IO/UITypes/UIStatsInfo.h"
-#include "client/IO/Components/MapleButton.h"
 #include "client/IO/UI.h"
 #include "client/Graphics/GraphicsGL.h"
 #include "client/Audio/Audio.h"
 #include "client/Net/OutPacket.h"
-#include "nlnx/file.hpp"
 #include "nlnx/nx.hpp"
 
 #include <fstream>

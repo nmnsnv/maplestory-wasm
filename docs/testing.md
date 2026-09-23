@@ -30,6 +30,23 @@ Some Apple Clang/OS combinations can stall inside ASan initialization before
 test discovery. Use the Docker sanitizer command below, or select an installed
 LLVM compiler with `CC`/`CXX` for a fresh sanitizer build directory.
 
+## Editor setup (clangd)
+
+Run `./scripts/run_tests.sh` once to download doctest and generate the native
+compile commands. `tests/.clangd` reads them from
+`build/tests/clangd/compile_commands.json`, so test files use the native compiler
+and doctest include paths instead of inheriting the WASM client's configuration.
+
+The runner refreshes this database after each successful local configuration,
+including Release and sanitizer builds. Run `./scripts/run_tests.sh --assets`
+when editing asset tests so their graphics dependencies are included. The editor
+database follows the latest local configuration; Docker runs leave it unchanged
+because their compiler and dependency paths refer to the container filesystem.
+A host configuration is needed for host clangd even when tests run in Docker.
+
+If VS Code still shows stale missing-header or `TEST_CASE` errors after running
+the tests, run **clangd: Restart language server** from the Command Palette.
+
 ## Tests using NX assets
 
 ```bash

@@ -6,7 +6,6 @@
 #include "client/Character/QuestLog.h"
 #include "client/Data/QuestData.h"
 #include "client/Graphics/Texture.h"
-#include "nlnx/file.hpp"
 #include "nlnx/node.hpp"
 #include "nlnx/nx.hpp"
 

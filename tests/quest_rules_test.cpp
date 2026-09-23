@@ -4,8 +4,6 @@
 #include "client/Character/Inventory/Inventory.h"
 #include "client/Character/QuestLog.h"
 #include "client/Data/QuestData.h"
-#include "nlnx/file.hpp"
-#include "nlnx/node.hpp"
 #include "nlnx/nx.hpp"
 
 #include <algorithm>
