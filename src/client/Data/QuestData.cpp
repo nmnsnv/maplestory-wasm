@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <exception>
+#include <limits>
 #include <unordered_map>
 #include <utility>
 
@@ -314,6 +315,30 @@ namespace jrc
     std::vector<std::string> QuestData::get_dialog_branch(bool start, const std::string& branch) const
     {
         return parse_dialog_lines(nl::nx::quest["Say.img"][std::to_string(id)][start ? "0" : "1"].resolve(branch));
+    }
+
+    std::map<size_t, QuestData::QuizQuestion> QuestData::get_quiz_questions(bool start) const
+    {
+        const nl::node phase = nl::nx::quest["Say.img"][std::to_string(id)][start ? "0" : "1"];
+        const auto lines = numbered_children(phase);
+        std::map<size_t, QuizQuestion> questions;
+        for (size_t index = 0; index < lines.size(); ++index)
+        {
+            const nl::node stop = phase["stop"][lines[index].name()];
+            const int64_t answer = stop["answer"].get_integer();
+            if (answer <= 0 || answer > std::numeric_limits<int32_t>::max() ||
+                lines[index].get_string().find("#L") == std::string::npos)
+                continue;
+
+            // Say.img answers are one-based, but #L IDs and failure branches
+            // are zero-based. Match branches by the original page key, since
+            // numbered pages need not be contiguous.
+            QuizQuestion question{static_cast<int32_t>(answer - 1), {}};
+            for (nl::node response : numbered_children(stop))
+                question.incorrect_responses.emplace(std::stoi(response.name()), response.get_string());
+            questions.emplace(index, std::move(question));
+        }
+        return questions;
     }
 
     const std::vector<QuestData::ItemReward>& QuestData::get_item_rewards() const

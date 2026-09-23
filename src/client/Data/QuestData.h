@@ -20,6 +20,7 @@
 
 #include <array>
 #include <cstdint>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -81,6 +82,12 @@ namespace jrc
             int32_t job;    // job flags (5-byte encoding), 0: any
         };
 
+        struct QuizQuestion
+        {
+            int32_t correct_selection;
+            std::map<int32_t, std::string> incorrect_responses;
+        };
+
         // The phase of a quest a description belongs to.
         enum Phase
         {
@@ -130,6 +137,7 @@ namespace jrc
         // or completing (phase IN_PROGRESS) the quest.
         const std::vector<std::string>& get_dialog(bool start) const;
         std::vector<std::string> get_dialog_branch(bool start, const std::string& branch) const;
+        std::map<size_t, QuizQuestion> get_quiz_questions(bool start) const;
 
         // Return the items given on completion.
         const std::vector<ItemReward>& get_item_rewards() const;

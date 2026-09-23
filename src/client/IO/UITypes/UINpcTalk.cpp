@@ -19,6 +19,7 @@
 
 #include "../Components/MapleButton.h"
 #include "../Components/NpcDialogLayout.h"
+#include "../Components/NpcMenu.h"
 #include "../UI.h"
 
 #include "../../Console.h"
@@ -76,45 +77,6 @@ namespace jrc
             // Cosmic-compatible servers have been observed using both values
             // for menu prompts with #L...#l options.
             return msgtype == SELECTION_DIALOGUE_TYPE || msgtype == LEGACY_SELECTION_DIALOGUE_TYPE;
-        }
-
-        size_t find_next_selection_tag(const std::string& source, size_t start)
-        {
-            size_t cursor = source.find("#L", start);
-            while (cursor != std::string::npos)
-            {
-                size_t id_start = cursor + 2;
-                size_t id_end = id_start;
-                while (id_end < source.size() && std::isdigit(static_cast<unsigned char>(source[id_end])))
-                {
-                    id_end++;
-                }
-
-                if (id_end > id_start && id_end < source.size() && source[id_end] == '#')
-                {
-                    return cursor;
-                }
-
-                cursor = source.find("#L", cursor + 2);
-            }
-
-            return std::string::npos;
-        }
-
-        std::string trim_selection_text(std::string text)
-        {
-            while (!text.empty())
-            {
-                char ch = text.back();
-                if (ch != '\r' && ch != '\n' && ch != ' ' && ch != '\t')
-                {
-                    break;
-                }
-
-                text.pop_back();
-            }
-
-            return text;
         }
 
         bool try_parse_int32(const std::string& token, int32_t& value)
@@ -539,14 +501,45 @@ namespace jrc
     {
         if (quest->awaiting_result)
             return Button::PRESSED;
-        if (quest->choosing_reward)
+        if (quest->showing_quiz_failure)
+        {
+            if (buttonid == OK)
+            {
+                quest->showing_quiz_failure = false;
+                quest->line_index = 0;
+                show_quest_line();
+            }
+            else if (buttonid == END)
+            {
+                quest.reset();
+                active = false;
+            }
+            return Button::PRESSED;
+        }
+        if (quest->choosing_reward || quest->quiz.is_question(quest->line_index))
         {
             switch (buttonid)
             {
             case OK:
             {
-                if (selected >= 0 && static_cast<size_t>(selected) < selections.size())
-                    submit_quest(static_cast<int16_t>(selections[selected]));
+                if (selected < 0 || static_cast<size_t>(selected) >= selections.size())
+                    break;
+                const int32_t choice = selections[selected];
+                if (quest->choosing_reward)
+                    submit_quest(static_cast<int16_t>(choice));
+                else if (!quest->quiz.answer(quest->line_index, choice))
+                {
+                    quest->showing_quiz_failure = true;
+                    set_dialogue(quest->npcid, 0, 0, true, 0,
+                        quest->quiz.feedback(quest->line_index, choice));
+                }
+                else if (quest->line_index + 1 < quest->lines.size())
+                {
+                    ++quest->line_index;
+                    show_quest_line();
+                }
+                else
+                    finish_quest_dialogue();
                 break;
             }
             case NEXT:
@@ -589,19 +582,7 @@ namespace jrc
             {
                 break;
             }
-            if (quest->informational)
-            {
-                quest.reset();
-                active = false;
-            }
-            else if (!quest->start && !quest->reward_choices.empty())
-            {
-                show_quest_rewards();
-            }
-            else
-            {
-                submit_quest();
-            }
+            finish_quest_dialogue();
             break;
         case NO:
             if (!quest->informational)
@@ -626,8 +607,26 @@ namespace jrc
         return Button::PRESSED;
     }
 
+    void UINpcTalk::finish_quest_dialogue()
+    {
+        if (quest->informational)
+        {
+            quest.reset();
+            active = false;
+        }
+        else if (quest->quiz.complete())
+        {
+            if (!quest->start && !quest->reward_choices.empty())
+                show_quest_rewards();
+            else
+                submit_quest();
+        }
+    }
+
     void UINpcTalk::submit_quest(int16_t selection)
     {
+        if (!quest->quiz.complete())
+            return;
         const int16_t qid = quest->qid;
         const int32_t npcid = quest->npcid;
         const bool start = quest->start;
@@ -704,6 +703,11 @@ namespace jrc
         quest->start = start;
         quest->lines = lines;
         quest->reward_choices = reward_choices;
+        const auto& data = QuestData::get(qid);
+        // Fallback/server-check prompts have their own page order and must
+        // not inherit quiz branches from a different conversation.
+        if (lines == data.get_dialog(start))
+            quest->quiz = QuestQuiz(data.get_quiz_questions(start));
 
         if (quest->lines.empty())
         {
@@ -721,7 +725,11 @@ namespace jrc
         bool last_line = quest->line_index + 1 >= quest->lines.size();
         const std::string& line = quest->lines[quest->line_index];
 
-        if (last_line && !quest->informational)
+        if (quest->quiz.is_question(quest->line_index))
+        {
+            set_dialogue(quest->npcid, SELECTION_DIALOGUE_TYPE, 0, false, 0, line);
+        }
+        else if (last_line && !quest->informational)
         {
             // The final line carries the accept/decline (or hand-in) prompt.
             set_dialogue(quest->npcid, 12, 0, false, 0, line);
@@ -976,68 +984,15 @@ namespace jrc
 
     void UINpcTalk::parse_selections(const std::string& source, std::string& rendered_text)
     {
-        rendered_text.clear();
+        auto menu = NpcMenu::parse(source);
+        rendered_text = std::move(menu.prompt);
         selections.clear();
         selection_texts.clear();
-
-        size_t cursor = 0;
-        while (cursor < source.size())
+        for (auto& option : menu.options)
         {
-            size_t begin = source.find("#L", cursor);
-            if (begin == std::string::npos)
-            {
-                rendered_text += source.substr(cursor);
-                break;
-            }
-
-            rendered_text += source.substr(cursor, begin - cursor);
-
-            size_t id_start = begin + 2;
-            size_t id_end = id_start;
-            while (id_end < source.size() && std::isdigit(static_cast<unsigned char>(source[id_end])))
-                id_end++;
-
-            if (id_end >= source.size() || source[id_end] != '#')
-            {
-                rendered_text += source.substr(begin);
-                break;
-            }
-
-            size_t option_start = id_end + 1;
-            size_t option_end = source.find("#l", option_start);
-            bool has_explicit_end = option_end != std::string::npos;
-            if (!has_explicit_end)
-            {
-                option_end = find_next_selection_tag(source, option_start);
-                if (option_end == std::string::npos)
-                {
-                    option_end = source.size();
-                }
-            }
-
-            if (id_end == id_start)
-            {
-                rendered_text += source.substr(begin, option_end - begin);
-                cursor = has_explicit_end ? option_end + 2 : option_end;
-                continue;
-            }
-
-            int32_t selection_id = 0;
-            if (!try_parse_int32(source.substr(id_start, id_end - id_start), selection_id))
-            {
-                rendered_text += source.substr(begin, option_end - begin);
-                cursor = has_explicit_end ? option_end + 2 : option_end;
-                continue;
-            }
-
-            selections.push_back(selection_id);
-            selection_texts.push_back(
-                trim_selection_text(source.substr(option_start, option_end - option_start))
-            );
-            cursor = has_explicit_end ? option_end + 2 : option_end;
+            selections.push_back(option.id);
+            selection_texts.push_back(std::move(option.text));
         }
-
-        rendered_text = trim_selection_text(rendered_text);
     }
 
     void UINpcTalk::refresh_selection_styles()
