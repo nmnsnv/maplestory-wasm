@@ -19,6 +19,7 @@
 #include "../Template/Enumeration.h"
 
 #include <cstdint>
+#include <cstddef>
 
 namespace jrc
 {
@@ -32,7 +33,7 @@ namespace jrc
             LENGTH
         };
 
-        Id by_id(size_t id);
+        Id by_id(std::size_t id);
         int32_t value_of(Id value);
 
         constexpr Enumeration<Id> values;

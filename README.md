@@ -156,6 +156,14 @@ Open **http://localhost:8000** after the containers are up.
 
 ---
 
+## Client Tests
+
+Run the self-contained native suite with `./scripts/run_tests.sh`. Use
+`./scripts/run_tests.sh --assets` to include tests against your read-only NX data,
+or `./scripts/docker_run_tests.sh` when the native toolchain is unavailable.
+See [the testing guide](docs/testing.md) for filtering, sanitizers, reports, and
+adding cases. These tests require no Cosmic server.
+
 ## 📂 Project Structure
 
 ```

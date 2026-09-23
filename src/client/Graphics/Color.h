@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
+#include <cstddef>
 #include <array>
 #include <cstdint>
 
@@ -25,7 +26,7 @@ namespace jrc
     class Color
     {
     public:
-        static constexpr size_t LENGTH = 4;
+        static constexpr std::size_t LENGTH = 4;
         using underlying_t = std::array<float, LENGTH>;
 
         /// Codes of predefined colors.
