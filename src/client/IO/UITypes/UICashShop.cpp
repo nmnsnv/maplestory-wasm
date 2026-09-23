@@ -6,6 +6,7 @@
 #include "../../Constants.h"
 #include "../../Character/Inventory/Inventory.h"
 #include "../../Character/Look/EquipSlot.h"
+#include "../../Data/EquipData.h"
 #include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
 #include "../../Net/Packets/GameplayPackets.h"
@@ -13,6 +14,7 @@
 #include "nlnx/nx.hpp"
 
 #include <algorithm>
+#include <cstddef>
 
 namespace jrc
 {
@@ -22,25 +24,89 @@ namespace jrc
         constexpr int32_t MAPLE_POINT = 2;
         constexpr int32_t NX_PREPAID = 4;
         constexpr size_t ITEMS_PER_PAGE = 10;
+        constexpr size_t CASH_INVENTORY_PAGE_SIZE = 12;
 
-        UICashShop::Category category_for_item(int32_t item_id, const ItemData& item)
+        Equipslot::Id equip_slot_for_item(int32_t item_id)
+        {
+            const EquipData& equip = EquipData::get(item_id);
+            if (!equip.is_valid())
+            {
+                return Equipslot::NONE;
+            }
+
+            return equip.get_eqslot();
+        }
+
+        UICashShop::Category category_for_item(int32_t item_id, const ItemData& item, Equipslot::Id equip_slot)
         {
             if (item_id >= 5000000 && item_id < 5010000)
             {
                 return UICashShop::CAT_PET;
             }
+            if (item_id >= 1800000 && item_id < 1810000)
+            {
+                return UICashShop::CAT_PET_EQUIP;
+            }
+            if (item_id >= 5170000 && item_id < 5180000)
+            {
+                return UICashShop::CAT_PET_SKILL;
+            }
+            if (item_id >= 5150000 && item_id < 5170000)
+            {
+                return UICashShop::CAT_BEAUTY;
+            }
+            if (item_id >= 5010000 && item_id < 5020000)
+            {
+                return UICashShop::CAT_EFFECT;
+            }
+            if ((item_id >= 5040000 && item_id < 5050000) ||
+                (item_id >= 5060000 && item_id < 5070000) ||
+                (item_id >= 5080000 && item_id < 5090000))
+            {
+                return UICashShop::CAT_CONVENIENCE;
+            }
 
             const std::string& category = item.get_category();
-            if (category == "Consume")
+            if (category == "Cash")
             {
-                return UICashShop::CAT_CONSUME;
+                return UICashShop::CAT_CONVENIENCE;
             }
-            if (category == "Etc" || category == "Install" || category == "Cash")
+            if (equip_slot != Equipslot::NONE)
             {
-                return UICashShop::CAT_ETC;
+                switch (equip_slot)
+                {
+                case Equipslot::CAP:
+                    return UICashShop::CAT_EQUIP_HAT;
+                case Equipslot::WEAPON:
+                    return UICashShop::CAT_EQUIP_WEAPON;
+                case Equipslot::TOP:
+                case Equipslot::PANTS:
+                    if (item_id / 10000 == 105)
+                    {
+                        return UICashShop::CAT_EQUIP_OVERALL;
+                    }
+                    return UICashShop::CAT_EQUIP_ALL;
+                case Equipslot::SHOES:
+                    return UICashShop::CAT_EQUIP_SHOES;
+                case Equipslot::CAPE:
+                    return UICashShop::CAT_EQUIP_CAPE;
+                case Equipslot::FACEACC:
+                case Equipslot::EYEACC:
+                case Equipslot::EARRINGS:
+                case Equipslot::RING:
+                case Equipslot::RING2:
+                case Equipslot::RING3:
+                case Equipslot::RING4:
+                case Equipslot::PENDANT:
+                case Equipslot::BELT:
+                case Equipslot::MEDAL:
+                    return UICashShop::CAT_EQUIP_ACCESSORY;
+                default:
+                    return UICashShop::CAT_EQUIP_ALL;
+                }
             }
 
-            return UICashShop::CAT_EQUIP;
+            return UICashShop::CAT_CONVENIENCE;
         }
 
         std::string format_price(int32_t price)
@@ -73,48 +139,11 @@ namespace jrc
             return nl::nx::ui["CashShop.img"];
         }
 
-        std::string tab_asset(UICashShop::Category category)
-        {
-            switch (category)
-            {
-            case UICashShop::CAT_MAIN:
-                return "1";
-            case UICashShop::CAT_EQUIP:
-                return "3";
-            case UICashShop::CAT_CONSUME:
-                return "4";
-            case UICashShop::CAT_ETC:
-                return "6";
-            case UICashShop::CAT_PET:
-                return "7";
-            default:
-                return "1";
-            }
-        }
-
-        Point<int16_t> tab_position(UICashShop::Category category)
-        {
-            switch (category)
-            {
-            case UICashShop::CAT_MAIN:
-                return { 277, 74 };
-            case UICashShop::CAT_EQUIP:
-                return { 396, 74 };
-            case UICashShop::CAT_CONSUME:
-                return { 448, 74 };
-            case UICashShop::CAT_ETC:
-                return { 553, 74 };
-            case UICashShop::CAT_PET:
-                return { 605, 74 };
-            default:
-                return { 277, 74 };
-            }
-        }
-
         bool is_equip_item(int32_t item_id)
         {
             return InventoryType::by_item_id(item_id) == InventoryType::EQUIP;
         }
+
     }
 
     UICashShop::UICashShop()
@@ -123,10 +152,16 @@ namespace jrc
           screen_height(Constants::viewheight()),
           backdrop(screen_width, screen_height, Geometry::BLACK, 1.0f),
           selected_card_cover(200, 80, Geometry::WHITE, 0.16f),
+          preview_card_cover(200, 80, Geometry::WHITE, 0.24f),
+          selected_category_cover(120, 18, Geometry::WHITE, 0.18f),
+          selected_cash_item_cover(34, 34, Geometry::WHITE, 0.24f),
+          category_strip_cover(326, 56, Geometry::BLACK, 0.24f),
+          button_cover(84, 18, Geometry::BLACK, 0.26f),
           preview_cover(212, 165, Geometry::BLACK, 0.08f),
+          field_cover(144, 17, Geometry::BLACK, 0.35f),
           title(Text::A13B, Text::LEFT, Text::WHITE, "Cash Shop"),
           status(Text::A11M, Text::LEFT, Text::YELLOW, "Entering Cash Shop..."),
-          cash_line(Text::A11M, Text::LEFT, Text::WHITE, ""),
+          cash_line(Text::A11M, Text::LEFT, Text::WHITE, "", 330),
           inventory_line(Text::A11M, Text::LEFT, Text::WHITE, ""),
           equipped_line(Text::A11M, Text::LEFT, Text::WHITE, ""),
           gift_line(Text::A11M, Text::LEFT, Text::WHITE, ""),
@@ -136,18 +171,23 @@ namespace jrc
           selected_name(Text::A12B, Text::LEFT, Text::WHITE, "", 178),
           selected_price(Text::A11M, Text::LEFT, Text::YELLOW, ""),
           selected_desc(Text::A11M, Text::LEFT, Text::LIGHTGREY, "", 178),
+          recipient_label(Text::A11M, Text::LEFT, Text::WHITE, "Gift to"),
+          gift_message_label(Text::A11M, Text::LEFT, Text::WHITE, "Message"),
+          cash_inventory_title(Text::A11B, Text::LEFT, Text::WHITE, "Cash Inventory"),
+          item_inventory_title(Text::A11B, Text::LEFT, Text::WHITE, "Item Inventory"),
           nx_credit(0),
           maple_points(0),
           nx_prepaid(0),
           preview_item_id(0),
           gift_count(-1),
-          wishlist_count(-1),
-          active_category(CAT_MAIN),
+          active_category(CAT_FEATURED),
           page(0),
           selected_visible_index(0),
+          selected_cash_inventory_index(0),
           classic_skin(false),
           entered(false),
-          leaving(false)
+          leaving(false),
+          requested_cash_balance(false)
     {
         nl::node src = cashshop_source();
         background = src["Base"]["backgrnd"];
@@ -162,14 +202,8 @@ namespace jrc
         for (uint16_t i = 0; i < CAT_NUM; i++)
         {
             Category category = static_cast<Category>(i);
-            tab_textures[category] = src["CSTab"]["Tab"][classic_skin ? tab_asset(category) : std::to_string(i)];
-            Point<int16_t> tab_pos = classic_skin
-                ? tab_position(category)
-                : Point<int16_t>(14, static_cast<int16_t>(70 + i * 38));
-            buttons[BT_TAB_BASE + i] = std::make_unique<AreaButton>(
-                tab_pos,
-                classic_skin ? Point<int16_t>(52, 23) : Point<int16_t>(106, 34)
-            );
+            Point<int16_t> tab_pos = category_position(i);
+            buttons[BT_CATEGORY_BASE + i] = std::make_unique<AreaButton>(tab_pos, category_button_size());
             tab_labels[category] = Text(Text::A11B, Text::CENTER, Text::WHITE, category_name(category));
         }
 
@@ -185,22 +219,73 @@ namespace jrc
             classic_skin ? Point<int16_t>(573, 538) : Point<int16_t>(515, 552),
             Point<int16_t>(58, 24)
         );
+        buttons[BT_BUY_SELECTED] = std::make_unique<AreaButton>(
+            classic_skin ? Point<int16_t>(22, 298) : Point<int16_t>(608, 266),
+            Point<int16_t>(52, 18)
+        );
+        buttons[BT_GIFT_SELECTED] = std::make_unique<AreaButton>(
+            classic_skin ? Point<int16_t>(82, 298) : Point<int16_t>(666, 266),
+            Point<int16_t>(52, 18)
+        );
+        buttons[BT_WISHLIST] = std::make_unique<AreaButton>(
+            classic_skin ? Point<int16_t>(142, 298) : Point<int16_t>(724, 266),
+            Point<int16_t>(52, 18)
+        );
+        buttons[BT_CLEAR_PREVIEW] = std::make_unique<AreaButton>(
+            classic_skin ? Point<int16_t>(230, 350) : Point<int16_t>(608, 452),
+            Point<int16_t>(84, 18)
+        );
+        buttons[BT_MOVE_CASH_ITEM] = std::make_unique<AreaButton>(
+            classic_skin ? Point<int16_t>(230, 374) : Point<int16_t>(696, 452),
+            Point<int16_t>(84, 18)
+        );
         button_labels[BT_PREV_PAGE] = Text(Text::A11B, Text::CENTER, Text::WHITE, "PREV");
         button_labels[BT_NEXT_PAGE] = Text(Text::A11B, Text::CENTER, Text::WHITE, "NEXT");
+        button_labels[BT_BUY_SELECTED] = Text(Text::A11B, Text::CENTER, Text::WHITE, "Buy");
+        button_labels[BT_GIFT_SELECTED] = Text(Text::A11B, Text::CENTER, Text::WHITE, "Gift");
+        button_labels[BT_WISHLIST] = Text(Text::A11B, Text::CENTER, Text::WHITE, "Wish");
+        button_labels[BT_CLEAR_PREVIEW] = Text(Text::A11B, Text::CENTER, Text::WHITE, "Clear Preview");
+        button_labels[BT_MOVE_CASH_ITEM] = Text(Text::A11B, Text::CENTER, Text::WHITE, "Move Item");
 
         for (size_t i = 0; i < ITEMS_PER_PAGE; i++)
         {
             Point<int16_t> card_pos = card_position(i);
-            buttons[BT_CARD_BASE + i] = std::make_unique<AreaButton>(card_pos, Point<int16_t>(119, 184));
+            buttons[BT_CARD_BASE + i] = std::make_unique<AreaButton>(card_pos, Point<int16_t>(119, 145));
             if (classic_skin)
             {
-                buttons[BT_CARD_BASE + i] = std::make_unique<AreaButton>(card_pos, Point<int16_t>(200, 80));
+                buttons[BT_CARD_BASE + i] = std::make_unique<AreaButton>(card_pos, Point<int16_t>(155, 80));
             }
             buttons[BT_BUY_BASE + i] = std::make_unique<MapleButton>(
                 src["CSList"]["BtBuy"],
                 classic_skin ? card_pos + Point<int16_t>(158, 58) : card_pos + Point<int16_t>(9, 150)
             );
         }
+
+        for (size_t i = 0; i < CASH_INVENTORY_PAGE_SIZE; i++)
+        {
+            buttons[BT_CASH_INV_BASE + i] = std::make_unique<AreaButton>(cash_inventory_slot(i), Point<int16_t>(34, 34));
+        }
+
+        gift_recipient = Textfield(
+            Text::A11M,
+            Text::LEFT,
+            Text::WHITE,
+            classic_skin ? Rectangle<int16_t>(75, 196, 402, 419) : Rectangle<int16_t>(664, 778, 501, 518),
+            13
+        );
+        gift_recipient.set_state(Textfield::NORMAL);
+        gift_recipient.set_enter_callback([&](std::string) {
+            gift_selected_item();
+        });
+        gift_message = Textfield(
+            Text::A11M,
+            Text::LEFT,
+            Text::WHITE,
+            classic_skin ? Rectangle<int16_t>(75, 196, 421, 438) : Rectangle<int16_t>(664, 778, 523, 540),
+            73
+        );
+        gift_message.set_state(Textfield::NORMAL);
+        gift_message.change_text("Enjoy your gift.");
 
         load_catalog();
         rebuild_visible_items();
@@ -215,26 +300,15 @@ namespace jrc
         if (classic_skin)
         {
             background.draw(Point<int16_t>(0, 0));
-            tab_textures.at(active_category).draw(Point<int16_t>(277, 73));
         }
         else
         {
             background.draw(DrawArgument(Point<int16_t>(0, 0), Point<int16_t>(screen_width, screen_height)));
 
-            for (uint16_t i = 0; i < CAT_NUM; i++)
-            {
-                Category category = static_cast<Category>(i);
-                const Texture& tab = tab_textures.at(category);
-                tab.draw(DrawArgument(
-                    Point<int16_t>(0, static_cast<int16_t>(55 + i * 38)),
-                    Point<int16_t>(126, 37)
-                ));
-                tab_labels.at(category).draw(Point<int16_t>(62, static_cast<int16_t>(65 + i * 38)));
-            }
-
             best_new.draw(Point<int16_t>(134, 91));
             line.draw(Point<int16_t>(134, 534));
         }
+        draw_category_sidebar();
 
         size_t first = page * ITEMS_PER_PAGE;
         for (size_t i = 0; i < ITEMS_PER_PAGE; i++)
@@ -251,6 +325,11 @@ namespace jrc
             if (i == selected_visible_index)
             {
                 selected_card_cover.draw(pos);
+            }
+            if (entry.equip_slot != Equipslot::NONE && preview_equips.count(entry.equip_slot) &&
+                preview_equips.at(entry.equip_slot) == entry.item_id)
+            {
+                preview_card_cover.draw(pos);
             }
 
             const ItemData& item = ItemData::get(entry.item_id);
@@ -293,35 +372,39 @@ namespace jrc
 
         if (!visible_catalog_indices.empty())
         {
-            const CashItemEntry& selected = catalog[visible_catalog_indices[page * ITEMS_PER_PAGE + selected_visible_index]];
-            const ItemData& item = ItemData::get(selected.item_id);
-            if (classic_skin)
+            const CashItemEntry* selected_ptr = selected_entry();
+            if (selected_ptr)
             {
-                preview_look.draw(Point<int16_t>(140, 188), true, Stance::STAND1, Expression::DEFAULT);
-                if (!preview_item_id)
+                const CashItemEntry& selected = *selected_ptr;
+                const ItemData& item = ItemData::get(selected.item_id);
+                if (classic_skin)
                 {
-                    item.get_icon(false).draw(DrawArgument(Point<int16_t>(117, 110), 2.0f, 2.0f));
+                    preview_look.draw(Point<int16_t>(140, 188), true, Stance::STAND1, Expression::DEFAULT);
+                    if (!preview_item_id)
+                    {
+                        item.get_icon(false).draw(DrawArgument(Point<int16_t>(117, 110), 2.0f, 2.0f));
+                    }
+                    selected_name.draw(Point<int16_t>(21, 270));
+                    selected_price.draw(Point<int16_t>(21, 286));
                 }
-                selected_name.draw(Point<int16_t>(21, 270));
-                selected_price.draw(Point<int16_t>(21, 286));
-            }
-            else
-            {
-                preview_look.draw(Point<int16_t>(692, 177), true, Stance::STAND1, Expression::DEFAULT);
-                if (!preview_item_id)
+                else
                 {
-                    item.get_icon(false).draw(DrawArgument(Point<int16_t>(681, 132), 2.0f, 2.0f));
+                    preview_look.draw(Point<int16_t>(692, 177), true, Stance::STAND1, Expression::DEFAULT);
+                    if (!preview_item_id)
+                    {
+                        item.get_icon(false).draw(DrawArgument(Point<int16_t>(681, 132), 2.0f, 2.0f));
+                    }
+                    selected_name.draw(Point<int16_t>(608, 220));
+                    selected_price.draw(Point<int16_t>(608, 250));
+                    selected_desc.draw(Point<int16_t>(608, 470));
                 }
-                selected_name.draw(Point<int16_t>(608, 220));
-                selected_price.draw(Point<int16_t>(608, 250));
-                selected_desc.draw(Point<int16_t>(608, 470));
             }
         }
 
         size_t inventory_limit = std::min<size_t>(cash_inventory_items.size(), classic_skin ? 12 : 12);
         for (size_t i = 0; i < inventory_limit; i++)
         {
-            const ItemData& item = ItemData::get(cash_inventory_items[i]);
+            const ItemData& item = ItemData::get(cash_inventory_items[i].item_id);
             if (item)
             {
                 int16_t x = classic_skin
@@ -330,25 +413,58 @@ namespace jrc
                 int16_t y = classic_skin
                     ? cash_inventory_slot(i).y()
                     : static_cast<int16_t>(340 + (i / 4) * 35);
+                if (i == selected_cash_inventory_index)
+                {
+                    selected_cash_item_cover.draw(Point<int16_t>(x, y));
+                }
                 item.get_icon(false).draw(Point<int16_t>(x, y));
             }
         }
 
         draw_equipped_items();
 
+        Point<int16_t> recipient_field_pos = classic_skin ? Point<int16_t>(75, 402) : Point<int16_t>(664, 501);
+        Point<int16_t> message_field_pos = classic_skin ? Point<int16_t>(75, 421) : Point<int16_t>(664, 523);
+        field_cover.draw(recipient_field_pos);
+        field_cover.draw(message_field_pos);
+        gift_recipient.draw(Point<int16_t>());
+        gift_message.draw(Point<int16_t>());
+
+        if (classic_skin)
+        {
+            button_cover.draw(DrawArgument(Point<int16_t>(22, 298), Point<int16_t>(52, 18)));
+            button_cover.draw(DrawArgument(Point<int16_t>(82, 298), Point<int16_t>(52, 18)));
+            button_cover.draw(DrawArgument(Point<int16_t>(142, 298), Point<int16_t>(52, 18)));
+            button_cover.draw(Point<int16_t>(230, 350));
+            button_cover.draw(Point<int16_t>(230, 374));
+            button_cover.draw(DrawArgument(Point<int16_t>(494, 538), Point<int16_t>(58, 18)));
+            button_cover.draw(DrawArgument(Point<int16_t>(573, 538), Point<int16_t>(58, 18)));
+        }
+
         UIElement::draw_buttons(alpha);
         if (classic_skin)
         {
             status.draw(Point<int16_t>(278, 20));
-            message_line.draw(Point<int16_t>(278, 54));
-            cash_line.draw(Point<int16_t>(346, 545));
+            message_line.draw(Point<int16_t>(278, 88));
+            Text(Text::A11B, Text::LEFT, Text::BLACK, format_price(nx_credit)).draw(Point<int16_t>(452, 545));
+            Text(Text::A11B, Text::LEFT, Text::BLACK, format_price(nx_prepaid)).draw(Point<int16_t>(452, 561));
+            Text(Text::A11B, Text::LEFT, Text::BLACK, format_price(maple_points)).draw(Point<int16_t>(452, 577));
             page_line.draw(Point<int16_t>(564, 558));
-            inventory_line.draw(Point<int16_t>(20, 326));
-            equipped_line.draw(Point<int16_t>(20, 512));
+            cash_inventory_title.draw(Point<int16_t>(20, 326));
+            inventory_line.draw(Point<int16_t>(142, 326));
+            item_inventory_title.draw(Point<int16_t>(20, 476));
+            equipped_line.draw(Point<int16_t>(232, 492));
             gift_line.draw(Point<int16_t>(20, 440));
             wishlist_line.draw(Point<int16_t>(90, 440));
+            recipient_label.draw(Point<int16_t>(20, 405));
+            gift_message_label.draw(Point<int16_t>(20, 424));
             button_labels.at(BT_PREV_PAGE).draw(Point<int16_t>(523, 558));
             button_labels.at(BT_NEXT_PAGE).draw(Point<int16_t>(602, 558));
+            button_labels.at(BT_BUY_SELECTED).draw(Point<int16_t>(48, 312));
+            button_labels.at(BT_GIFT_SELECTED).draw(Point<int16_t>(108, 312));
+            button_labels.at(BT_WISHLIST).draw(Point<int16_t>(168, 312));
+            button_labels.at(BT_CLEAR_PREVIEW).draw(Point<int16_t>(272, 364));
+            button_labels.at(BT_MOVE_CASH_ITEM).draw(Point<int16_t>(272, 388));
         }
         else
         {
@@ -361,9 +477,17 @@ namespace jrc
             gift_line.draw(Point<int16_t>(608, 324));
             wishlist_line.draw(Point<int16_t>(608, 340));
             message_line.draw(Point<int16_t>(140, 72));
+            recipient_label.draw(Point<int16_t>(608, 504));
+            gift_message_label.draw(Point<int16_t>(608, 526));
+            cash_inventory_title.draw(Point<int16_t>(608, 292));
 
             button_labels.at(BT_PREV_PAGE).draw(Point<int16_t>(225, 558));
             button_labels.at(BT_NEXT_PAGE).draw(Point<int16_t>(544, 558));
+            button_labels.at(BT_BUY_SELECTED).draw(Point<int16_t>(634, 280));
+            button_labels.at(BT_GIFT_SELECTED).draw(Point<int16_t>(692, 280));
+            button_labels.at(BT_WISHLIST).draw(Point<int16_t>(750, 280));
+            button_labels.at(BT_CLEAR_PREVIEW).draw(Point<int16_t>(650, 466));
+            button_labels.at(BT_MOVE_CASH_ITEM).draw(Point<int16_t>(738, 466));
         }
     }
 
@@ -375,9 +499,33 @@ namespace jrc
         update_layout();
     }
 
+    void UICashShop::update()
+    {
+        UIElement::update();
+        gift_recipient.update(Point<int16_t>());
+        gift_message.update(Point<int16_t>());
+    }
+
     bool UICashShop::is_in_range(Point<int16_t>) const
     {
         return true;
+    }
+
+    UIElement::CursorResult UICashShop::send_cursor(bool clicked, Point<int16_t> cursorpos)
+    {
+        Cursor::State recipient_state = gift_recipient.send_cursor(cursorpos, clicked);
+        if (recipient_state != Cursor::IDLE)
+        {
+            return { recipient_state, true };
+        }
+
+        Cursor::State message_state = gift_message.send_cursor(cursorpos, clicked);
+        if (message_state != Cursor::IDLE)
+        {
+            return { message_state, true };
+        }
+
+        return UIElement::send_cursor(clicked, cursorpos);
     }
 
     void UICashShop::send_key(int32_t, bool pressed, bool escape)
@@ -391,6 +539,11 @@ namespace jrc
     void UICashShop::set_entered()
     {
         entered = true;
+        if (!requested_cash_balance)
+        {
+            requested_cash_balance = true;
+            CheckCashPacket().dispatch();
+        }
         sync_text();
     }
 
@@ -402,19 +555,48 @@ namespace jrc
         sync_text();
     }
 
-    void UICashShop::set_inventory_items(const std::vector<int32_t>& item_ids)
+    void UICashShop::set_inventory_items(const std::vector<CashInventoryEntry>& items)
     {
-        cash_inventory_items = item_ids;
+        cash_inventory_items = items;
+        selected_cash_inventory_index = 0;
         sync_text();
     }
 
-    void UICashShop::add_inventory_item(int32_t item_id)
+    void UICashShop::add_inventory_item(const CashInventoryEntry& item)
     {
-        if (item_id)
+        if (item.item_id)
         {
-            cash_inventory_items.push_back(item_id);
+            cash_inventory_items.push_back(item);
             sync_text();
         }
+    }
+
+    void UICashShop::complete_cash_inventory_move(int64_t cash_id, int32_t item_id)
+    {
+        if (cash_id != 0)
+        {
+            auto iter = std::remove_if(cash_inventory_items.begin(), cash_inventory_items.end(),
+                [cash_id](const CashInventoryEntry& entry) {
+                    return entry.cash_id == cash_id;
+                });
+            cash_inventory_items.erase(iter, cash_inventory_items.end());
+        }
+        else if (!cash_inventory_items.empty() && selected_cash_inventory_index < cash_inventory_items.size())
+        {
+            cash_inventory_items.erase(cash_inventory_items.begin() + static_cast<std::ptrdiff_t>(selected_cash_inventory_index));
+        }
+
+        if (selected_cash_inventory_index >= cash_inventory_items.size())
+        {
+            selected_cash_inventory_index = cash_inventory_items.empty() ? 0 : cash_inventory_items.size() - 1;
+        }
+
+        if (item_id != 0)
+        {
+            moved_inventory_items.push_back(item_id);
+        }
+
+        sync_text();
     }
 
     void UICashShop::set_gift_count(int32_t count)
@@ -423,9 +605,13 @@ namespace jrc
         sync_text();
     }
 
-    void UICashShop::set_wishlist_count(int32_t count)
+    void UICashShop::set_wishlist(const std::vector<int32_t>& serial_numbers)
     {
-        wishlist_count = count;
+        wishlist_serials = serial_numbers;
+        wishlist_serials.erase(
+            std::remove(wishlist_serials.begin(), wishlist_serials.end(), 0),
+            wishlist_serials.end()
+        );
         sync_text();
     }
 
@@ -467,9 +653,42 @@ namespace jrc
             return Button::NORMAL;
         }
 
-        if (buttonid >= BT_TAB_BASE && buttonid < BT_TAB_BASE + CAT_NUM)
+        if (buttonid == BT_BUY_SELECTED)
         {
-            active_category = static_cast<Category>(buttonid - BT_TAB_BASE);
+            buy_selected_item();
+            return Button::NORMAL;
+        }
+
+        if (buttonid == BT_GIFT_SELECTED)
+        {
+            gift_selected_item();
+            return Button::NORMAL;
+        }
+
+        if (buttonid == BT_WISHLIST)
+        {
+            toggle_wishlist_item();
+            return Button::NORMAL;
+        }
+
+        if (buttonid == BT_CLEAR_PREVIEW)
+        {
+            preview_equips.clear();
+            update_preview_look();
+            sync_text();
+            set_message("Preview cleared.");
+            return Button::NORMAL;
+        }
+
+        if (buttonid == BT_MOVE_CASH_ITEM)
+        {
+            move_selected_cash_item();
+            return Button::NORMAL;
+        }
+
+        if (buttonid >= BT_CATEGORY_BASE && buttonid < BT_CATEGORY_BASE + CAT_NUM)
+        {
+            active_category = static_cast<Category>(buttonid - BT_CATEGORY_BASE);
             rebuild_visible_items();
             return Button::NORMAL;
         }
@@ -484,6 +703,21 @@ namespace jrc
         {
             select_visible_item(buttonid - BT_BUY_BASE);
             buy_selected_item();
+            return Button::NORMAL;
+        }
+
+        if (buttonid >= BT_CASH_INV_BASE && buttonid < BT_CASH_INV_BASE + CASH_INVENTORY_PAGE_SIZE)
+        {
+            size_t index = buttonid - BT_CASH_INV_BASE;
+            if (index < cash_inventory_items.size())
+            {
+                selected_cash_inventory_index = index;
+                const ItemData& item = ItemData::get(cash_inventory_items[index].item_id);
+                if (item)
+                {
+                    set_message("Selected " + item.get_name() + " from Cash Inventory.");
+                }
+            }
             return Button::NORMAL;
         }
 
@@ -507,12 +741,18 @@ namespace jrc
 
         cash_line.change_text(
             classic_skin
-                ? format_price(nx_credit) + " / " + format_price(nx_prepaid) + " / " + format_price(maple_points)
+                ? "Credit " + format_price(nx_credit) +
+                  "  Prepaid " + format_price(nx_prepaid) +
+                  "  Maple " + format_price(maple_points)
                 : "NX Credit " + format_price(nx_credit) +
-                  "    Maple Points " + format_price(maple_points) +
-                  "    NX Prepaid " + format_price(nx_prepaid)
+                  "    NX Prepaid " + format_price(nx_prepaid) +
+                  "    Maple Points " + format_price(maple_points)
         );
-        inventory_line.change_text("Cash Inventory: " + item_count_text(cash_inventory_items.size()));
+        inventory_line.change_text(
+            classic_skin
+                ? item_count_text(cash_inventory_items.size())
+                : "Cash Inventory: " + item_count_text(cash_inventory_items.size())
+        );
         const Inventory& inventory = Stage::get().get_player().get_inventory();
         size_t equipped_count = 0;
         for (auto slot : Equipslot::values)
@@ -522,12 +762,19 @@ namespace jrc
                 equipped_count++;
             }
         }
-        equipped_line.change_text("Equips: " + item_count_text(equipped_count));
+        equipped_line.change_text(
+            classic_skin
+                ? "Equipped " + item_count_text(equipped_count)
+                : "Equips: " + item_count_text(equipped_count)
+        );
         gift_line.change_text("Gifts: " + (gift_count >= 0 ? std::to_string(gift_count) : std::string("Loading")));
-        wishlist_line.change_text("Wishlist: " + (wishlist_count >= 0 ? std::to_string(wishlist_count) : std::string("Loading")));
+        wishlist_line.change_text("Wishlist: " + item_count_text(wishlist_serials.size()));
 
         size_t page_count = std::max<size_t>(1, (visible_catalog_indices.size() + ITEMS_PER_PAGE - 1) / ITEMS_PER_PAGE);
-        page_line.change_text(std::to_string(static_cast<int32_t>(page + 1)) + " / " + std::to_string(static_cast<int32_t>(page_count)));
+        page_line.change_text(
+            "Page " + std::to_string(static_cast<int32_t>(page + 1)) +
+            " / " + std::to_string(static_cast<int32_t>(page_count))
+        );
 
         if (visible_catalog_indices.empty())
         {
@@ -571,6 +818,7 @@ namespace jrc
             {
                 continue;
             }
+            Equipslot::Id equip_slot = equip_slot_for_item(item_id);
 
             catalog.push_back({
                 static_cast<int32_t>(item["SN"].get_integer()),
@@ -578,7 +826,8 @@ namespace jrc
                 static_cast<int32_t>(item["Price"].get_integer()),
                 static_cast<int16_t>(item["Count"].get_integer(1)),
                 static_cast<int16_t>(item["Period"].get_integer(90)),
-                category_for_item(item_id, item_data),
+                category_for_item(item_id, item_data, equip_slot),
+                equip_slot,
                 item_data.get_name()
             });
         }
@@ -597,10 +846,22 @@ namespace jrc
         visible_catalog_indices.clear();
         for (size_t i = 0; i < catalog.size(); i++)
         {
-            if (active_category == CAT_MAIN || catalog[i].category == active_category)
+            if (category_matches(catalog[i]))
             {
                 visible_catalog_indices.push_back(i);
             }
+        }
+        if (active_category == CAT_RECOMMENDED)
+        {
+            std::sort(visible_catalog_indices.begin(), visible_catalog_indices.end(), [this](size_t left, size_t right) {
+                const CashItemEntry& left_item = catalog[left];
+                const CashItemEntry& right_item = catalog[right];
+                if (left_item.price != right_item.price)
+                {
+                    return left_item.price < right_item.price;
+                }
+                return left_item.sn < right_item.sn;
+            });
         }
 
         page = 0;
@@ -614,9 +875,28 @@ namespace jrc
         if (page * ITEMS_PER_PAGE + visible_index < visible_catalog_indices.size())
         {
             selected_visible_index = visible_index;
-            update_preview_look();
+            if (const CashItemEntry* selected = selected_entry())
+            {
+                toggle_preview_item(*selected);
+            }
             sync_text();
         }
+    }
+
+    const UICashShop::CashItemEntry* UICashShop::selected_entry() const
+    {
+        if (visible_catalog_indices.empty())
+        {
+            return nullptr;
+        }
+
+        size_t visible_index = page * ITEMS_PER_PAGE + selected_visible_index;
+        if (visible_index >= visible_catalog_indices.size())
+        {
+            return nullptr;
+        }
+
+        return &catalog[visible_catalog_indices[visible_index]];
     }
 
     void UICashShop::update_preview_look()
@@ -624,42 +904,137 @@ namespace jrc
         preview_look = Stage::get().get_player().get_look();
         preview_item_id = 0;
 
-        if (visible_catalog_indices.empty())
+        for (const auto& preview : preview_equips)
         {
+            preview_look.add_equip(preview.second);
+        }
+
+        if (const CashItemEntry* selected = selected_entry())
+        {
+            if (is_equip_item(selected->item_id))
+            {
+                preview_item_id = selected->item_id;
+            }
+        }
+    }
+
+    void UICashShop::toggle_preview_item(const CashItemEntry& entry)
+    {
+        if (entry.equip_slot == Equipslot::NONE)
+        {
+            update_preview_look();
             return;
         }
 
-        size_t visible_index = page * ITEMS_PER_PAGE + selected_visible_index;
-        if (visible_index >= visible_catalog_indices.size())
+        auto iter = preview_equips.find(entry.equip_slot);
+        if (iter != preview_equips.end() && iter->second == entry.item_id)
         {
-            return;
+            preview_equips.erase(iter);
+        }
+        else
+        {
+            preview_equips[entry.equip_slot] = entry.item_id;
         }
 
-        const CashItemEntry& selected = catalog[visible_catalog_indices[visible_index]];
-        if (is_equip_item(selected.item_id))
-        {
-            preview_look.add_equip(selected.item_id);
-            preview_item_id = selected.item_id;
-        }
+        update_preview_look();
     }
 
     void UICashShop::buy_selected_item()
     {
-        if (visible_catalog_indices.empty())
+        const CashItemEntry* selected = selected_entry();
+        if (!selected)
         {
             return;
         }
 
-        const CashItemEntry& selected = catalog[visible_catalog_indices[page * ITEMS_PER_PAGE + selected_visible_index]];
-        int32_t payment_type = choose_payment_type(selected.price);
-        if (payment_type == 0)
+        if (!can_afford(selected->price))
         {
-            set_message("Not enough NX or Maple Points for " + selected.name + ".");
+            set_message("Not enough NX or Maple Points for " + selected->name + ".");
             return;
         }
 
-        BuyCashItemPacket(payment_type, selected.sn).dispatch();
-        set_message("Purchase request sent for " + selected.name + ".");
+        int32_t cash_type = nx_credit >= selected->price
+            ? NX_CREDIT
+            : maple_points >= selected->price
+                ? MAPLE_POINT
+                : NX_PREPAID;
+        BuyCashItemPacket(cash_type, selected->sn).dispatch();
+        set_message("Purchase request sent for " + selected->name + ".");
+    }
+
+    void UICashShop::gift_selected_item()
+    {
+        const CashItemEntry* selected = selected_entry();
+        if (!selected)
+        {
+            return;
+        }
+
+        if (gift_recipient.empty())
+        {
+            set_message("Enter a recipient character name before gifting.");
+            gift_recipient.set_state(Textfield::FOCUSED);
+            return;
+        }
+
+        if (!can_afford(selected->price))
+        {
+            set_message("Not enough NX or Maple Points for " + selected->name + ".");
+            return;
+        }
+
+        std::string message = gift_message.get_text().empty() ? "Enjoy your gift." : gift_message.get_text();
+        GiftCashItemPacket(0, selected->sn, gift_recipient.get_text(), message).dispatch();
+        set_message("Gift request sent for " + selected->name + ".");
+    }
+
+    void UICashShop::toggle_wishlist_item()
+    {
+        const CashItemEntry* selected = selected_entry();
+        if (!selected)
+        {
+            return;
+        }
+
+        auto iter = std::find(wishlist_serials.begin(), wishlist_serials.end(), selected->sn);
+        if (iter != wishlist_serials.end())
+        {
+            wishlist_serials.erase(iter);
+            set_message("Removed " + selected->name + " from wishlist.");
+        }
+        else
+        {
+            if (wishlist_serials.size() >= 10)
+            {
+                set_message("Wishlist is full.");
+                return;
+            }
+            wishlist_serials.push_back(selected->sn);
+            set_message("Added " + selected->name + " to wishlist.");
+        }
+
+        ModifyCashWishlistPacket(wishlist_serials).dispatch();
+        sync_text();
+    }
+
+    void UICashShop::move_selected_cash_item()
+    {
+        if (cash_inventory_items.empty() || selected_cash_inventory_index >= cash_inventory_items.size())
+        {
+            set_message("Select a Cash Inventory item first.");
+            return;
+        }
+
+        const CashInventoryEntry& entry = cash_inventory_items[selected_cash_inventory_index];
+        if (entry.cash_id == 0)
+        {
+            set_message("Selected Cash Inventory item cannot be moved yet.");
+            return;
+        }
+
+        MoveCashItemFromLockerPacket(entry.cash_id).dispatch();
+        const ItemData& item = ItemData::get(entry.item_id);
+        set_message(item ? "Move request sent for " + item.get_name() + "." : "Move request sent.");
     }
 
     void UICashShop::request_leave()
@@ -674,37 +1049,122 @@ namespace jrc
         sync_text();
     }
 
-    int32_t UICashShop::choose_payment_type(int32_t price) const
+    bool UICashShop::can_afford(int32_t price) const
     {
-        if (nx_prepaid >= price)
+        return nx_prepaid >= price || maple_points >= price || nx_credit >= price;
+    }
+
+    bool UICashShop::category_matches(const CashItemEntry& entry) const
+    {
+        switch (active_category)
         {
-            return NX_PREPAID;
+        case CAT_FEATURED:
+            return true;
+        case CAT_NEW:
+            {
+                int32_t newest_sn = 0;
+                for (const CashItemEntry& item : catalog)
+                {
+                    newest_sn = std::max(newest_sn, item.sn);
+                }
+                return newest_sn > 0 && entry.sn >= newest_sn - 1000;
+            }
+        case CAT_RECOMMENDED:
+            return entry.price <= 5000 || entry.category == CAT_PET || entry.category == CAT_BEAUTY;
+        case CAT_EQUIP_ALL:
+            return entry.equip_slot != Equipslot::NONE;
+        case CAT_EVENT:
+            return entry.period > 0 && entry.period <= 30;
+        default:
+            return entry.category == active_category;
         }
-        if (maple_points >= price)
-        {
-            return MAPLE_POINT;
-        }
-        if (nx_credit >= price)
-        {
-            return NX_CREDIT;
-        }
-        return 0;
     }
 
     std::string UICashShop::category_name(Category category) const
     {
+        if (classic_skin)
+        {
+            switch (category)
+            {
+            case CAT_FEATURED:
+                return "Feat";
+            case CAT_NEW:
+                return "New";
+            case CAT_RECOMMENDED:
+                return "Rec";
+            case CAT_EQUIP_ALL:
+                return "Equip";
+            case CAT_EQUIP_HAT:
+                return "Hats";
+            case CAT_EQUIP_WEAPON:
+                return "Weapon";
+            case CAT_EQUIP_OVERALL:
+                return "Overall";
+            case CAT_EQUIP_SHOES:
+                return "Shoes";
+            case CAT_EQUIP_CAPE:
+                return "Capes";
+            case CAT_EQUIP_ACCESSORY:
+                return "Access";
+            case CAT_PET:
+                return "Pets";
+            case CAT_PET_EQUIP:
+                return "PetEq";
+            case CAT_PET_SKILL:
+                return "PetSk";
+            case CAT_BEAUTY:
+                return "Beauty";
+            case CAT_CONVENIENCE:
+                return "Conven";
+            case CAT_EFFECT:
+                return "Effect";
+            case CAT_PACKAGE:
+                return "Pack";
+            case CAT_EVENT:
+                return "Event";
+            default:
+                return "";
+            }
+        }
+
         switch (category)
         {
-        case CAT_MAIN:
-            return "MAIN";
-        case CAT_EQUIP:
-            return "EQUIP";
-        case CAT_CONSUME:
-            return "USE";
-        case CAT_ETC:
-            return "ETC";
+        case CAT_FEATURED:
+            return "Featured";
+        case CAT_NEW:
+            return "New";
+        case CAT_RECOMMENDED:
+            return "Recommended";
+        case CAT_EQUIP_ALL:
+            return "Equipment";
+        case CAT_EQUIP_HAT:
+            return "Hats";
+        case CAT_EQUIP_WEAPON:
+            return "Weapons";
+        case CAT_EQUIP_OVERALL:
+            return "Overalls";
+        case CAT_EQUIP_SHOES:
+            return "Shoes";
+        case CAT_EQUIP_CAPE:
+            return "Capes";
+        case CAT_EQUIP_ACCESSORY:
+            return "Accessories";
         case CAT_PET:
-            return "PET";
+            return "Pets";
+        case CAT_PET_EQUIP:
+            return "Pet Equip";
+        case CAT_PET_SKILL:
+            return "Pet Skills";
+        case CAT_BEAUTY:
+            return "Beauty";
+        case CAT_CONVENIENCE:
+            return "Convenience";
+        case CAT_EFFECT:
+            return "Effects";
+        case CAT_PACKAGE:
+            return "Packages";
+        case CAT_EVENT:
+            return "Events";
         default:
             return "";
         }
@@ -724,6 +1184,33 @@ namespace jrc
             static_cast<int16_t>(142 + (index % 3) * 150),
             static_cast<int16_t>(118 + (index / 3) * 202)
         };
+    }
+
+    Point<int16_t> UICashShop::category_position(size_t index) const
+    {
+        if (classic_skin)
+        {
+            return {
+                static_cast<int16_t>(362 + (index % 6) * 52),
+                static_cast<int16_t>(39 + (index / 6) * 18)
+            };
+        }
+
+        return {
+            10,
+            static_cast<int16_t>(58 + index * 20)
+        };
+    }
+
+    Point<int16_t> UICashShop::category_button_size() const
+    {
+        return classic_skin ? Point<int16_t>(50, 15) : Point<int16_t>(120, 18);
+    }
+
+    Point<int16_t> UICashShop::category_label_position(size_t index) const
+    {
+        Point<int16_t> pos = category_position(index);
+        return classic_skin ? pos + Point<int16_t>(25, 2) : pos + Point<int16_t>(60, 4);
     }
 
     Point<int16_t> UICashShop::cash_inventory_slot(size_t index) const
@@ -758,6 +1245,32 @@ namespace jrc
         };
     }
 
+    void UICashShop::draw_category_sidebar() const
+    {
+        if (classic_skin)
+        {
+            category_strip_cover.draw(Point<int16_t>(356, 34));
+        }
+
+        for (uint16_t i = 0; i < CAT_NUM; i++)
+        {
+            Category category = static_cast<Category>(i);
+            Point<int16_t> pos = category_position(i);
+            if (category == active_category)
+            {
+                selected_category_cover.draw(DrawArgument(pos, category_button_size()));
+            }
+
+            Text label(
+                Text::A11B,
+                Text::CENTER,
+                category == active_category ? Text::YELLOW : Text::WHITE,
+                category_name(category)
+            );
+            label.draw(category_label_position(i));
+        }
+    }
+
     void UICashShop::draw_equipped_items() const
     {
         const Inventory& inventory = Stage::get().get_player().get_inventory();
@@ -785,7 +1298,32 @@ namespace jrc
             }
         }
 
-        draw_item_inventory_items(InventoryType::EQUIP, index, limit);
+        for (int32_t item_id : moved_inventory_items)
+        {
+            if (index >= limit)
+            {
+                break;
+            }
+
+            const ItemData& item = ItemData::get(item_id);
+            if (item)
+            {
+                item.get_icon(false).draw(item_inventory_slot(index));
+                index++;
+            }
+        }
+
+        InventoryType::Id inventory_tabs[] = {
+            InventoryType::EQUIP,
+            InventoryType::USE,
+            InventoryType::SETUP,
+            InventoryType::ETC,
+            InventoryType::CASH
+        };
+        for (InventoryType::Id type : inventory_tabs)
+        {
+            draw_item_inventory_items(type, index, limit);
+        }
     }
 
     void UICashShop::draw_item_inventory_items(InventoryType::Id type, size_t& index, size_t limit) const

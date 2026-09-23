@@ -20,31 +20,34 @@ namespace jrc
             return UI::get().emplace<UICashShop>().get();
         }
 
-        int32_t read_wishlist_count(InPacket& recv)
+        std::vector<int32_t> read_wishlist(InPacket& recv)
         {
-            int32_t count = 0;
+            std::vector<int32_t> serial_numbers;
+            serial_numbers.reserve(10);
             for (int32_t i = 0; i < 10 && recv.length() >= sizeof(int32_t); i++)
             {
-                if (recv.read_int() != 0)
+                int32_t serial_number = recv.read_int();
+                if (serial_number != 0)
                 {
-                    count++;
+                    serial_numbers.push_back(serial_number);
                 }
             }
-            return count;
+            return serial_numbers;
         }
 
-        int32_t read_cash_inventory_item(InPacket& recv)
+        UICashShop::CashInventoryEntry read_cash_inventory_item(InPacket& recv)
         {
-            recv.read_long(); // cash id / pet id / ring id
-            recv.read_int();  // account id
+            UICashShop::CashInventoryEntry entry;
+            entry.cash_id = recv.read_long(); // cash id / pet id / ring id
+            entry.account_id = recv.read_int();
             recv.read_int();  // unused
-            int32_t item_id = recv.read_int();
-            recv.read_int(); // serial number
-            recv.read_short(); // quantity
-            recv.read_padded_string(13); // gift from
-            recv.read_long(); // expiration
+            entry.item_id = recv.read_int();
+            entry.serial_number = recv.read_int();
+            entry.quantity = recv.read_short();
+            entry.gift_from = recv.read_padded_string(13);
+            entry.expiration = recv.read_long();
             recv.read_long(); // unused
-            return item_id;
+            return entry;
         }
 
         int32_t read_gift_item(InPacket& recv)
@@ -97,13 +100,13 @@ namespace jrc
         case 0x4B:
             {
                 int16_t count = recv.read_short();
-                std::vector<int32_t> item_ids;
-                item_ids.reserve(static_cast<size_t>(std::max<int16_t>(count, 0)));
+                std::vector<UICashShop::CashInventoryEntry> items;
+                items.reserve(static_cast<size_t>(std::max<int16_t>(count, 0)));
                 for (int16_t i = 0; i < count && recv.length() >= 55; i++)
                 {
-                    item_ids.push_back(read_cash_inventory_item(recv));
+                    items.push_back(read_cash_inventory_item(recv));
                 }
-                cashshop->set_inventory_items(item_ids);
+                cashshop->set_inventory_items(items);
             }
             break;
         case 0x4D:
@@ -118,7 +121,7 @@ namespace jrc
             break;
         case 0x4F:
         case 0x55:
-            cashshop->set_wishlist_count(read_wishlist_count(recv));
+            cashshop->set_wishlist(read_wishlist(recv));
             break;
         case 0x5C:
             if (recv.length() > 0)
@@ -144,7 +147,23 @@ namespace jrc
             }
             break;
         case 0x68:
-            cashshop->set_message("Moved item from Cash inventory.");
+            {
+                int32_t item_id = 0;
+                int64_t cash_id = 0;
+                if (recv.length() >= 8)
+                {
+                    recv.read_short(); // target item inventory slot
+                    recv.read_byte();  // normal item type byte
+                    item_id = recv.read_int();
+                    bool cash_item = recv.read_bool();
+                    if (cash_item && recv.length() >= 8)
+                    {
+                        cash_id = recv.read_long();
+                    }
+                }
+                cashshop->complete_cash_inventory_move(cash_id, item_id);
+                cashshop->set_message("Moved item from Cash inventory.");
+            }
             break;
         case 0x6A:
             cashshop->set_message("Moved item into Cash inventory.");

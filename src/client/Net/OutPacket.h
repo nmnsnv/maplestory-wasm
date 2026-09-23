@@ -123,6 +123,7 @@ namespace jrc
         MOVE_MONSTER       = 188,
         PICKUP_ITEM        = 202,
         PLAYER_UPDATE      = 0xCF,
+        CHECK_CASH         = 0xE4,
         CASHSHOP_OPERATION = 0xE5,
 
         // Custom

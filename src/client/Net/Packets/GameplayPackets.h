@@ -18,6 +18,8 @@
 #pragma once
 #include "MovementPacket.h"
 
+#include <vector>
+
 
 namespace jrc
 {
@@ -52,17 +54,68 @@ namespace jrc
         EnterCashShopPacket() : OutPacket(ENTER_CASHSHOP) {}
     };
 
+    /// Requests the player's current Cash Shop balances.
+    /// Opcode: CHECK_CASH(228)
+    class CheckCashPacket : public OutPacket
+    {
+    public:
+        CheckCashPacket() : OutPacket(CHECK_CASH) {}
+    };
+
     /// Purchases a cash shop item.
     /// Opcode: CASHSHOP_OPERATION(229), Action: 0x03
     class BuyCashItemPacket : public OutPacket
     {
     public:
-        BuyCashItemPacket(int32_t payment_type, int32_t serial_number) : OutPacket(CASHSHOP_OPERATION)
+        BuyCashItemPacket(int32_t cash_type, int32_t serial_number) : OutPacket(CASHSHOP_OPERATION)
         {
             write_byte(0x03);
             write_byte(0);
-            write_int(payment_type);
+            write_int(cash_type);
             write_int(serial_number);
+        }
+    };
+
+    /// Gifts a cash shop item to another character.
+    /// Opcode: CASHSHOP_OPERATION(229), Action: 0x04
+    class GiftCashItemPacket : public OutPacket
+    {
+    public:
+        GiftCashItemPacket(int32_t birthday, int32_t serial_number, const std::string& recipient, const std::string& message)
+            : OutPacket(CASHSHOP_OPERATION)
+        {
+            write_byte(0x04);
+            write_int(birthday);
+            write_int(serial_number);
+            write_string(recipient);
+            write_string(message);
+        }
+    };
+
+    /// Replaces the wishlist with up to ten cash item serial numbers.
+    /// Opcode: CASHSHOP_OPERATION(229), Action: 0x05
+    class ModifyCashWishlistPacket : public OutPacket
+    {
+    public:
+        ModifyCashWishlistPacket(const std::vector<int32_t>& serial_numbers) : OutPacket(CASHSHOP_OPERATION)
+        {
+            write_byte(0x05);
+            for (size_t i = 0; i < 10; i++)
+            {
+                write_int(i < serial_numbers.size() ? serial_numbers[i] : 0);
+            }
+        }
+    };
+
+    /// Moves a purchased item from the Cash Shop locker into character inventory.
+    /// Opcode: CASHSHOP_OPERATION(229), Action: 0x0D
+    class MoveCashItemFromLockerPacket : public OutPacket
+    {
+    public:
+        explicit MoveCashItemFromLockerPacket(int64_t cash_id) : OutPacket(CASHSHOP_OPERATION)
+        {
+            write_byte(0x0D);
+            write_int(static_cast<int32_t>(cash_id));
         }
     };
 
