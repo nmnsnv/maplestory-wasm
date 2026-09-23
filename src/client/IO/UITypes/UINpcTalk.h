@@ -20,6 +20,7 @@
 #include "../Components/NpcText.h"
 
 #include "../../Data/QuestData.h"
+#include "../../Gameplay/QuestQuiz.h"
 #include "../../Graphics/Text.h"
 #include "../../Graphics/Texture.h"
 #include <memory>
@@ -98,6 +99,8 @@ namespace jrc
             bool choosing_reward = false;
             bool awaiting_result = false;
             bool informational = false;
+            QuestQuiz quiz;
+            bool showing_quiz_failure = false;
         };
 
         void set_dialogue(
@@ -111,6 +114,7 @@ namespace jrc
         void show_quest_line();
         void show_quest_rewards();
         void submit_quest(int16_t selection = -1);
+        void finish_quest_dialogue();
         Button::State quest_button_pressed(uint16_t buttonid);
         void cycle_selection(int32_t direction);
 

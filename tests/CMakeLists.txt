@@ -69,6 +69,7 @@ add_library(test_core STATIC
     "${CLIENT}/Character/Inventory/Pet.cpp"
     "${CLIENT}/Character/Job.cpp"
     "${CLIENT}/IO/UIWindow.cpp"
+    "${CLIENT}/IO/Components/NpcMenu.cpp"
 )
 target_link_libraries(test_core PUBLIC test_options)
 
@@ -89,6 +90,7 @@ client_test(packet_test unit)
 client_test(cash_shop_test unit)
 client_test(ui_window_test unit)
 client_test(job_requirements_test unit)
+client_test(npc_menu_test unit)
 
 if(TEST_ASSETS)
     foreach(asset Character Etc Item Npc Quest String UI UI_83)
@@ -147,7 +149,7 @@ if(TEST_ASSETS)
     add_library(test_texture_capture OBJECT support/texture_capture.cpp)
     target_link_libraries(test_texture_capture PUBLIC test_asset_support)
 
-    foreach(name cash_shop_assets character_stats equip_requirements npc_buttons npc_dialog quest_ui)
+    foreach(name cash_shop_assets character_stats equip_requirements npc_buttons npc_dialog quest_ui quest_quiz)
         client_test(${name}_test assets test_asset_client test_asset_support)
     endforeach()
     foreach(name quest_rules quest_conversation npc_quest_markers)
