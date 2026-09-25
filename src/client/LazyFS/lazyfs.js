@@ -481,6 +481,101 @@ var LazyFS = {
 		});
 	},
 
+	// ========== ASSET PRELOADING ==========
+
+	// Track recent reads per file to predict nearby chunks
+	_recentReads: new Map(),   // Map<filepath, Set<chunkIndex>>
+	_prefetchTimer: null,
+	_prefetchInFlight: 0,
+	MAX_PREFETCH_CONCURRENT: 2,
+	PREFETCH_RADIUS: 3,        // Chunks ahead/behind to prefetch
+	PREFETCH_IDLE_MS: 500,     // Wait for reads to settle before prefetching
+
+	/**
+	 * Schedule prefetch of chunks near recently accessed regions.
+	 * Runs via requestIdleCallback after reads settle.
+	 */
+	_schedulePrefetch: function () {
+		if (this._prefetchTimer) {
+			clearTimeout(this._prefetchTimer);
+		}
+
+		this._prefetchTimer = setTimeout(() => {
+			// Respect save-data hint
+			if (navigator.connection && navigator.connection.saveData) {
+				return;
+			}
+
+			const schedule = (typeof requestIdleCallback === 'function')
+				? requestIdleCallback
+				: (fn) => setTimeout(fn, 50);
+
+			schedule(() => this._runPrefetch());
+		}, this.PREFETCH_IDLE_MS);
+	},
+
+	_runPrefetch: async function () {
+		if (this._prefetchInFlight >= this.MAX_PREFETCH_CONCURRENT) {
+			return;
+		}
+
+		for (const [filepath, accessedChunks] of this._recentReads) {
+			const fileEntry = this.files.get(filepath);
+			if (!fileEntry || fileEntry.size === null) continue;
+
+			const versionTag = this.getFileVersionTag(fileEntry);
+			const totalChunks = Math.ceil(fileEntry.size / this.CHUNK_SIZE);
+			const candidates = new Set();
+
+			// Gather chunks adjacent to recently accessed ones
+			for (const idx of accessedChunks) {
+				for (let d = 1; d <= this.PREFETCH_RADIUS; d++) {
+					if (idx + d < totalChunks) candidates.add(idx + d);
+					if (idx - d >= 0) candidates.add(idx - d);
+				}
+			}
+
+			// Remove already-cached chunks
+			const missing = [];
+			for (const ci of candidates) {
+				if (accessedChunks.has(ci)) continue;
+				const ck = this.getChunkCacheKey(filepath, versionTag, ci);
+				if (this.chunkCache.has(ck)) continue;
+				missing.push(ci);
+			}
+
+			if (missing.length === 0) continue;
+
+			// Batch contiguous runs
+			missing.sort((a, b) => a - b);
+			const batches = [];
+			let bStart = missing[0], bEnd = missing[0];
+			for (let i = 1; i < missing.length; i++) {
+				if (missing[i] === bEnd + 1) {
+					bEnd = missing[i];
+				} else {
+					batches.push({ start: bStart, end: bEnd });
+					bStart = missing[i];
+					bEnd = missing[i];
+				}
+			}
+			batches.push({ start: bStart, end: bEnd });
+
+			// Fetch up to concurrency limit
+			for (const batch of batches) {
+				if (this._prefetchInFlight >= this.MAX_PREFETCH_CONCURRENT) break;
+				this._prefetchInFlight++;
+				console.debug(`[LazyFS] Prefetching ${filepath} chunks ${batch.start}-${batch.end}`);
+				this.fetchChunks(filepath, batch.start, batch.end)
+					.catch(() => {})
+					.finally(() => { this._prefetchInFlight--; });
+			}
+		}
+
+		// Clear recent reads after prefetch pass
+		this._recentReads.clear();
+	},
+
 	/**
 	 * Read data from a file at a specific offset
 	 * This is called by Emscripten's FS when the file is read
@@ -611,6 +706,16 @@ var LazyFS = {
 			result.set(chunk.subarray(readStart, readEnd), resultOffset);
 			resultOffset += readLength;
 		}
+
+		// Track accessed chunks for prefetching
+		if (!this._recentReads.has(filepath)) {
+			this._recentReads.set(filepath, new Set());
+		}
+		const accessed = this._recentReads.get(filepath);
+		for (let ci = startChunk; ci <= endChunk; ci++) {
+			accessed.add(ci);
+		}
+		this._schedulePrefetch();
 
 		return result;
 	}
