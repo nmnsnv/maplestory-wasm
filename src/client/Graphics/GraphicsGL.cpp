@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #include "GraphicsGL.h"
+#include "Shaders.h"
 #include "DrawBounds.h"
 
 #include "../Configuration.h"
@@ -46,22 +47,7 @@ namespace jrc
         GLint result = GL_FALSE;
 
         GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-        const char *vs_source =
-            "precision highp float;\n"
-            "attribute vec4 coord;"
-            "attribute vec4 color;"
-            "varying vec2 texpos;"
-            "varying vec4 colormod;"
-            "uniform vec2 screensize;"
-            "uniform int yoffset;"
-
-            "void main(void) {"
-            "    float x = -1.0 + coord.x * 2.0 / screensize.x;"
-            "    float y = 1.0 - (coord.y + float(yoffset)) * 2.0 / screensize.y;"
-            "    gl_Position = vec4(x, y, 0.0, 1.0);"
-            "    texpos = coord.zw;"
-            "    colormod = color;"
-            "}";
+        const char *vs_source = Shaders::VERTEX;
         glShaderSource(vs, 1, &vs_source, NULL);
         glCompileShader(vs);
         glGetShaderiv(vs, GL_COMPILE_STATUS, &result);
@@ -74,23 +60,7 @@ namespace jrc
         }
 
         GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-        const char *fs_source =
-            "precision mediump float;\n"
-            "varying vec2 texpos;"
-            "varying vec4 colormod;"
-            "uniform sampler2D texture;"
-            "uniform vec2 atlassize;"
-            "uniform int fontregion;"
-
-            "void main(void) {"
-            "    if (texpos.y == 0.0) {"
-            "        gl_FragColor = colormod;"
-            "    } else if (texpos.y <= float(fontregion)) {"
-            "        gl_FragColor = vec4(1.0, 1.0, 1.0, texture2D(texture, texpos / atlassize).r) * colormod;"
-            "    } else {"
-            "        gl_FragColor = texture2D(texture, texpos / atlassize) * colormod;"
-            "    }"
-            "}";
+        const char *fs_source = Shaders::FRAGMENT;
         glShaderSource(fs, 1, &fs_source, NULL);
         glCompileShader(fs);
         glGetShaderiv(fs, GL_COMPILE_STATUS, &result);

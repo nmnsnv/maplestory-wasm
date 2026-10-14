@@ -91,6 +91,7 @@ client_test(cash_shop_test unit)
 client_test(ui_window_test unit)
 client_test(job_requirements_test unit)
 client_test(npc_menu_test unit)
+client_test(graphics_shader_test unit)
 
 if(TEST_ASSETS)
     foreach(asset Character Etc Item Npc Quest String UI UI_83)
